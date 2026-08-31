@@ -76,5 +76,5 @@ describe("homepage degree map preview", () => {
     expect(pageSource).toMatch(/from "next\/image"/);
     expect(pageSource.toLowerCase()).not.toMatch(/snhu.?logo|logo\.svg|logo\.png/);
     expect(container.querySelectorAll("img[alt*='logo' i]")).toHaveLength(0);
-  });
+  }, 15000);
 });

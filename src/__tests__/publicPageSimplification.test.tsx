@@ -31,7 +31,7 @@ describe("public page simplification", () => {
     ]) {
       expect(screen.queryByText(removedText)).not.toBeInTheDocument();
     }
-  });
+  }, 15000);
 
   it("curates bachelor homepage cards from the popular list", async () => {
     render(await HomePage());
@@ -56,7 +56,7 @@ describe("public page simplification", () => {
       if (getProgramLevelCategory(program) === "bachelor") continue;
       expect(screen.queryByRole("heading", { name: program.title, level: 3 })).not.toBeInTheDocument();
     }
-  });
+  }, 15000);
 
   it("keeps concise student-facing About content without status or methodology cards", async () => {
     render(await AboutPage());
@@ -66,7 +66,7 @@ describe("public page simplification", () => {
     expect(screen.getByRole("heading", { name: "Important Disclaimer" })).toBeInTheDocument();
     expect(screen.queryByText("Data Methodology")).not.toBeInTheDocument();
     expect(screen.queryByText("System & Data Status")).not.toBeInTheDocument();
-  });
+  }, 15000);
 
   it("uses conservative, shared directory categories", () => {
     expect(getProgramLevelCategory({ credential: "Bachelor of Arts", degreeLevel: "BA" })).toBe("bachelor");

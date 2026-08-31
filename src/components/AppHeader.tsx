@@ -129,6 +129,29 @@ export function AppHeader({ currentPage = "home", initialPrograms = [] }: AppHea
               <span className="truncate">Browse Programs</span>
             </Button>
           </div>
+
+          <nav
+            className="flex items-center gap-1 overflow-x-auto border-t border-surface-variant/60 pt-2 md:hidden"
+            aria-label="Mobile navigation"
+          >
+            {NAV_ITEMS.map((item) => {
+              const isActive = activeSection === item.id;
+              return (
+                <Link
+                  key={item.id}
+                  href={item.href}
+                  aria-current={isActive ? "page" : undefined}
+                  className={`rounded-md px-3 py-1.5 text-xs font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-surface ${
+                    isActive
+                      ? "bg-surface-container-lowest font-semibold text-primary shadow-xs"
+                      : "text-on-surface-variant hover:bg-surface-container-low hover:text-on-surface"
+                  }`}
+                >
+                  {item.label}
+                </Link>
+              );
+            })}
+          </nav>
         </div>
       </header>
 

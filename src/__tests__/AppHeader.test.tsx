@@ -1,4 +1,4 @@
-import { render, screen, fireEvent } from "@testing-library/react";
+import { render, screen, fireEvent, within } from "@testing-library/react";
 import { describe, it, expect, vi } from "vitest";
 import { AppHeader } from "@/components/AppHeader";
 
@@ -19,26 +19,39 @@ describe("AppHeader Component", () => {
     expect(homeLink).toHaveTextContent("Tools");
   });
 
-  it("renders all four primary navigation links", () => {
+  it("renders all four primary navigation links in desktop and mobile navigation regions", () => {
     render(<AppHeader />);
-    expect(screen.getByRole("link", { name: "Programs" })).toHaveAttribute("href", "/programs");
-    expect(screen.getByRole("link", { name: "Courses" })).toHaveAttribute("href", "/courses");
-    expect(screen.getByRole("link", { name: "Transfers" })).toHaveAttribute("href", "/transfers");
-    expect(screen.getByRole("link", { name: "About" })).toHaveAttribute("href", "/about");
+    const desktopNav = screen.getByRole("navigation", { name: "Main navigation" });
+    const mobileNav = screen.getByRole("navigation", { name: "Mobile navigation" });
+
+    for (const nav of [desktopNav, mobileNav]) {
+      const links = within(nav);
+      expect(links.getByRole("link", { name: "Programs" })).toHaveAttribute("href", "/programs");
+      expect(links.getByRole("link", { name: "Courses" })).toHaveAttribute("href", "/courses");
+      expect(links.getByRole("link", { name: "Transfers" })).toHaveAttribute("href", "/transfers");
+      expect(links.getByRole("link", { name: "About" })).toHaveAttribute("href", "/about");
+    }
   });
 
-  it("indicates the active navigation section", () => {
+  it("indicates the active navigation section across both desktop and mobile navigation", () => {
     const { rerender } = render(<AppHeader currentPage="programs" />);
-    expect(screen.getByRole("link", { name: "Programs" })).toHaveAttribute("aria-current", "page");
+    const desktopNav = screen.getByRole("navigation", { name: "Main navigation" });
+    const mobileNav = screen.getByRole("navigation", { name: "Mobile navigation" });
+
+    expect(within(desktopNav).getByRole("link", { name: "Programs" })).toHaveAttribute("aria-current", "page");
+    expect(within(mobileNav).getByRole("link", { name: "Programs" })).toHaveAttribute("aria-current", "page");
 
     rerender(<AppHeader currentPage="courses" />);
-    expect(screen.getByRole("link", { name: "Courses" })).toHaveAttribute("aria-current", "page");
+    expect(within(desktopNav).getByRole("link", { name: "Courses" })).toHaveAttribute("aria-current", "page");
+    expect(within(mobileNav).getByRole("link", { name: "Courses" })).toHaveAttribute("aria-current", "page");
 
     rerender(<AppHeader currentPage="transfers" />);
-    expect(screen.getByRole("link", { name: "Transfers" })).toHaveAttribute("aria-current", "page");
+    expect(within(desktopNav).getByRole("link", { name: "Transfers" })).toHaveAttribute("aria-current", "page");
+    expect(within(mobileNav).getByRole("link", { name: "Transfers" })).toHaveAttribute("aria-current", "page");
 
     rerender(<AppHeader currentPage="about" />);
-    expect(screen.getByRole("link", { name: "About" })).toHaveAttribute("aria-current", "page");
+    expect(within(desktopNav).getByRole("link", { name: "About" })).toHaveAttribute("aria-current", "page");
+    expect(within(mobileNav).getByRole("link", { name: "About" })).toHaveAttribute("aria-current", "page");
   });
 
   it("renders global search input field", () => {

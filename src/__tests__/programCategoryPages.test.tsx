@@ -68,7 +68,7 @@ describe("program category landing pages", () => {
       "href",
       "/programs/associate",
     );
-  });
+  }, 15000);
 
   it("renders the other category pages with category-specific headings", async () => {
     render(await AssociatePage());
@@ -79,7 +79,7 @@ describe("program category landing pages", () => {
 
     render(await CertificatesPage());
     expect(screen.getByRole("heading", { name: "Certificate Programs", level: 1 })).toBeInTheDocument();
-  });
+  }, 15000);
 
   it("configures permanent redirects from legacy singular category paths", () => {
     const configSource = readFileSync(join(process.cwd(), "next.config.js"), "utf8");

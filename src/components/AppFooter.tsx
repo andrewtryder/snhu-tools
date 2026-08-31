@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { GITHUB_REPO_URL } from "@/lib/snhuTools";
+import { GITHUB_REPO_URL } from "@/lib/site";
 
 export function formatCatalogLastUpdated(lastUpdated: Date | string | null): string {
   if (!lastUpdated) return "Not available";

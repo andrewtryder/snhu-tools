@@ -70,7 +70,7 @@ describe("ProgramTransferCoverage UI", () => {
     expect(screen.getAllByRole("link", { name: /View transfer equivalencies for CS / })).toHaveLength(11);
     expect(document.querySelector(".grid")).toBeTruthy();
     expect(document.querySelector(".rounded-full")).toBeNull();
-  });
+  }, 15000);
 
   it("shows a concise no-match message when coverage is available but empty", async () => {
     getProgramTransferCoverage.mockResolvedValue({

@@ -10,3 +10,5 @@ export const siteConfig = {
   },
   repository: "https://github.com/andrewtryder/snhu-tools",
 };
+
+export const GITHUB_REPO_URL = siteConfig.repository;

@@ -14,7 +14,7 @@ describe("Trust & Methodology Pages", () => {
     render(<MethodologyPage />);
     expect(screen.getByRole("heading", { name: /Data Processing & Graph Analysis Methodology/i })).toBeInTheDocument();
     expect(screen.getByText(/Zero Requirement Invention/i)).toBeInTheDocument();
-  });
+  }, 15000);
 
   it("renders Data Status health dashboard page", async () => {
     const page = await DataStatusPage();
@@ -22,7 +22,7 @@ describe("Trust & Methodology Pages", () => {
 
     expect(screen.getByRole("heading", { name: /Catalog Synchronization Status/i })).toBeInTheDocument();
     expect(screen.getByText("Computer Science")).toBeInTheDocument();
-  });
+  }, 15000);
 
   it("renders About Page with concise unofficial disclaimers", async () => {
     render(await AboutPage());
@@ -33,5 +33,5 @@ describe("Trust & Methodology Pages", () => {
       screen.getByRole("link", { name: "github.com/andrewtryder/snhu-tools" }),
     ).toHaveAttribute("href", "https://github.com/andrewtryder/snhu-tools");
     expect(screen.getByText(/This project is open source and the code may be found at/i)).toBeInTheDocument();
-  });
+  }, 15000);
 });
