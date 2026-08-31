@@ -16,6 +16,11 @@ const nextConfig = {
         destination: "/programs/certificates",
         permanent: true,
       },
+      {
+        source: "/course/:id",
+        destination: "/courses/:id",
+        permanent: true,
+      },
     ]
   },
 }

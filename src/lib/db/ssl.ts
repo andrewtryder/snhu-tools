@@ -38,12 +38,15 @@ function readCaCert(): string | undefined {
   return resolvePostgresCaCert(process.env.POSTGRES_CA_CERT);
 }
 
-export function resolvePgConnectionConfig(connectionString: string): {
+export function resolvePgConnectionConfig(
+  connectionString: string,
+  caValue?: string,
+): {
   connectionString: string;
   ssl?: boolean | ConnectionOptions;
 } {
   const cleanedConnectionString = stripSslQueryParams(connectionString);
-  const ca = readCaCert();
+  const ca = caValue !== undefined ? resolvePostgresCaCert(caValue) : readCaCert();
 
   if (ca) {
     return {
