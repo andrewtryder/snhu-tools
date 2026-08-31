@@ -53,6 +53,8 @@ function toCoursesData(rows: Awaited<ReturnType<typeof getAllTransferRows>>): Tr
     }
 
     data[subjectPrefix][courseNumber].push({
+      subjectPrefix: row.subjectPrefix,
+      courseNumber: row.courseNumber,
       title: row.title,
       pid: row.pid,
       eligibilityTimeframe: row.eligibilityTimeframe,

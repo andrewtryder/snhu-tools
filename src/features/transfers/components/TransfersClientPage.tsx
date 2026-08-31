@@ -12,17 +12,20 @@ import {
   GraduationCapIcon,
 } from "lucide-react";
 import type { FacetSummary } from "@/features/transfers/lib/seoQueries";
+import { slugify } from "@/features/transfers/lib/slug";
 
 export type ViewType = "subject" | "organization" | "level";
 
 export type TransferCourseItem = {
+  subjectPrefix: string | null;
+  courseNumber: string | null;
   title: string | null;
   pid: string | null;
   eligibilityTimeframe: string | null;
   groupFilter2Name: string | null;
   academicLevel: string | null;
   coursePID: string | null;
-  courseName: string | null;
+  courseName?: string | null;
   searchString?: string;
 };
 
@@ -68,9 +71,13 @@ export function TransfersClientPage({
     for (const prefix of Object.values(initialCoursesData)) {
       for (const courseList of Object.values(prefix)) {
         for (const course of courseList) {
+          const courseCode = course.courseNumber || course.courseName || "";
+          const subject = course.subjectPrefix || "";
+          const title = course.title || "";
+          const org = course.groupFilter2Name || "";
           courses.push({
             ...course,
-            searchString: `${course.courseName || ""} ${course.title || ""} ${course.groupFilter2Name || ""}`.toLowerCase(),
+            searchString: `${courseCode} ${subject} ${title} ${org}`.toLowerCase(),
           });
         }
       }
@@ -104,7 +111,7 @@ export function TransfersClientPage({
     filtered.forEach((course) => {
       let key = "";
       if (activeView === "subject") {
-        key = course.courseName || "Unknown Subject";
+        key = course.subjectPrefix || "Unknown Subject";
       } else if (activeView === "organization") {
         key = course.groupFilter2Name || "Unknown Organization";
       } else if (activeView === "level") {
@@ -332,11 +339,9 @@ export function TransfersClientPage({
                                 <table className="min-w-full divide-y divide-surface-variant">
                                   <thead className="bg-surface-container-low">
                                     <tr>
-                                      {activeView !== "subject" && (
-                                        <th className="px-4 py-3 text-left text-xs font-medium text-on-surface-variant">
-                                          Course
-                                        </th>
-                                      )}
+                                      <th className="px-4 py-3 text-left text-xs font-medium text-on-surface-variant">
+                                        Course
+                                      </th>
                                       {activeView !== "organization" && (
                                         <th className="px-4 py-3 text-left text-xs font-medium text-on-surface-variant">
                                           Organization
@@ -356,35 +361,45 @@ export function TransfersClientPage({
                                     </tr>
                                   </thead>
                                   <tbody className="divide-y divide-surface-variant">
-                                    {coursesList.map((course, idx) => (
-                                      <tr
-                                        key={`${rowId}-${idx}`}
-                                        className="transition-colors hover:bg-surface-container-low"
-                                      >
-                                        {activeView !== "subject" && (
+                                    {coursesList.map((course, idx) => {
+                                      const courseCode =
+                                        course.courseNumber || course.courseName;
+                                      const orgName = course.groupFilter2Name;
+                                      const levelName = course.academicLevel;
+
+                                      return (
+                                        <tr
+                                          key={`${rowId}-${idx}`}
+                                          className="transition-colors hover:bg-surface-container-low"
+                                        >
                                           <td className="px-4 py-3 text-sm font-medium text-on-surface">
-                                            {course.pid ? (
-                                              <a
-                                                href={`https://www.snhu.edu/admission/transferring-credits/work-life-experience#/experiences/${course.pid}`}
+                                            {courseCode ? (
+                                              <Link
+                                                href={`/transfers/courses/${slugify(courseCode)}`}
                                                 className="text-secondary transition-colors hover:text-primary hover:underline"
-                                                target="_blank"
-                                                rel="noopener noreferrer"
                                               >
-                                                {course.courseName}
-                                              </a>
+                                                {courseCode}
+                                              </Link>
                                             ) : (
-                                              course.courseName
+                                              "-"
                                             )}
                                           </td>
-                                        )}
-                                        {activeView !== "organization" && (
-                                          <td className="px-4 py-3 text-sm text-on-surface-variant">
-                                            {course.groupFilter2Name || "-"}
-                                          </td>
-                                        )}
-                                        <td className="px-4 py-3 text-sm text-on-surface">
-                                          {activeView === "subject" ? (
-                                            course.pid ? (
+                                          {activeView !== "organization" && (
+                                            <td className="px-4 py-3 text-sm text-on-surface-variant">
+                                              {orgName ? (
+                                                <Link
+                                                  href={`/transfers/organizations/${slugify(orgName)}`}
+                                                  className="transition-colors hover:text-primary hover:underline"
+                                                >
+                                                  {orgName}
+                                                </Link>
+                                              ) : (
+                                                "-"
+                                              )}
+                                            </td>
+                                          )}
+                                          <td className="px-4 py-3 text-sm text-on-surface">
+                                            {course.pid ? (
                                               <a
                                                 href={`https://www.snhu.edu/admission/transferring-credits/work-life-experience#/experiences/${course.pid}`}
                                                 className="font-medium text-secondary transition-colors hover:text-primary hover:underline"
@@ -394,24 +409,31 @@ export function TransfersClientPage({
                                                 {course.title || "-"}
                                               </a>
                                             ) : (
-                                              <span className="font-medium">{course.title || "-"}</span>
-                                            )
-                                          ) : (
-                                            course.title || "-"
-                                          )}
-                                        </td>
-                                        {activeView !== "level" && (
-                                          <td className="hidden px-4 py-3 text-sm text-on-surface-variant sm:table-cell">
-                                            <span className="inline-flex items-center rounded-full border border-surface-variant bg-surface-container-low px-2 py-0.5 text-xs font-medium text-on-surface">
-                                              {course.academicLevel || "-"}
-                                            </span>
+                                              <span className="font-medium">
+                                                {course.title || "-"}
+                                              </span>
+                                            )}
                                           </td>
-                                        )}
-                                        <td className="hidden px-4 py-3 text-sm text-on-surface-variant md:table-cell">
-                                          {course.eligibilityTimeframe || "-"}
-                                        </td>
-                                      </tr>
-                                    ))}
+                                          {activeView !== "level" && (
+                                            <td className="hidden px-4 py-3 text-sm text-on-surface-variant sm:table-cell">
+                                              {levelName ? (
+                                                <Link
+                                                  href={`/transfers/levels/${slugify(levelName)}`}
+                                                  className="inline-flex items-center rounded-full border border-surface-variant bg-surface-container-low px-2 py-0.5 text-xs font-medium text-on-surface transition-colors hover:text-primary"
+                                                >
+                                                  {levelName}
+                                                </Link>
+                                              ) : (
+                                                "-"
+                                              )}
+                                            </td>
+                                          )}
+                                          <td className="hidden px-4 py-3 text-sm text-on-surface-variant md:table-cell">
+                                            {course.eligibilityTimeframe || "-"}
+                                          </td>
+                                        </tr>
+                                      );
+                                    })}
                                   </tbody>
                                 </table>
                               </div>

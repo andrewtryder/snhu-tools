@@ -75,13 +75,24 @@ describe("Transfers courseCode utilities", () => {
       });
     });
 
-    it("returns TOO_MANY_COURSES when exceeding max limit", () => {
+    it("returns TOO_MANY_COURSES when exceeding max limit of 100 unique codes", () => {
       const codes = Array.from({ length: 101 }, (_, i) => `CS${100 + i}`).join(",");
       const result = parseCoursesQuery(codes);
       expect(result).toEqual({
         ok: false,
         error: "TOO_MANY_COURSES",
       });
+    });
+
+    it("does not count duplicates toward the 100 unique course limit", () => {
+      // 100 unique codes repeated twice (200 segments total)
+      const uniqueCodes = Array.from({ length: 100 }, (_, i) => `CS${100 + i}`);
+      const raw = [...uniqueCodes, ...uniqueCodes].join(",");
+      const result = parseCoursesQuery(raw);
+      expect(result.ok).toBe(true);
+      if (result.ok) {
+        expect(result.courseCodes).toHaveLength(100);
+      }
     });
   });
 });
