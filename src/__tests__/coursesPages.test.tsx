@@ -149,6 +149,27 @@ describe("Courses Pages", () => {
       expect(screen.getByText("Unofficial — For Informational Purposes Only")).toBeInTheDocument();
     }, 15000);
 
+    it("safely serializes JSON-LD without literal script breakout tags", async () => {
+      getCourseByIdMock.mockResolvedValueOnce({
+        ...sampleCourse,
+        description: "Course with </script><script>alert(1)</script> injection.",
+      });
+      getCourseTreeMock.mockResolvedValueOnce(sampleTree);
+      getDirectPrerequisiteIdsMock.mockResolvedValueOnce([]);
+      getDependentCourseIdsMock.mockResolvedValueOnce([]);
+
+      const page = await CourseDetailPage({ params: Promise.resolve({ id: "cs300" }) });
+      const { container } = render(page);
+
+      const scripts = Array.from(container.querySelectorAll("script[type='application/ld+json']"));
+      expect(scripts.length).toBeGreaterThan(0);
+      for (const script of scripts) {
+        expect(script.innerHTML).not.toContain("</script>");
+        expect(script.innerHTML).not.toContain("<script>");
+      }
+      expect(scripts.some((s) => s.innerHTML.includes("\\u003c/script>"))).toBe(true);
+    });
+
     it("calls notFound when course does not exist", async () => {
       getCourseByIdMock.mockResolvedValueOnce(null);
       getCourseTreeMock.mockResolvedValueOnce(null);

@@ -18,6 +18,7 @@ import {
 } from "@/features/courses/components/PrerequisiteTreeList";
 import { CourseSearchHeader } from "@/features/courses/components/CourseSearchHeader";
 import { getSiteUrl } from "@/lib/siteUrl";
+import { serializeJsonLd } from "@/lib/safeJsonLd";
 
 export const revalidate = false;
 
@@ -186,7 +187,7 @@ export default async function CourseDetailPage({ params }: CoursePageProps) {
             key={index}
             type="application/ld+json"
             dangerouslySetInnerHTML={{
-              __html: JSON.stringify(schema),
+              __html: serializeJsonLd(schema),
             }}
           />
         ))}

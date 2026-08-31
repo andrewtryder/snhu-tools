@@ -9,6 +9,8 @@ import { parseCourseIdList } from "@/features/courses/lib/courseIds";
 import type { CourseTree } from "@/features/courses/lib/courseGraphLayout";
 import { getSiteUrl } from "@/lib/siteUrl";
 
+import { serializeJsonLd } from "@/lib/safeJsonLd";
+
 export const revalidate = false;
 
 const title = "SNHU Courses & Prerequisite Explorer";
@@ -192,7 +194,7 @@ export default async function CoursesPage({ searchParams }: CoursesPageProps) {
       <main id="main-content" className="flex-1 mx-auto max-w-(--spacing-container-max) px-4 py-8 md:px-8 md:py-12 w-full">
         <script
           type="application/ld+json"
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+          dangerouslySetInnerHTML={{ __html: serializeJsonLd(jsonLd) }}
         />
 
         <header className="mb-10 text-center max-w-2xl mx-auto">

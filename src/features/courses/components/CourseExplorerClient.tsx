@@ -156,6 +156,12 @@ export function CourseExplorerClient({
 
         setLastSearchedIds(courseIds.join(","));
         generateGraph(trees);
+
+        if (typeof window !== "undefined") {
+          const params = new URLSearchParams();
+          params.set("ids", courseIds.join(","));
+          window.history.replaceState(null, "", `/courses?${params.toString()}`);
+        }
       } catch (err: unknown) {
         if (err instanceof Error) {
           setError(err.message);

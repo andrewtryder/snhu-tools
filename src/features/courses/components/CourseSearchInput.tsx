@@ -221,16 +221,32 @@ export function CourseSearchInput({
               setIsOpen(true);
             }
           }}
+          onBlur={() => {
+            setIsFocused(false);
+            setIsOpen(false);
+          }}
           onKeyDown={handleKeyDown}
-          className={`w-full rounded-lg border border-outline-variant bg-surface-container-lowest pl-10 pr-10 text-on-surface placeholder:text-on-surface-variant/60 shadow-xs transition-colors focus:border-primary focus:outline-hidden focus:ring-2 focus:ring-primary/20 ${
-            isCompact ? "py-2 text-sm" : "py-2.5 text-base"
+          className={`w-full rounded-lg border border-outline-variant bg-surface-container-lowest pl-10 text-on-surface placeholder:text-on-surface-variant/60 shadow-xs transition-colors focus:border-primary focus:outline-hidden focus:ring-2 focus:ring-primary/20 ${
+            isCompact ? "py-2 pr-10 text-sm" : "py-2.5 pr-24 text-base"
           }`}
         />
-        {(isLoading || isSearching) && (
+        {!isCompact && (
+          <button
+            type="submit"
+            disabled={isLoading || !value.trim()}
+            aria-label={isLoading ? "Searching courses" : "Search courses"}
+            className="absolute right-2 rounded-md bg-primary px-3 py-1 text-xs font-semibold text-on-primary shadow-xs transition-colors hover:bg-primary-container disabled:opacity-50 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
+          >
+            {isLoading ? (
+              <Loader2 className="h-3.5 w-3.5 animate-spin" aria-hidden="true" />
+            ) : (
+              "Search"
+            )}
+          </button>
+        )}
+        {isCompact && (isLoading || isSearching) && (
           <Loader2
-            className={`absolute right-3.5 z-10 animate-spin text-primary ${
-              isCompact ? "h-4 w-4" : "h-5 w-5"
-            }`}
+            className="absolute right-3.5 z-10 h-4 w-4 animate-spin text-primary"
             aria-hidden="true"
           />
         )}
@@ -259,6 +275,7 @@ export function CourseSearchInput({
                     id={optionId(listboxId, suggestion.catalog_course_id)}
                     role="option"
                     aria-selected={isSelected}
+                    onMouseDown={(e) => e.preventDefault()}
                     onClick={() => selectSuggestion(suggestion)}
                     onMouseEnter={() => setHighlightedIndex(index)}
                     className={`cursor-pointer px-4 py-2 text-sm transition-colors ${
