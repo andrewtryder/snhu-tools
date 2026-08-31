@@ -1,13 +1,23 @@
 import { render, screen } from "@testing-library/react";
-import { describe, it, expect, vi } from "vitest";
-import TransfersPage, { metadata } from "@/app/transfers/page";
+import { describe, it, expect, vi, beforeEach } from "vitest";
+import TransfersPage, { metadata, getHomepagePayload } from "@/app/transfers/page";
+import * as seoQueries from "@/features/transfers/lib/seoQueries";
 
 vi.mock("next/navigation", () => ({
   useRouter: () => ({ push: vi.fn() }),
   usePathname: () => "/transfers",
+  useSearchParams: () => new URLSearchParams(),
 }));
 
-describe("Temporary Transfers Landing Page", () => {
+vi.mock("next/server", () => ({
+  connection: vi.fn().mockResolvedValue(undefined),
+}));
+
+describe("Transfers Landing Page", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
   it("has noindex, nofollow metadata to prevent premature search indexing", () => {
     expect(metadata.robots).toEqual({
       index: false,
@@ -15,14 +25,59 @@ describe("Temporary Transfers Landing Page", () => {
     });
   });
 
-  it("renders integration notice and title", () => {
-    render(<TransfersPage />);
+  it("loads homepage payload with rows and facets", async () => {
+    vi.spyOn(seoQueries, "getAllTransferRows").mockResolvedValueOnce([
+      {
+        subjectPrefix: "CS",
+        courseNumber: "CS110",
+        title: "Intro to Python",
+        pid: "123",
+        eligibilityTimeframe: "2020-Present",
+        groupFilter2Name: "Sophia Learning",
+        academicLevel: "Undergraduate",
+        coursePID: "course-123",
+      },
+    ]);
+
+    const payload = await getHomepagePayload();
+    expect(payload.dataUnavailable).toBe(false);
+    expect(payload.rows).toHaveLength(1);
+    expect(payload.facets.subjects[0]?.value).toBe("CS");
+  });
+
+  it("renders landing page with heading and search controls", async () => {
+    vi.spyOn(seoQueries, "getAllTransferRows").mockResolvedValueOnce([
+      {
+        subjectPrefix: "CS",
+        courseNumber: "CS110",
+        title: "Intro to Python",
+        pid: "123",
+        eligibilityTimeframe: "2020-Present",
+        groupFilter2Name: "Sophia Learning",
+        academicLevel: "Undergraduate",
+        coursePID: "course-123",
+      },
+    ]);
+
+    const jsx = await TransfersPage();
+    render(jsx);
+
     expect(
-      screen.getByRole("heading", { name: /Transfer Equivalencies/i })
-    ).toBeInTheDocument();
-    expect(screen.getByText("Under Integration")).toBeInTheDocument();
+      screen.getByRole("heading", { name: /SNHU Transfer Equivalency List/i }),
+    ).toBeDefined();
+    expect(screen.getByPlaceholderText(/Search by course/i)).toBeDefined();
+  });
+
+  it("renders data unavailable warning gracefully when fetch fails", async () => {
+    vi.spyOn(seoQueries, "getAllTransferRows").mockRejectedValueOnce(
+      new Error("Database offline"),
+    );
+
+    const jsx = await TransfersPage();
+    render(jsx);
+
     expect(
-      screen.getByRole("link", { name: /Explore Degree Programs/i })
-    ).toHaveAttribute("href", "/programs");
+      screen.getByText(/Transfer data is temporarily unavailable/i),
+    ).toBeDefined();
   });
 });

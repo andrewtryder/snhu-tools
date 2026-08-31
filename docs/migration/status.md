@@ -9,7 +9,13 @@
   - Internal compatibility redirect: permanent HTTP 308 redirect from `/course/:id` to `/courses/:id`
   - Temporary isolated Courses database bridge via `COURSES_POSTGRES_URL` and `COURSES_POSTGRES_CA_CERT` (`coursesPgPool`), with zero fallback to Degree Map's `POSTGRES_URL`
   - Public read APIs migrated: `/api/courses`, `/api/courses/search`, `/api/course/[id]`, `/api/course-tree/[id]`, `/api/course-trees/[ids]`
-  - SEO & Crawlability: Structured `Course` and `BreadcrumbList` JSON-LD schemas targeting canonical `/courses/[id]` paths; temporary `noindex` robots metadata retained during integration until canonical production cutover
+- Transfers feature migration (Phase 3)
+  - Source repository: `~/code/snhu-transfers` at baseline SHA `db1024b6e4a69c963126ed848318bc5817b2c94b`
+  - Canonical routes: `/transfers` (Interactive Explorer + Search Hub), `/transfers/browse` (Directory Hub), `/transfers/courses` (Course Directory Index), `/transfers/courses/[courseNumber]` (Course Transfer Options + In-App Prerequisite Link to `/courses/[id]`), `/transfers/subjects` (Subject Index), `/transfers/subjects/[subject]` (Subject Detail), `/transfers/organizations` (Organization Index), `/transfers/organizations/[organization]` (Organization Detail), `/transfers/levels` (Academic Level Index), `/transfers/levels/[level]` (Level Detail)
+  - Temporary isolated Transfers database bridge via `TRANSFERS_POSTGRES_URL` and `TRANSFERS_POSTGRES_CA_CERT` (`transfersPgPool`), with zero fallback to `POSTGRES_URL` or `COURSES_POSTGRES_URL`
+  - Lazy Proxy Drizzle ORM read client (`transfersDrizzleDb`) for safe build-time importing without runtime database credentials
+  - Public read APIs migrated: `/api/v1/transfer-coverage` with cache headers, input bounds, schema versioning, and canonical `/transfers/courses/[slug]` links
+  - SEO & Crawlability: Structured `ItemList` and `BreadcrumbList` JSON-LD schemas serialized with `serializeJsonLd()`; temporary `noindex` robots metadata retained during integration until canonical production cutover
 
 ## Settled Decisions
 - Degree Map is the foundation and primary product experience of SNHU Tools
@@ -21,7 +27,6 @@
 - CircleCI context strategy deferred to a dedicated phase
 
 ## Upcoming
-- **Phase 3: Transfers Migration**: Port Drizzle ORM transfer tables, search hub, directory listings (courses, subjects, organizations, levels), and equivalency tables.
 - **Phase 4: In-Process Transfer Coverage & API Unification**: Eliminate HTTP fetch from Degree Map to Transfers by invoking `getTransferCoverageResponse()` in-process; unify on-demand `/api/revalidate`.
 - **Phase 5: Database & CircleCI Pipeline Consolidation**: Unify schema migrations (`scripts/migrate.ts`), catalog synchronization scripts, and CircleCI scheduled workflows.
 - **Phase 6: Vercel Preview & Staging Verification**: End-to-end audit of all route families, dynamic graphs, search autocomplete, transfer coverage, and sitemaps.

@@ -1,56 +1,130 @@
 import type { Metadata } from "next";
-import Link from "next/link";
+import { connection } from "next/server";
+import { Suspense } from "react";
 import { AppHeader } from "@/components/AppHeader";
 import { AppFooter } from "@/components/AppFooter";
-import { Card } from "@/components/ui/Card";
-import { Badge } from "@/components/ui/Badge";
-import { ArrowLeftRightIcon, ArrowRightIcon } from "lucide-react";
+import {
+  TransfersClientPage,
+  type TransferCoursesData,
+} from "@/features/transfers/components/TransfersClientPage";
+import { buildFacetSummaries, getAllTransferRows } from "@/features/transfers/lib/seoQueries";
+import { serializeJsonLd } from "@/lib/safeJsonLd";
+import { getSiteUrl } from "@/lib/siteUrl";
+
+const siteUrl = getSiteUrl();
 
 export const metadata: Metadata = {
-  title: "Transfer Equivalencies | SNHU Tools",
-  description: "Transfer equivalency tools are being integrated into SNHU Tools.",
+  title: "SNHU Transfer Equivalency List | Search Accepted Transfer Credits",
+  description:
+    "Search unofficial SNHU transfer equivalencies and accepted transfer credits by course number, provider, subject, and level. Compare sources like Sophia Learning, Study.com, AP Exams, and more.",
+  alternates: {
+    canonical: `${siteUrl}/transfers`,
+  },
   robots: {
     index: false,
     follow: false,
   },
+  openGraph: {
+    title: "SNHU Transfer Equivalency List | Search Accepted Transfer Credits",
+    description:
+      "Search unofficial SNHU transfer equivalencies and accepted transfer credits by course number, provider, subject, and level. Compare sources like Sophia Learning, Study.com, AP Exams, and more.",
+    url: `${siteUrl}/transfers`,
+  },
+  twitter: {
+    card: "summary",
+    title: "SNHU Transfer Equivalency List | Search Accepted Transfer Credits",
+    description:
+      "Search unofficial SNHU transfer equivalencies and accepted transfer credits by course number, provider, subject, and level. Compare sources like Sophia Learning, Study.com, AP Exams, and more.",
+  },
 };
 
-export default function TransfersPage() {
+function toCoursesData(rows: Awaited<ReturnType<typeof getAllTransferRows>>): TransferCoursesData {
+  const data: TransferCoursesData = {};
+
+  for (const row of rows) {
+    const subjectPrefix = row.subjectPrefix || "UNKNOWN";
+    const courseNumber = row.courseNumber || "UNKNOWN";
+
+    if (!data[subjectPrefix]) {
+      data[subjectPrefix] = {};
+    }
+    if (!data[subjectPrefix][courseNumber]) {
+      data[subjectPrefix][courseNumber] = [];
+    }
+
+    data[subjectPrefix][courseNumber].push({
+      title: row.title,
+      pid: row.pid,
+      eligibilityTimeframe: row.eligibilityTimeframe,
+      groupFilter2Name: row.groupFilter2Name,
+      academicLevel: row.academicLevel,
+      coursePID: row.coursePID,
+      courseName: row.courseNumber,
+    });
+  }
+
+  return data;
+}
+
+export async function getHomepagePayload() {
+  try {
+    const rows = await getAllTransferRows();
+    const facets = buildFacetSummaries(rows, 20);
+    return { rows, facets, dataUnavailable: false };
+  } catch (error) {
+    console.error("Failed to fetch homepage transfer data:", error);
+    return {
+      rows: [],
+      facets: buildFacetSummaries([], 20),
+      dataUnavailable: true,
+    };
+  }
+}
+
+export default async function TransfersPage() {
+  await connection();
+  const { rows, facets, dataUnavailable } = await getHomepagePayload();
+
+  const webSiteJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    name: "SNHU Transfers",
+    description:
+      "Unofficial SNHU transfer equivalency search tool for accepted transfer credits by course, provider, subject, and academic level.",
+    url: `${siteUrl}/transfers`,
+    publisher: {
+      "@type": "Organization",
+      name: "SNHU Transfers",
+    },
+  };
+
   return (
-    <div className="flex min-h-screen flex-col bg-background text-on-background">
+    <div className="flex min-h-screen flex-col bg-background">
       <AppHeader currentPage="transfers" />
-      <main className="mx-auto w-full max-w-[var(--spacing-container-max)] flex-1 px-4 py-12 md:px-8">
-        <div className="mx-auto max-w-2xl">
-          <Card className="space-y-4">
-            <div className="flex items-center gap-2">
-              <Badge variant="neutral">Under Integration</Badge>
-            </div>
-            <div>
-              <h1 className="text-2xl font-bold flex items-center gap-2 text-on-surface">
-                <ArrowLeftRightIcon className="h-6 w-6 text-primary" aria-hidden="true" />
-                Transfer Equivalencies
-              </h1>
-              <p className="mt-1 text-base text-on-surface-variant">
-                Transfer equivalency tools and course mappings are being integrated into SNHU Tools.
-              </p>
-            </div>
-            <div className="space-y-4 text-sm text-on-surface-variant">
-              <p>
-                During this consolidation phase, explore active degree program requirements with integrated transfer coverage indicators.
-              </p>
-              <div>
-                <Link
-                  href="/programs"
-                  className="inline-flex items-center justify-center font-medium rounded-lg px-4 py-2 text-sm bg-primary text-on-primary hover:bg-primary-container shadow-sm transition-colors focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2"
-                >
-                  Explore Degree Programs
-                  <ArrowRightIcon className="ml-2 h-4 w-4" aria-hidden="true" />
-                </Link>
-              </div>
-            </div>
-          </Card>
-        </div>
+
+      <main
+        id="main-content"
+        className="mx-auto flex w-full max-w-[var(--spacing-container-max)] flex-1 flex-col gap-6 px-4 py-6 pb-52 md:px-8 md:py-8 md:pb-32"
+      >
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: serializeJsonLd(webSiteJsonLd) }}
+        />
+
+        {dataUnavailable ? (
+          <div
+            role="alert"
+            className="rounded-lg border border-warning-container bg-warning-container/20 p-4 text-sm text-on-surface"
+          >
+            Transfer data is temporarily unavailable. Please try again shortly.
+          </div>
+        ) : null}
+
+        <Suspense fallback={null}>
+          <TransfersClientPage initialCoursesData={toCoursesData(rows)} seoFacets={facets} />
+        </Suspense>
       </main>
+
       <AppFooter />
     </div>
   );
