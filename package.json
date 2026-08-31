@@ -1,7 +1,7 @@
 {
-  "name": "snhu-degreemap",
+  "name": "snhu-tools",
   "version": "0.1.0",
-  "description": "Unofficial interactive degree-requirement and prerequisite maps for SNHU programs.",
+  "description": "Unofficial degree-planning, course-prerequisite, and transfer-equivalency tools for SNHU.",
   "private": true,
   "engines": {
     "node": ">=24.0.0"

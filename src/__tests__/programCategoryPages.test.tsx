@@ -12,6 +12,7 @@ import { fixturePrograms } from "@/data/fixturePrograms";
 
 vi.mock("next/navigation", () => ({
   useRouter: () => ({ push: vi.fn() }),
+  usePathname: () => "/programs/bachelors",
 }));
 
 describe("program category landing pages", () => {

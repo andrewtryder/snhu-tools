@@ -40,6 +40,12 @@ export function AppFooter({ lastUpdated = null }: { lastUpdated?: Date | string 
             <Link href="/programs" className={linkClassName}>
               Programs
             </Link>
+            <Link href="/courses" className={linkClassName}>
+              Courses
+            </Link>
+            <Link href="/transfers" className={linkClassName}>
+              Transfers
+            </Link>
             <Link href="/about" className={linkClassName}>
               About
             </Link>

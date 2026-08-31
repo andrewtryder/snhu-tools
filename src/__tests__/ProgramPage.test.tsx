@@ -4,6 +4,7 @@ import { ProgramDetailContent } from "@/app/programs/[slug]/page";
 
 vi.mock("next/navigation", () => ({
   useRouter: () => ({ push: vi.fn() }),
+  usePathname: () => "/programs/computer-science-bs",
   notFound: () => {
     throw new Error("NEXT_NOT_FOUND");
   },

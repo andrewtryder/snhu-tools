@@ -6,6 +6,7 @@ import AboutPage from "@/app/about/page";
 
 vi.mock("next/navigation", () => ({
   useRouter: () => ({ push: vi.fn() }),
+  usePathname: () => "/about",
 }));
 
 describe("Trust & Methodology Pages", () => {
@@ -29,8 +30,8 @@ describe("Trust & Methodology Pages", () => {
     expect(screen.getByRole("heading", { name: /Important Disclaimer/i })).toBeInTheDocument();
     expect(screen.getByRole("heading", { name: /Related SNHU Tools/i })).toBeInTheDocument();
     expect(
-      screen.getByRole("link", { name: "github.com/andrewtryder/snhu-degreemap" }),
-    ).toHaveAttribute("href", "https://github.com/andrewtryder/snhu-degreemap");
+      screen.getByRole("link", { name: "github.com/andrewtryder/snhu-tools" }),
+    ).toHaveAttribute("href", "https://github.com/andrewtryder/snhu-tools");
     expect(screen.getByText(/This project is open source and the code may be found at/i)).toBeInTheDocument();
   });
 });

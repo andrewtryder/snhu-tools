@@ -6,6 +6,7 @@ import HomePage from "@/app/page";
 
 vi.mock("next/navigation", () => ({
   useRouter: () => ({ push: vi.fn() }),
+  usePathname: () => "/",
 }));
 
 describe("homepage degree map preview", () => {

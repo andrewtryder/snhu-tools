@@ -27,4 +27,4 @@ export const SNHU_TOOLS: readonly SNHUTool[] = [
 
 export const CURRENT_TOOL_ID: SNHUToolId = "degreemap";
 
-export const GITHUB_REPO_URL = "https://github.com/andrewtryder/snhu-degreemap";
+export const GITHUB_REPO_URL = "https://github.com/andrewtryder/snhu-tools";

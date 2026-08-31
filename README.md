@@ -1,12 +1,15 @@
-# SNHU Degree Map
+# SNHU Tools
 
-Unofficial interactive SNHU degree maps with catalog-backed program requirements, prerequisite graphs, and course relationships.
+Unofficial interactive academic planning, degree maps, course prerequisite graphs, and transfer equivalency tools for SNHU students.
 
-The SNHU Degree Map application lets students browse SNHU degree programs, inspect requirement groups, and visualize prerequisite and corequisite relationships as an interactive graph.
+SNHU Tools brings together three key resources into one unified application:
+- **Degree Map** (`/programs`): Interactive prerequisite and requirement visualization for SNHU degree programs based on published catalog data.
+- **Course Prerequisites** (`/courses`): Course-level prerequisite relationships and dependencies.
+- **Transfer Equivalencies** (`/transfers`): Unofficial institutional and provider transfer course equivalencies.
 
 ## Live Site
 
-**[https://snhu-degreemap.vercel.app](https://snhu-degreemap.vercel.app)**
+**[https://snhu-tools.vercel.app](https://snhu-tools.vercel.app)**
 
 ## Why This Exists
 

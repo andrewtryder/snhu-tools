@@ -9,6 +9,7 @@ import { getProgramLevelCategory } from "@/lib/programLevelCategories";
 
 vi.mock("next/navigation", () => ({
   useRouter: () => ({ push: vi.fn() }),
+  usePathname: () => "/",
 }));
 
 describe("public page simplification", () => {

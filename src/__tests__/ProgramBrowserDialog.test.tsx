@@ -7,6 +7,7 @@ vi.mock("next/navigation", () => ({
   useRouter: () => ({
     push: vi.fn(),
   }),
+  usePathname: () => "/programs",
 }));
 
 describe("ProgramBrowserDialog Component", () => {

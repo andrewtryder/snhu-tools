@@ -9,11 +9,13 @@ describe("AppFooter Component", () => {
     expect(screen.getByText(/Last Updated:/)).toBeInTheDocument();
     expect(screen.getByText("July 31, 2026")).toBeInTheDocument();
     expect(screen.getByText(/Unofficial SNHU site/)).toBeInTheDocument();
-    expect(screen.getByRole("link", { name: "About" })).toHaveAttribute("href", "/about");
     expect(screen.getByRole("link", { name: "Programs" })).toHaveAttribute("href", "/programs");
+    expect(screen.getByRole("link", { name: "Courses" })).toHaveAttribute("href", "/courses");
+    expect(screen.getByRole("link", { name: "Transfers" })).toHaveAttribute("href", "/transfers");
+    expect(screen.getByRole("link", { name: "About" })).toHaveAttribute("href", "/about");
     expect(screen.getByRole("link", { name: /Source Code/i })).toHaveAttribute(
       "href",
-      "https://github.com/andrewtryder/snhu-degreemap"
+      "https://github.com/andrewtryder/snhu-tools"
     );
   });
 

@@ -57,19 +57,19 @@
 | **Degree Map** | `/twitter-image.tsx` | Metadata | Dynamic image generation | `/twitter-image` | Root Twitter card image. |
 | **Courses** | `/` | Dynamic / Cached | Server rendered with cached DB queries (`unstable_cache`) | `/courses` | Becomes `/courses` in unified app. Legacy `snhu-courses.vercel.app/` redirects to `https://snhu-tools.vercel.app/courses`. |
 | **Courses** | `/courses` | Dynamic / Cached | Server rendered directory table with `unstable_cache` | `/courses` *(unified directory)* | Combines course search table with course catalog browser. |
-| **Courses** | `/course/[id]` | Dynamic / Cached | Server rendered with `unstable_cache` + `React.cache` | `/courses/[id]` | **Route Normalization**: Courses detail route shifts from singular `/course/[id]` to plural `/courses/[id]`. `/course/[id]` will 301 redirect to `/courses/[id]`. |
+| **Courses** | `/course/[id]` | Dynamic / Cached | Server rendered with `unstable_cache` + `React.cache` | `/courses/[id]` | **Route Normalization**: Courses detail route shifts from singular `/course/[id]` to plural `/courses/[id]`. `/course/[id]` will 308 redirect to `/courses/[id]`. |
 | **Courses** | `/about` | Static | Static page | Merged into `/about` | Merged into canonical `/about`. |
 | **Courses** | `/course/[id]/opengraph-image.tsx` | Metadata | Dynamic OG image | `/courses/[id]/opengraph-image` | Preserved for rich course previews. |
 | **Transfers** | `/` | Dynamic / Cached | Server rendered (`connection()` + `unstable_cache`) | `/transfers` | Becomes `/transfers` in unified app. Legacy `snhu-transfers.vercel.app/` redirects to `https://snhu-tools.vercel.app/transfers`. |
 | **Transfers** | `/browse` | Dynamic / Cached | Server rendered directory hub (`connection()`) | `/transfers/browse` (or alias `/transfers`) | Directory linking to subjects, organizations, levels, and course equivalencies. |
 | **Transfers** | `/courses` | Dynamic / Cached | Server rendered directory (`connection()`) | `/transfers/courses` | Lists SNHU courses having transfer equivalencies. |
-| **Transfers** | `/courses/[courseNumber]` | Dynamic / Cached | Server rendered (`connection()`) | `/transfers/courses/[courseNumber]` | Course equivalency page (e.g. `/transfers/courses/cs110`). Legacy `snhu-transfers.vercel.app/courses/:code` 301 redirects here. |
+| **Transfers** | `/courses/[courseNumber]` | Dynamic / Cached | Server rendered (`connection()`) | `/transfers/courses/[courseNumber]` | Course equivalency page (e.g. `/transfers/courses/cs110`). Legacy `snhu-transfers.vercel.app/courses/:code` 308 redirects here. |
 | **Transfers** | `/subjects` | Dynamic / Cached | Server rendered directory (`connection()`) | `/transfers/subjects` | Lists subjects with transfer equivalencies. |
-| **Transfers** | `/subjects/[subject]` | Dynamic / Cached | Server rendered (`connection()`) | `/transfers/subjects/[subject]` | Subject equivalency page (e.g. `/transfers/subjects/cs`). Legacy `snhu-transfers.vercel.app/subjects/:sub` 301 redirects here. |
+| **Transfers** | `/subjects/[subject]` | Dynamic / Cached | Server rendered (`connection()`) | `/transfers/subjects/[subject]` | Subject equivalency page (e.g. `/transfers/subjects/cs`). Legacy `snhu-transfers.vercel.app/subjects/:sub` 308 redirects here. |
 | **Transfers** | `/organizations` | Dynamic / Cached | Server rendered directory (`connection()`) | `/transfers/organizations` | Lists external providers (Sophia, StraighterLine, etc.). |
-| **Transfers** | `/organizations/[organization]` | Dynamic / Cached | Server rendered (`connection()`) | `/transfers/organizations/[organization]` | Organization equivalency page. Legacy `snhu-transfers.vercel.app/organizations/:org` 301 redirects here. |
+| **Transfers** | `/organizations/[organization]` | Dynamic / Cached | Server rendered (`connection()`) | `/transfers/organizations/[organization]` | Organization equivalency page. Legacy `snhu-transfers.vercel.app/organizations/:org` 308 redirects here. |
 | **Transfers** | `/levels` | Dynamic / Cached | Server rendered directory (`connection()`) | `/transfers/levels` | Lists academic levels (undergraduate, graduate). |
-| **Transfers** | `/levels/[level]` | Dynamic / Cached | Server rendered (`connection()`) | `/transfers/levels/[level]` | Level equivalency page. Legacy `snhu-transfers.vercel.app/levels/:lvl` 301 redirects here. |
+| **Transfers** | `/levels/[level]` | Dynamic / Cached | Server rendered (`connection()`) | `/transfers/levels/[level]` | Level equivalency page. Legacy `snhu-transfers.vercel.app/levels/:lvl` 308 redirects here. |
 | **Transfers** | `/about` | Static | Static page | Merged into `/about` | Merged into canonical `/about`. |
 
 ---
@@ -350,7 +350,7 @@ erDiagram
 | :--- | :--- | :--- | :--- | :--- |
 | **Runtime** | Node.js 24 (Turbopack) | Node.js 24 (Turbopack) | Node.js 24 (Turbopack) | Node.js 24 (Turbopack) |
 | **Security Headers (`vercel.json`)** | `X-Content-Type-Options: nosniff`, `X-Frame-Options: DENY`, `X-XSS-Protection: 1; mode=block`, `Referrer-Policy: strict-origin-when-cross-origin` | None in `vercel.json` | `$schema` only | Inherit full security headers from `snhu-degreemap/vercel.json`. |
-| **Redirects (`next.config`)** | `/programs/bachelor` $\rightarrow$ `/programs/bachelors` (301)<br>`/programs/certificate` $\rightarrow$ `/programs/certificates` (301) | None in `next.config` | None in `next.config` | Include legacy program redirects + `/course/:id` $\rightarrow$ `/courses/:id` + `/browse` $\rightarrow$ `/transfers/browse`. |
+| **Redirects (`next.config`)** | `/programs/bachelor` $\rightarrow$ `/programs/bachelors` (308)<br>`/programs/certificate` $\rightarrow$ `/programs/certificates` (308) | None in `next.config` | None in `next.config` | Include legacy program redirects + `/course/:id` $\rightarrow$ `/courses/:id` + `/browse` $\rightarrow$ `/transfers/browse`. |
 | **Fluid Compute / Concurrency** | Standard serverless with `attachDatabasePool(pool)` | Standard serverless with `attachDatabasePool(pool)` | Standard serverless with `attachDatabasePool(pool)` | Standard serverless with `attachDatabasePool(pool)` to maintain connection reuse across invocations. |
 | **Analytics & Web Vitals** | `@vercel/analytics` | `@vercel/analytics`, `@vercel/speed-insights` | `@vercel/analytics`, `@vercel/speed-insights` | `@vercel/analytics` + `@vercel/speed-insights`. |
 | **Revalidation Mechanism** | Tag `program-data` | Tag `catalog-data` + static paths | Tag `transfer-data` | Unified on-demand tag revalidation for `program-data`, `catalog-data`, `transfer-data`. |
@@ -387,26 +387,26 @@ erDiagram
 
 | Legacy URL (Existing Production) | HTTP Status | Canonical Destination URL (`snhu-tools`) |
 | :--- | :--- | :--- |
-| `https://snhu-degreemap.vercel.app/` | 301 Permanent Redirect | `https://snhu-tools.vercel.app/` |
-| `https://snhu-degreemap.vercel.app/programs` | 301 Permanent Redirect | `https://snhu-tools.vercel.app/programs` |
-| `https://snhu-degreemap.vercel.app/programs/:slug` | 301 Permanent Redirect | `https://snhu-tools.vercel.app/programs/:slug` |
-| `https://snhu-degreemap.vercel.app/programs/:slug/requirements` | 301 Permanent Redirect | `https://snhu-tools.vercel.app/programs/:slug/requirements` |
-| `https://snhu-degreemap.vercel.app/about` | 301 Permanent Redirect | `https://snhu-tools.vercel.app/about` |
-| `https://snhu-courses.vercel.app/` | 301 Permanent Redirect | `https://snhu-tools.vercel.app/courses` |
-| `https://snhu-courses.vercel.app/courses` | 301 Permanent Redirect | `https://snhu-tools.vercel.app/courses` |
-| `https://snhu-courses.vercel.app/course/:id` | 301 Permanent Redirect | `https://snhu-tools.vercel.app/courses/:id` |
-| `https://snhu-courses.vercel.app/about` | 301 Permanent Redirect | `https://snhu-tools.vercel.app/about` |
-| `https://snhu-transfers.vercel.app/` | 301 Permanent Redirect | `https://snhu-tools.vercel.app/transfers` |
-| `https://snhu-transfers.vercel.app/browse` | 301 Permanent Redirect | `https://snhu-tools.vercel.app/transfers/browse` |
-| `https://snhu-transfers.vercel.app/courses` | 301 Permanent Redirect | `https://snhu-tools.vercel.app/transfers/courses` |
-| `https://snhu-transfers.vercel.app/courses/:code` | 301 Permanent Redirect | `https://snhu-tools.vercel.app/transfers/courses/:code` |
-| `https://snhu-transfers.vercel.app/subjects` | 301 Permanent Redirect | `https://snhu-tools.vercel.app/transfers/subjects` |
-| `https://snhu-transfers.vercel.app/subjects/:subject` | 301 Permanent Redirect | `https://snhu-tools.vercel.app/transfers/subjects/:subject` |
-| `https://snhu-transfers.vercel.app/organizations` | 301 Permanent Redirect | `https://snhu-tools.vercel.app/transfers/organizations` |
-| `https://snhu-transfers.vercel.app/organizations/:org` | 301 Permanent Redirect | `https://snhu-tools.vercel.app/transfers/organizations/:org` |
-| `https://snhu-transfers.vercel.app/levels` | 301 Permanent Redirect | `https://snhu-tools.vercel.app/transfers/levels` |
-| `https://snhu-transfers.vercel.app/levels/:level` | 301 Permanent Redirect | `https://snhu-tools.vercel.app/transfers/levels/:level` |
-| `https://snhu-transfers.vercel.app/about` | 301 Permanent Redirect | `https://snhu-tools.vercel.app/about` |
+| `https://snhu-degreemap.vercel.app/` | 308 Permanent Redirect | `https://snhu-tools.vercel.app/` |
+| `https://snhu-degreemap.vercel.app/programs` | 308 Permanent Redirect | `https://snhu-tools.vercel.app/programs` |
+| `https://snhu-degreemap.vercel.app/programs/:slug` | 308 Permanent Redirect | `https://snhu-tools.vercel.app/programs/:slug` |
+| `https://snhu-degreemap.vercel.app/programs/:slug/requirements` | 308 Permanent Redirect | `https://snhu-tools.vercel.app/programs/:slug/requirements` |
+| `https://snhu-degreemap.vercel.app/about` | 308 Permanent Redirect | `https://snhu-tools.vercel.app/about` |
+| `https://snhu-courses.vercel.app/` | 308 Permanent Redirect | `https://snhu-tools.vercel.app/courses` |
+| `https://snhu-courses.vercel.app/courses` | 308 Permanent Redirect | `https://snhu-tools.vercel.app/courses` |
+| `https://snhu-courses.vercel.app/course/:id` | 308 Permanent Redirect | `https://snhu-tools.vercel.app/courses/:id` |
+| `https://snhu-courses.vercel.app/about` | 308 Permanent Redirect | `https://snhu-tools.vercel.app/about` |
+| `https://snhu-transfers.vercel.app/` | 308 Permanent Redirect | `https://snhu-tools.vercel.app/transfers` |
+| `https://snhu-transfers.vercel.app/browse` | 308 Permanent Redirect | `https://snhu-tools.vercel.app/transfers/browse` |
+| `https://snhu-transfers.vercel.app/courses` | 308 Permanent Redirect | `https://snhu-tools.vercel.app/transfers/courses` |
+| `https://snhu-transfers.vercel.app/courses/:code` | 308 Permanent Redirect | `https://snhu-tools.vercel.app/transfers/courses/:code` |
+| `https://snhu-transfers.vercel.app/subjects` | 308 Permanent Redirect | `https://snhu-tools.vercel.app/transfers/subjects` |
+| `https://snhu-transfers.vercel.app/subjects/:subject` | 308 Permanent Redirect | `https://snhu-tools.vercel.app/transfers/subjects/:subject` |
+| `https://snhu-transfers.vercel.app/organizations` | 308 Permanent Redirect | `https://snhu-tools.vercel.app/transfers/organizations` |
+| `https://snhu-transfers.vercel.app/organizations/:org` | 308 Permanent Redirect | `https://snhu-tools.vercel.app/transfers/organizations/:org` |
+| `https://snhu-transfers.vercel.app/levels` | 308 Permanent Redirect | `https://snhu-tools.vercel.app/transfers/levels` |
+| `https://snhu-transfers.vercel.app/levels/:level` | 308 Permanent Redirect | `https://snhu-tools.vercel.app/transfers/levels/:level` |
+| `https://snhu-transfers.vercel.app/about` | 308 Permanent Redirect | `https://snhu-tools.vercel.app/about` |
 
 ---
 
@@ -621,7 +621,7 @@ snhu-tools/
 
 | Risk | Severity | Probability | Impact | Mitigation Strategy |
 | :--- | :---: | :---: | :--- | :--- |
-| **SEO Loss & Broken Legacy Links** | **High** | High | Loss of Google search rankings for course and transfer pages. | 1. Preserve exact slug conventions.<br>2. Deploy explicit 301 redirects in legacy Vercel projects pointing to exact canonical URLs in `snhu-tools.vercel.app`.<br>3. Submit unified XML sitemap immediately upon cutover. |
+| **SEO Loss & Broken Legacy Links** | **High** | High | Loss of Google search rankings for course and transfer pages. | 1. Preserve exact slug conventions.<br>2. Deploy explicit HTTP 308 permanent redirects in legacy Vercel projects pointing to exact canonical URLs in `snhu-tools.vercel.app`.<br>3. Submit unified XML sitemap immediately upon cutover. |
 | **Transfer Coverage In-Process Regressions** | **High** | Low | Degree Map program pages fail to show transfer equivalencies if in-process call breaks contract. | Implement contract tests verifying that `getTransferCoverageResponse(codes)` output matches the exact JSON schema required by `ProgramTransferCoverage.tsx`. |
 | **Database Connection Pool Exhaustion** | **Medium** | Medium | Serverless functions exceed PostgreSQL max connection limits. | Maintain `attachDatabasePool(pool)` from `@vercel/functions` with `max: 1` per serverless function instance. Data caching via `unstable_cache` shields the DB from repeated requests. |
 | **Dynamic Route Collisions** | **Medium** | Low | Conflict between `/courses/[id]` and `/transfers/courses/[courseNumber]`. | Enforce strict namespaces: `/courses/[id]` for course prerequisite detail and `/transfers/courses/[courseNumber]` for course transfer equivalencies. |
@@ -633,22 +633,23 @@ snhu-tools/
 
 ## 19. Blockers and Ambiguities
 
-### Confirmed Facts (Verified from Source Code)
+### Confirmed Facts & Settled Decisions (Verified & Decided)
 1. All three source projects run on Next.js `16.3.2`, React 19, and Node 24 with Turbopack.
 2. All three repositories share **100% identical design tokens** in `globals.css` (`@theme inline`).
 3. Database table schemas across the three applications have **zero overlapping table names**.
 4. Cross-project data dependencies are strictly one-way: `snhu-degreemap` calls `snhu-transfers /api/v1/transfer-coverage` over HTTP.
 5. `snhu-courses` and `snhu-transfers` already implement modern Next.js 16 `instrumentation.ts` and `onRequestError`, whereas `snhu-degreemap` still uses legacy `next.config.js` wrapper.
 6. All unit and integration test suites in all three source repositories currently pass (325 tests total).
+7. **Legacy Domain & Redirect Strategy (Settled)**: The three legacy Vercel projects (`snhu-degreemap.vercel.app`, `snhu-courses.vercel.app`, `snhu-transfers.vercel.app`) will remain standalone redirect-only projects performing permanent HTTP 308 redirects to canonical `https://snhu-tools.vercel.app` routes upon cutover.
+8. **Canonical Destination (Settled)**: `snhu-tools` is the single canonical application with Degree Map as its foundation.
 
 ### Strong Inferences
 1. In production, each application currently uses a distinct PostgreSQL database or separate connection string configured in Vercel environment variables.
 2. The unified application can initially connect to existing databases via scoped credentials or be consolidated into a single PostgreSQL database instance without table renaming.
 
-### Unknowns Requiring Verification During Next Phases
-1. **Production Database Infrastructure Placement**: Whether production databases are hosted on Aiven, Neon, or another provider, and whether a single shared PostgreSQL database instance is preferred.
-2. **CircleCI Context Migration**: Whether existing CircleCI contexts (`snhu-degreemap-sync-context`, `snhu-courses-sync`, `snhu-transfers-sync`) should be combined into `snhu-tools-sync-context` or kept separate.
-3. **Legacy Domain DNS / Redirect Strategy**: Whether the three legacy domains (`snhu-degreemap.vercel.app`, `snhu-courses.vercel.app`, `snhu-transfers.vercel.app`) will be configured as domain aliases on `snhu-tools` or remain as standalone Vercel redirect projects.
+### Known Deferred Decisions Requiring Later Review
+1. **Production Database Infrastructure Placement**: Whether production databases are hosted on Aiven, Neon, or another provider, and whether a single shared PostgreSQL database instance is preferred (handled in a dedicated later phase).
+2. **CircleCI Context Migration**: Whether existing CircleCI contexts (`snhu-degreemap-sync-context`, `snhu-courses-sync`, `snhu-transfers-sync`) should be combined into `snhu-tools-sync-context` or kept separate (handled in a dedicated later phase).
 
 ---
 
@@ -661,7 +662,7 @@ graph LR
     P3 --> P4[Phase 4: In-Process Coverage & API Consolidation]
     P4 --> P5[Phase 5: Unified DB & CircleCI Automation]
     P5 --> P6[Phase 6: Vercel Preview & Testing]
-    P6 --> P7[Phase 7: Production Cutover & Legacy 301 Redirects]
+    P6 --> P7[Phase 7: Production Cutover & Legacy 308 Redirects]
 ```
 
 ### Phase 1: Establish Unified Application Shell & Navigation
@@ -701,7 +702,7 @@ graph LR
 - Validate all route families, dynamic graphs, search autocomplete, transfer coverage, and sitemap generation.
 - Confirm zero regression across all 325+ tests.
 
-### Phase 7: Production Cutover & Legacy 301 Redirects
+### Phase 7: Production Cutover & Legacy 308 Redirects
 - Deploy `snhu-tools` to production (`https://snhu-tools.vercel.app`).
-- Deploy lightweight redirect-only configurations on legacy repositories (`snhu-degreemap`, `snhu-courses`, `snhu-transfers`) issuing 301 redirects to canonical `snhu-tools.vercel.app` routes.
+- Deploy lightweight redirect-only configurations on legacy repositories (`snhu-degreemap`, `snhu-courses`, `snhu-transfers`) issuing HTTP 308 permanent redirects to canonical `snhu-tools.vercel.app` routes.
 - Update Google Search Console sitemaps.

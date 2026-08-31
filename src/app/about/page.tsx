@@ -75,11 +75,11 @@ export default async function AboutPage() {
                 This project is open source and the code may be found at{" "}
                 <a
                   className="font-semibold text-primary hover:underline"
-                  href="https://github.com/andrewtryder/snhu-degreemap"
+                  href="https://github.com/andrewtryder/snhu-tools"
                   target="_blank"
                   rel="noopener noreferrer"
                 >
-                  github.com/andrewtryder/snhu-degreemap
+                  github.com/andrewtryder/snhu-tools
                 </a>
                 .
               </p>
