@@ -20,7 +20,7 @@ vi.mock("@/components/programs/ProgramTransferCoverage", () => ({
       <h2>Transfer Integration</h2>
       <p>2 of 10 identified program courses have known transfer listings.</p>
       <a
-        href="https://snhu-transfers.vercel.app/courses/CS210"
+        href="/transfers/courses/cs210"
         aria-label="View transfer equivalencies for CS 210"
       >
         CS 210
@@ -56,7 +56,7 @@ describe("Computer Science Program Page", () => {
     expect(screen.queryByText(/Transfer Evaluation Disclaimer/i)).not.toBeInTheDocument();
 
     const transferLink = screen.getByRole("link", { name: "View transfer equivalencies for CS 210" });
-    expect(transferLink).toHaveAttribute("href", "https://snhu-transfers.vercel.app/courses/CS210");
+    expect(transferLink).toHaveAttribute("href", "/transfers/courses/cs210");
 
     expect(screen.getByText("Program Requirement Groups & Course Listing")).toBeInTheDocument();
     expect(screen.getByText("Credit totals by degree requirement category.")).toBeInTheDocument();

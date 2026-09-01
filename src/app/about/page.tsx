@@ -50,20 +50,19 @@ export default async function AboutPage() {
             <section className="space-y-2">
               <h2 className="text-lg font-bold text-on-surface">Related SNHU Tools</h2>
               <p>
-                SNHU Tools is a small family of unofficial planning sites. They do not share runtime
-                data, but each complements the others:
+                SNHU Tools brings together unofficial planning tools that complement each other:
               </p>
               <ul className="list-disc space-y-1 pl-5">
                 <li>
-                  <a className="font-semibold text-primary hover:underline" href="https://snhu-courses.vercel.app">
+                  <Link className="font-semibold text-primary hover:underline" href="/courses">
                     Course Prerequisites
-                  </a>{" "}
+                  </Link>{" "}
                   explores individual course dependency chains.
                 </li>
                 <li>
-                  <a className="font-semibold text-primary hover:underline" href="https://snhu-transfers.vercel.app">
+                  <Link className="font-semibold text-primary hover:underline" href="/transfers">
                     Transfer Equivalencies
-                  </a>{" "}
+                  </Link>{" "}
                   explores accepted transfer mappings.
                 </li>
                 <li>
@@ -91,3 +90,4 @@ export default async function AboutPage() {
     </div>
   );
 }
+import Link from "next/link";

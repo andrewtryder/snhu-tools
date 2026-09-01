@@ -1,9 +1,11 @@
+import Link from "next/link";
 import { DegreeProgram } from "@/types/program";
 import { Card } from "@/components/ui/Card";
 import {
   getProgramTransferCoverage,
   type TransferCoverageCourse,
 } from "@/lib/transferCoverage.server";
+import { transferCoursePath } from "@/features/transfers/lib/slug";
 
 const TRANSFER_COURSE_GRID_CLASS =
   "grid grid-cols-2 gap-1.5 sm:grid-cols-3 md:grid-cols-4 xl:grid-cols-6";
@@ -13,15 +15,13 @@ const TRANSFER_COURSE_LINK_CLASS =
 
 function TransferCourseLink({ course }: { course: TransferCoverageCourse }) {
   return (
-    <a
-      href={course.courseUrl}
-      target="_blank"
-      rel="noopener noreferrer"
+    <Link
+      href={transferCoursePath(course.courseCode)}
       aria-label={`View transfer equivalencies for ${course.displayCourseCode}`}
       className={TRANSFER_COURSE_LINK_CLASS}
     >
       {course.displayCourseCode}
-    </a>
+    </Link>
   );
 }
 

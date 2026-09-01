@@ -13,6 +13,11 @@ export function normalizeCourseNumber(value: string): string {
   return normalizeTransferCourseCode(value);
 }
 
+/** Canonical local route for a transfer-equivalency course page. */
+export function transferCoursePath(courseCode: string): string {
+  return `/transfers/courses/${slugify(courseCode)}`;
+}
+
 export function canonicalPath(pathname: string, baseUrl: string): string {
   return new URL(pathname, baseUrl).toString();
 }

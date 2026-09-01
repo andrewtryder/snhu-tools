@@ -1,309 +1,150 @@
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { describe, expect, it, vi, beforeEach } from "vitest";
+import { fixturePrograms } from "@/data/fixturePrograms";
+import type { DegreeProgram } from "@/types/program";
+
+const getTransferCoverageResponse = vi.fn();
+
+vi.mock("@/features/transfers/lib/transferCoverage", () => ({
+  getTransferCoverageResponse: (...args: unknown[]) => getTransferCoverageResponse(...args),
+}));
+
 import {
-  assertValidCoverageBatch,
   collectProgramCoverageCourseCodes,
   getProgramTransferCoverage,
-  isTransferCoverageResponse,
   parseCoverageUpdatedAt,
 } from "@/lib/transferCoverage.server";
-import { DegreeProgram } from "@/types/program";
-import { fixturePrograms } from "@/data/fixturePrograms";
 
-function makeCourse(overrides: Partial<TransferCourse> & { courseCode: string }) {
-  return {
-    courseCode: overrides.courseCode,
-    displayCourseCode: overrides.displayCourseCode ?? overrides.courseCode,
-    hasTransferEquivalencies: overrides.hasTransferEquivalencies ?? true,
-    equivalencyCount: overrides.equivalencyCount ?? 1,
-    providerCount: overrides.providerCount ?? 1,
-    providers: overrides.providers ?? ["Sophia Learning"],
-    courseUrl:
-      overrides.courseUrl ?? `https://snhu-transfers.vercel.app/courses/${overrides.courseCode.toLowerCase()}`,
-  };
-}
-
-type TransferCourse = {
-  courseCode: string;
-  displayCourseCode: string;
-  hasTransferEquivalencies: boolean;
-  equivalencyCount: number;
-  providerCount: number;
-  providers: string[];
-  courseUrl: string;
-};
-
-function okResponse(body: unknown, status = 200): Response {
-  return new Response(JSON.stringify(body), {
-    status,
-    headers: { "Content-Type": "application/json" },
-  });
-}
-
-function completeBody(codes: string[], overrides?: Partial<{ dataLastUpdatedAt: string | null }>) {
-  const courses = codes.map((courseCode) =>
-    makeCourse({
-      courseCode,
-      hasTransferEquivalencies: false,
-      equivalencyCount: 0,
-      providerCount: 0,
-      providers: [],
-    }),
-  );
+function coverage(codes: string[], options: { matched?: boolean; timestamp?: string | null } = {}) {
+  const matched = options.matched ?? false;
   return {
     schemaVersion: 1 as const,
-    dataLastUpdatedAt: overrides?.dataLastUpdatedAt === undefined ? "2026-08-02T00:00:00.000Z" : overrides.dataLastUpdatedAt,
+    dataLastUpdatedAt: options.timestamp === undefined ? "2026-08-02T00:00:00.000Z" : options.timestamp,
     requestedCourseCount: codes.length,
-    matchedCourseCount: 0,
-    courses,
+    matchedCourseCount: matched ? codes.length : 0,
+    courses: codes.map((courseCode) => ({
+      courseCode,
+      displayCourseCode: courseCode,
+      hasTransferEquivalencies: matched,
+      equivalencyCount: matched ? 1 : 0,
+      providerCount: matched ? 1 : 0,
+      providers: matched ? ["Test College"] : [],
+      courseUrl: `https://example.test/transfers/courses/${courseCode.toLowerCase()}`,
+    })),
   };
 }
 
 describe("transferCoverage.server", () => {
-  const originalEnv = process.env;
-  const csProgram = fixturePrograms.find((p) => p.slug === "computer-science-bs")!;
+  const csProgram = fixturePrograms.find((program) => program.slug === "computer-science-bs")!;
 
   beforeEach(() => {
-    process.env = { ...originalEnv };
-    process.env.TRANSFER_COVERAGE_API_URL = "https://snhu-transfers.vercel.app/api/v1/transfer-coverage";
-    delete process.env.NEXT_PUBLIC_TRANSFERS_URL;
-    vi.restoreAllMocks();
+    getTransferCoverageResponse.mockReset();
   });
 
-  afterEach(() => {
-    process.env = originalEnv;
-  });
-
-  it("collects non-placeholder, non-external course codes", () => {
+  it("collects eligible normalized, deduplicated course codes in first-seen order", () => {
     const program: DegreeProgram = {
       ...csProgram,
       nodes: [
         { ...csProgram.nodes[0]!, code: "CS 110", isPlaceholder: false, isExternal: false },
-        { ...csProgram.nodes[0]!, id: "ext", code: "CS 999", isExternal: true },
-        { ...csProgram.nodes[0]!, id: "ph", code: "ELEC 1", isPlaceholder: true },
+        { ...csProgram.nodes[0]!, id: "duplicate", code: "cs-110", isPlaceholder: false, isExternal: false },
+        { ...csProgram.nodes[0]!, id: "external", code: "CS 999", isExternal: true },
+        { ...csProgram.nodes[0]!, id: "placeholder", code: "ELEC 1", isPlaceholder: true },
+        { ...csProgram.nodes[0]!, id: "empty", code: "   ", isPlaceholder: false, isExternal: false },
       ],
     };
+
     expect(collectProgramCoverageCourseCodes(program)).toEqual(["CS110"]);
   });
 
-  it("parses coverage timestamps safely", () => {
+  it("returns available empty coverage without calling the Transfers service", async () => {
+    const program: DegreeProgram = { ...csProgram, nodes: [] };
+
+    await expect(getProgramTransferCoverage(program)).resolves.toEqual({
+      status: "available",
+      data: {
+        schemaVersion: 1,
+        dataLastUpdatedAt: null,
+        requestedCourseCount: 0,
+        matchedCourseCount: 0,
+        courses: [],
+      },
+    });
+    expect(getTransferCoverageResponse).not.toHaveBeenCalled();
+  });
+
+  it("calls the local service without making an HTTP request", async () => {
+    const codes = collectProgramCoverageCourseCodes(csProgram);
+    getTransferCoverageResponse.mockResolvedValue(coverage(codes, { matched: true }));
+    const fetchMock = vi.fn();
+    vi.stubGlobal("fetch", fetchMock);
+
+    const result = await getProgramTransferCoverage(csProgram);
+
+    expect(result.status).toBe("available");
+    expect(getTransferCoverageResponse).toHaveBeenCalledWith(codes);
+    expect(fetchMock).not.toHaveBeenCalled();
+  });
+
+  it("preserves local service coverage data", async () => {
+    const codes = collectProgramCoverageCourseCodes(csProgram);
+    getTransferCoverageResponse.mockResolvedValue(coverage(codes, { matched: true, timestamp: null }));
+
+    const result = await getProgramTransferCoverage(csProgram);
+
+    expect(result).toMatchObject({
+      status: "available",
+      data: {
+        schemaVersion: 1,
+        dataLastUpdatedAt: null,
+        requestedCourseCount: codes.length,
+        matchedCourseCount: codes.length,
+      },
+    });
+  });
+
+  it("uses bounded batches and restores original program order", async () => {
+    const nodes = Array.from({ length: 105 }, (_, index) => ({
+      ...csProgram.nodes[0]!,
+      id: `course-${index}`,
+      code: `CS ${100 + index}`,
+      isPlaceholder: false,
+      isExternal: false,
+    }));
+    const program: DegreeProgram = { ...csProgram, nodes };
+    getTransferCoverageResponse.mockImplementation(async (codes: string[]) => coverage([...codes].reverse()));
+
+    const result = await getProgramTransferCoverage(program);
+
+    expect(getTransferCoverageResponse).toHaveBeenCalledTimes(2);
+    expect(getTransferCoverageResponse.mock.calls[0]![0]).toHaveLength(100);
+    expect(getTransferCoverageResponse.mock.calls[1]![0]).toHaveLength(5);
+    expect(result.status).toBe("available");
+    if (result.status === "available") {
+      expect(result.data.requestedCourseCount).toBe(105);
+      expect(result.data.matchedCourseCount).toBe(0);
+      expect(result.data.courses.map((course) => course.courseCode)).toEqual(
+        nodes.map((node) => node.code.replace(/[\s-]+/g, "")),
+      );
+    }
+  });
+
+  it("returns unavailable when the local service fails instead of fabricating zero coverage", async () => {
+    getTransferCoverageResponse.mockRejectedValue(new Error("database unavailable"));
+
+    await expect(getProgramTransferCoverage(csProgram)).resolves.toEqual({ status: "unavailable" });
+  });
+
+  it("returns unavailable when a batch omits a requested course", async () => {
+    const codes = collectProgramCoverageCourseCodes(csProgram);
+    getTransferCoverageResponse.mockResolvedValue(coverage(codes.slice(1)));
+
+    await expect(getProgramTransferCoverage(csProgram)).resolves.toEqual({ status: "unavailable" });
+  });
+
+  it("parses coverage timestamps safely for merge validation", () => {
     expect(parseCoverageUpdatedAt(null)).toBeNull();
     expect(parseCoverageUpdatedAt("not-a-date")).toBeNull();
     expect(parseCoverageUpdatedAt("2026-08-02T00:00:00.000Z")?.toISOString()).toBe(
       "2026-08-02T00:00:00.000Z",
     );
-  });
-
-  it("rejects invalid shape and mismatched providerCount", () => {
-    expect(
-      isTransferCoverageResponse({
-        schemaVersion: 2,
-        dataLastUpdatedAt: null,
-        requestedCourseCount: 0,
-        matchedCourseCount: 0,
-        courses: [],
-      }),
-    ).toBe(false);
-
-    expect(
-      isTransferCoverageResponse({
-        schemaVersion: 1,
-        dataLastUpdatedAt: null,
-        requestedCourseCount: 1,
-        matchedCourseCount: 1,
-        courses: [makeCourse({ courseCode: "CS110", providerCount: 4, providers: ["A", "B"] })],
-      }),
-    ).toBe(false);
-  });
-
-  it("returns unavailable when schemaVersion is not 1", async () => {
-    vi.stubGlobal(
-      "fetch",
-      vi.fn(async () =>
-        okResponse({
-          schemaVersion: 2,
-          dataLastUpdatedAt: null,
-          requestedCourseCount: 1,
-          matchedCourseCount: 0,
-          courses: [],
-        }),
-      ),
-    );
-
-    await expect(getProgramTransferCoverage(csProgram)).resolves.toEqual({ status: "unavailable" });
-  });
-
-  it("returns unavailable on HTTP 503", async () => {
-    vi.stubGlobal("fetch", vi.fn(async () => okResponse({ error: "nope" }, 503)));
-    await expect(getProgramTransferCoverage(csProgram)).resolves.toEqual({ status: "unavailable" });
-  });
-
-  it("returns unavailable on timeout", async () => {
-    vi.stubGlobal(
-      "fetch",
-      vi.fn(async () => {
-        throw new DOMException("The operation was aborted.", "TimeoutError");
-      }),
-    );
-    await expect(getProgramTransferCoverage(csProgram)).resolves.toEqual({ status: "unavailable" });
-  });
-
-  it("returns unavailable on malformed JSON", async () => {
-    vi.stubGlobal(
-      "fetch",
-      vi.fn(async () => new Response("not-json", { status: 200, headers: { "Content-Type": "application/json" } })),
-    );
-    await expect(getProgramTransferCoverage(csProgram)).resolves.toEqual({ status: "unavailable" });
-  });
-
-  it("returns unavailable when TRANSFER_COVERAGE_API_URL is missing", async () => {
-    delete process.env.TRANSFER_COVERAGE_API_URL;
-    await expect(getProgramTransferCoverage(csProgram)).resolves.toEqual({ status: "unavailable" });
-  });
-
-  it("returns unavailable for incomplete responses with duplicates and unrequested courses", async () => {
-    const codes = collectProgramCoverageCourseCodes(csProgram);
-    const first = codes[0]!;
-
-    vi.stubGlobal(
-      "fetch",
-      vi.fn(async () =>
-        okResponse({
-          schemaVersion: 1,
-          dataLastUpdatedAt: null,
-          requestedCourseCount: codes.length,
-          matchedCourseCount: 1,
-          courses: [
-            makeCourse({ courseCode: first }),
-            makeCourse({ courseCode: "ZZZ999" }),
-            makeCourse({ courseCode: first }),
-          ],
-        }),
-      ),
-    );
-
-    await expect(getProgramTransferCoverage(csProgram)).resolves.toEqual({ status: "unavailable" });
-  });
-
-  it("accepts a complete batch with null dataLastUpdatedAt", async () => {
-    const codes = collectProgramCoverageCourseCodes(csProgram);
-    vi.stubGlobal("fetch", vi.fn(async () => okResponse(completeBody(codes, { dataLastUpdatedAt: null }))));
-
-    const result = await getProgramTransferCoverage(csProgram);
-    expect(result.status).toBe("available");
-    if (result.status !== "available") return;
-    expect(result.data.dataLastUpdatedAt).toBeNull();
-    expect(result.data.requestedCourseCount).toBe(codes.length);
-    expect(result.data.courses).toHaveLength(codes.length);
-  });
-
-  it("returns unavailable when matchedCourseCount is wrong", async () => {
-    const codes = collectProgramCoverageCourseCodes(csProgram);
-    const body = completeBody(codes);
-    body.matchedCourseCount = 99;
-    vi.stubGlobal("fetch", vi.fn(async () => okResponse(body)));
-    await expect(getProgramTransferCoverage(csProgram)).resolves.toEqual({ status: "unavailable" });
-  });
-
-  it("returns unavailable for negative counts", async () => {
-    const codes = collectProgramCoverageCourseCodes(csProgram);
-    const body = completeBody(codes);
-    body.courses[0] = makeCourse({
-      courseCode: codes[0]!,
-      hasTransferEquivalencies: false,
-      equivalencyCount: -1,
-      providerCount: 0,
-      providers: [],
-    });
-    vi.stubGlobal("fetch", vi.fn(async () => okResponse(body)));
-    await expect(getProgramTransferCoverage(csProgram)).resolves.toEqual({ status: "unavailable" });
-  });
-
-  it("returns unavailable for non-HTTPS or wrong-host courseUrl", async () => {
-    const codes = collectProgramCoverageCourseCodes(csProgram);
-    const body = completeBody(codes);
-    body.courses[0] = makeCourse({
-      courseCode: codes[0]!,
-      hasTransferEquivalencies: false,
-      equivalencyCount: 0,
-      providerCount: 0,
-      providers: [],
-      courseUrl: "http://evil.example/courses/cs110",
-    });
-    vi.stubGlobal("fetch", vi.fn(async () => okResponse(body)));
-    await expect(getProgramTransferCoverage(csProgram)).resolves.toEqual({ status: "unavailable" });
-  });
-
-  it("returns unavailable for invalid dataLastUpdatedAt strings", async () => {
-    const codes = collectProgramCoverageCourseCodes(csProgram);
-    vi.stubGlobal(
-      "fetch",
-      vi.fn(async () => okResponse(completeBody(codes, { dataLastUpdatedAt: "yesterday" }))),
-    );
-    await expect(getProgramTransferCoverage(csProgram)).resolves.toEqual({ status: "unavailable" });
-  });
-
-  it("assertValidCoverageBatch throws on omitted requested courses", () => {
-    expect(() =>
-      assertValidCoverageBatch(
-        ["CS110", "CS210"],
-        {
-          schemaVersion: 1,
-          dataLastUpdatedAt: null,
-          requestedCourseCount: 2,
-          matchedCourseCount: 1,
-          courses: [makeCourse({ courseCode: "CS110" })],
-        },
-      ),
-    ).toThrow(/length mismatch|omitted/i);
-  });
-
-  it("batches requests when more than 100 courses are present", async () => {
-    const nodes = Array.from({ length: 105 }, (_, i) => ({
-      ...csProgram.nodes[0]!,
-      id: `n${i}`,
-      code: `CS ${100 + i}`,
-      isPlaceholder: false,
-      isExternal: false,
-    }));
-    const program: DegreeProgram = { ...csProgram, nodes };
-    const fetchMock = vi.fn(async (input: RequestInfo | URL) => {
-      const url = new URL(String(input));
-      const courses = url.searchParams.get("courses")!.split(",");
-      return okResponse(completeBody(courses));
-    });
-    vi.stubGlobal("fetch", fetchMock);
-
-    const result = await getProgramTransferCoverage(program);
-    expect(result.status).toBe("available");
-    expect(fetchMock).toHaveBeenCalledTimes(2);
-    if (result.status === "available") {
-      expect(result.data.requestedCourseCount).toBe(105);
-    }
-  });
-
-  it("returns unavailable when one batch fails among multiple", async () => {
-    const nodes = Array.from({ length: 105 }, (_, i) => ({
-      ...csProgram.nodes[0]!,
-      id: `n${i}`,
-      code: `CS ${100 + i}`,
-      isPlaceholder: false,
-      isExternal: false,
-    }));
-    const program: DegreeProgram = { ...csProgram, nodes };
-    let call = 0;
-    vi.stubGlobal(
-      "fetch",
-      vi.fn(async (input: RequestInfo | URL) => {
-        call += 1;
-        if (call === 1) {
-          const url = new URL(String(input));
-          const courses = url.searchParams.get("courses")!.split(",");
-          return okResponse(completeBody(courses));
-        }
-        return okResponse({ error: "down" }, 503);
-      }),
-    );
-
-    await expect(getProgramTransferCoverage(program)).resolves.toEqual({ status: "unavailable" });
   });
 });

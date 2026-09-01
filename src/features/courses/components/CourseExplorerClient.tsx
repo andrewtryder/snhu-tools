@@ -16,7 +16,7 @@ import {
 import "@xyflow/react/dist/style.css";
 import { GitBranch } from "lucide-react";
 import { layoutCourseGraph, type CourseTree } from "../lib/courseGraphLayout";
-import { parseCourseIdList } from "../lib/courseIds";
+import { coursePath, parseCourseIdList } from "../lib/courseIds";
 import { CourseSearchInput } from "./CourseSearchInput";
 
 const CONTROL_LABELS: Record<string, string> = {
@@ -44,10 +44,6 @@ function labelGraphControls(container: HTMLElement | null) {
       }
     }
   }
-}
-
-function coursePath(courseId: string): string {
-  return `/courses/${encodeURIComponent(courseId)}`;
 }
 
 function courseTreesPath(courseIds: string[]): string {

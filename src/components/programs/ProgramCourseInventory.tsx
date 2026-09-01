@@ -1,7 +1,8 @@
 import React from "react";
+import Link from "next/link";
 import { CourseNodeData } from "@/types/program";
 import { buildCourseLookup, resolvePrerequisites } from "@/lib/coursePrerequisites";
-import { getCoursesUrlForCourse } from "@/lib/transferIntegration";
+import { coursePath } from "@/features/courses/lib/courseIds";
 
 export function ProgramCourseInventory({ courses }: { courses: CourseNodeData[] }) {
   const byId = buildCourseLookup(courses);
@@ -34,19 +35,17 @@ export function ProgramCourseInventory({ courses }: { courses: CourseNodeData[] 
         <tbody>
           {listed.map((course) => {
             const prereqs = resolvePrerequisites(course, byId);
-            const coursesUrl = getCoursesUrlForCourse(course.code);
+            const coursesUrl = course.code.trim() ? coursePath(course.code) : null;
             return (
               <tr key={course.id} className="border-t border-surface-variant">
                 <th scope="row" className="px-3 py-2 font-mono font-semibold text-primary">
                   {coursesUrl ? (
-                    <a
+                    <Link
                       href={coursesUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
                       className="hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
                     >
                       {course.code}
-                    </a>
+                    </Link>
                   ) : (
                     course.code
                   )}

@@ -76,4 +76,18 @@ describe("CourseDetailDrawer relationship uncertainty", () => {
     expect(screen.getByText("CS 110")).toBeInTheDocument();
     expect(screen.getByText("Intro")).toBeInTheDocument();
   });
+
+  it("uses local Courses and Transfers routes", () => {
+    render(<CourseDetailDrawer course={courseWithPrereq} onClose={() => undefined} />);
+
+    expect(screen.getByRole("link", { name: "View course details" })).toHaveAttribute(
+      "href",
+      "/courses/CS210",
+    );
+    expect(screen.getByRole("link", { name: "View transfer listings" })).toHaveAttribute(
+      "href",
+      "/transfers/courses/cs-210",
+    );
+    expect(screen.getByRole("link", { name: "View course details" })).not.toHaveAttribute("target", "_blank");
+  });
 });

@@ -16,6 +16,11 @@
   - Lazy Proxy Drizzle ORM read client (`transfersDrizzleDb`) for safe build-time importing without runtime database credentials
   - Public read APIs migrated: `/api/v1/transfer-coverage` with cache headers, input bounds, schema versioning, and canonical `/transfers/courses/[slug]` links
   - SEO & Crawlability: Structured `ItemList` and `BreadcrumbList` JSON-LD schemas serialized with `serializeJsonLd()`; temporary `noindex` robots metadata retained during integration until canonical production cutover
+- In-Process Transfer Coverage & API Unification (Phase 4)
+  - Programs now calls `getTransferCoverageResponse()` directly in-process; it no longer fetches the Transfers API over HTTP. Bounded 100-course batches and available/unavailable failure semantics remain intact.
+  - `TRANSFER_COVERAGE_API_URL`, `NEXT_PUBLIC_TRANSFERS_URL`, and `NEXT_PUBLIC_COURSES_URL` are retired from runtime configuration.
+  - Program, graph-drawer, and About navigation now use local `/courses/[id]` and `/transfers/courses/[slug]` routes. The public `/api/v1/transfer-coverage` contract remains available, including absolute `courseUrl` values for external consumers.
+  - `POST /api/revalidate` now supports allowlisted `programs`, `courses`, `transfers`, and `all` scopes. No scope defaults to `programs` for existing callers; `transfer-data` also invalidates transfer-coverage cache entries.
 
 ## Settled Decisions
 - Degree Map is the foundation and primary product experience of SNHU Tools
@@ -27,7 +32,6 @@
 - CircleCI context strategy deferred to a dedicated phase
 
 ## Upcoming
-- **Phase 4: In-Process Transfer Coverage & API Unification**: Eliminate HTTP fetch from Degree Map to Transfers by invoking `getTransferCoverageResponse()` in-process; unify on-demand `/api/revalidate`.
 - **Phase 5: Database & CircleCI Pipeline Consolidation**: Unify schema migrations (`scripts/migrate.ts`), catalog synchronization scripts, and CircleCI scheduled workflows.
 - **Phase 6: Vercel Preview & Staging Verification**: End-to-end audit of all route families, dynamic graphs, search autocomplete, transfer coverage, and sitemaps.
 - **Phase 7: Production Cutover & Legacy Redirects**: Deploy unified application to production, submit XML sitemap to search engines, and deploy HTTP 308 redirect configurations to legacy repositories.
@@ -35,7 +39,7 @@
 ## Known Deferred Decisions & Migration Items
 - **Temporary Dual-Database Bridge**: Courses connects via an isolated `coursesPgPool` using `COURSES_POSTGRES_URL`. This dual-database arrangement is a temporary migration bridge; before production cutover in Phase 5, database topology will be consolidated so a single Vercel instance does not maintain multiple provider pools.
 - **Courses Write/Sync Pipeline**: Catalog sync jobs (`scripts/catalog-sync.ts`, `scripts/catalog-bootstrap.ts`, `/api/cron/catalog-sync`) and CircleCI workflows remain deferred to Phase 5.
-- **Catalog Revalidation Consolidation**: On-demand invalidation for the `catalog-data` tag remains deferred until `/api/revalidate` is unified in Phase 4.
+- **Scoped Revalidation Callers**: CircleCI callers have not yet been changed to send revalidation scopes; they retain the backward-compatible default `programs` scope until Phase 5.
 - **Unified Sitemap & Indexing Cutover**: Addition of course URLs to `sitemap.ts` and removing temporary `noindex` headers on Courses routes remains deferred to the Phase 7 SEO cutover.
 - **Legacy Domain Redirects**: 308 redirects from `snhu-courses.vercel.app/*` to `snhu-tools.vercel.app/courses/*` remain deferred until legacy redirect deployments in Phase 7.
 - **Production Database Topology**: Final determination between consolidating all domain tables (`programs*`, `courses_data*`, `transfer_courses*`) into a single shared PostgreSQL database instance vs. maintaining separate database connections will be evaluated during Phase 5.

@@ -26,7 +26,7 @@ function makeCourse(index: number, hasTransfer = true): TransferCoverageCourse {
     equivalencyCount: hasTransfer ? 1 : 0,
     providerCount: hasTransfer ? 1 : 0,
     providers: hasTransfer ? ["Test College"] : [],
-    courseUrl: `https://snhu-transfers.vercel.app/courses/${code}`,
+    courseUrl: `https://example.test/transfers/courses/${code}`,
   };
 }
 
@@ -68,6 +68,15 @@ describe("ProgramTransferCoverage UI", () => {
     }
 
     expect(screen.getAllByRole("link", { name: /View transfer equivalencies for CS / })).toHaveLength(11);
+    expect(screen.getByRole("link", { name: "View transfer equivalencies for CS 100" })).toHaveAttribute(
+      "href",
+      "/transfers/courses/cs100",
+    );
+    expect(screen.getByRole("link", { name: "View transfer equivalencies for CS 100" })).not.toHaveAttribute(
+      "target",
+      "_blank",
+    );
+    expect(document.body.innerHTML).not.toContain("snhu-transfers.vercel.app");
     expect(document.querySelector(".grid")).toBeTruthy();
     expect(document.querySelector(".rounded-full")).toBeNull();
   }, 15000);

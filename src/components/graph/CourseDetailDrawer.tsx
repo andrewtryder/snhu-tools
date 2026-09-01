@@ -1,15 +1,16 @@
 "use client";
 
 import React from "react";
+import Link from "next/link";
 import { CourseNodeData } from "@/types/program";
 import { Dialog } from "@/components/ui/Dialog";
 import { Badge } from "@/components/ui/Badge";
-import { getCoursesUrlForCourse, getTransferUrlForCourse } from "@/lib/transferIntegration";
+import { coursePath } from "@/features/courses/lib/courseIds";
+import { transferCoursePath } from "@/features/transfers/lib/slug";
 import {
   BookOpenIcon,
   CheckCircle2Icon,
   LayersIcon,
-  ExternalLinkIcon,
   ArrowRightLeftIcon,
 } from "lucide-react";
 
@@ -22,8 +23,8 @@ export interface CourseDetailDrawerProps {
 export function CourseDetailDrawer({ course, onClose, allCourses = [] }: CourseDetailDrawerProps) {
   if (!course) return null;
 
-  const coursesUrl = getCoursesUrlForCourse(course.code);
-  const transferUrl = getTransferUrlForCourse(course.code);
+  const coursesUrl = course.code.trim() ? coursePath(course.code) : null;
+  const transferUrl = course.code.trim() ? transferCoursePath(course.code) : null;
 
   const prereqCourses = (course.prerequisites || [])
     .map((id) => allCourses.find((c) => c.id === id || c.code === id))
@@ -59,14 +60,12 @@ export function CourseDetailDrawer({ course, onClose, allCourses = [] }: CourseD
 
           <div className="flex flex-wrap items-center gap-3">
             {coursesUrl && (
-              <a
+              <Link
                 href={coursesUrl}
-                target="_blank"
-                rel="noopener noreferrer"
                 className="inline-flex items-center gap-1 text-xs font-semibold text-primary hover:underline"
               >
-                View on snhu-courses <ExternalLinkIcon className="h-3 w-3" />
-              </a>
+                View course details
+              </Link>
             )}
           </div>
         </div>
@@ -80,16 +79,13 @@ export function CourseDetailDrawer({ course, onClose, allCourses = [] }: CourseD
 
         {transferUrl && (
           <div className="rounded-lg border border-emerald-200 bg-emerald-50/70 p-3 text-xs text-emerald-950">
-            <a
+            <Link
               href={transferUrl}
-              target="_blank"
-              rel="noopener noreferrer"
               className="inline-flex items-center gap-1.5 font-semibold text-emerald-900 hover:underline"
             >
               <ArrowRightLeftIcon className="h-4 w-4 text-emerald-700" />
-              View transfer listings on snhu-transfers
-              <ExternalLinkIcon className="h-3 w-3" />
-            </a>
+              View transfer listings
+            </Link>
             <p className="mt-1.5 text-[11px] text-emerald-800">
               Transfer course evaluations require official review and approval by SNHU.
             </p>

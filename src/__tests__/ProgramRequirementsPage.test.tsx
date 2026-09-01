@@ -48,11 +48,11 @@ describe("Program requirements page", () => {
     });
     expect(within(inventory).getByRole("link", { name: "MAT 140" })).toHaveAttribute(
       "href",
-      "https://snhu-courses.vercel.app/course/MAT140",
+      "/courses/MAT140",
     );
     expect(within(inventory).getByRole("link", { name: "IT 140" })).toHaveAttribute(
       "href",
-      "https://snhu-courses.vercel.app/course/IT140",
+      "/courses/IT140",
     );
     expect(within(inventory).getByText("Precalculus")).toBeInTheDocument();
     expect(within(inventory).getByText("Introduction to Scripting")).toBeInTheDocument();

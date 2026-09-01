@@ -21,6 +21,11 @@ export function normalizeCourseId(raw: string): string {
   return raw.trim().toUpperCase().replace(/[\s-]+/g, "");
 }
 
+/** Canonical local route for a normalized Courses course ID. */
+export function coursePath(courseId: string): string {
+  return `/courses/${encodeURIComponent(normalizeCourseId(courseId))}`;
+}
+
 export function isValidCourseId(id: string): boolean {
   return COURSE_ID_PATTERN.test(id);
 }
