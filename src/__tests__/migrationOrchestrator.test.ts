@@ -46,4 +46,24 @@ describe("unified migration orchestrator", () => {
     expect(mocks.migrateTransfers).not.toHaveBeenCalled();
     expect(mocks.client.end).toHaveBeenCalledTimes(1);
   });
+
+  it("does not run Transfers when Courses migration fails", async () => {
+    mocks.migrateCourses.mockRejectedValueOnce(new Error("courses migration failed"));
+
+    await expect(runMigrations("postgresql://example.test/db")).rejects.toThrow("courses migration failed");
+    expect(mocks.migratePrograms).toHaveBeenCalledTimes(1);
+    expect(mocks.migrateCourses).toHaveBeenCalledTimes(1);
+    expect(mocks.migrateTransfers).not.toHaveBeenCalled();
+    expect(mocks.client.end).toHaveBeenCalledTimes(1);
+  });
+
+  it("propagates Transfers failure after all migrations are reached", async () => {
+    mocks.migrateTransfers.mockRejectedValueOnce(new Error("transfers migration failed"));
+
+    await expect(runMigrations("postgresql://example.test/db")).rejects.toThrow("transfers migration failed");
+    expect(mocks.migratePrograms).toHaveBeenCalledTimes(1);
+    expect(mocks.migrateCourses).toHaveBeenCalledTimes(1);
+    expect(mocks.migrateTransfers).toHaveBeenCalledTimes(1);
+    expect(mocks.client.end).toHaveBeenCalledTimes(1);
+  });
 });

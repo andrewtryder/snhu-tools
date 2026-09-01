@@ -39,6 +39,8 @@ export type TransferSyncResult =
     }
   | { action: 'error'; error: string };
 
+export type TransferTerminalSyncResult = Exclude<TransferSyncResult, { action: 'batch' }>;
+
 async function mapWithConcurrency<T, R>(
   items: T[],
   concurrency: number,
@@ -316,6 +318,66 @@ export async function runTransferSync(
       } catch {
         // ignore secondary failure
       }
+      return { action: 'error', error: message };
+    }
+  });
+}
+
+const defaultInterBatchDelay = () => new Promise<void>((resolve) => setTimeout(resolve, 500));
+
+/** Trusted CLI path: claims a lease once, then continues only its owned sync_id. */
+export async function runTransferSyncToCompletion(
+  options: {
+    batchSize?: number;
+    concurrency?: number;
+    ignoreLease?: boolean;
+    allowLargeShrink?: boolean;
+    delay?: () => Promise<void>;
+  } = {},
+): Promise<TransferTerminalSyncResult> {
+  const batchSize = options.batchSize ?? CRON_BATCH_SIZE;
+  const concurrency = options.concurrency ?? CRON_CONCURRENCY;
+  const delay = options.delay ?? defaultInterBatchDelay;
+
+  return withClient(async (client) => {
+    let state: TransferSyncState | null = null;
+    try {
+      state = await getSyncState(client);
+      const wasRunning = state.status === 'running';
+      if (!wasRunning && state.next_due_at !== null && state.next_due_at.getTime() > Date.now()) {
+        return { action: 'skipped', reason: 'not_due', state };
+      }
+      const claimed = await tryClaimLease(client, { force: options.ignoreLease ?? false });
+      if (!claimed) return { action: 'skipped', reason: 'lease_held', state };
+
+      if (!wasRunning) {
+        await startRefresh(client, (await fetchExperiences()).map((item) => item.pid).filter((pid): pid is string => Boolean(pid)));
+        state = await getSyncState(client);
+      } else {
+        state = claimed;
+      }
+      const ownedSyncId = state.sync_id;
+      if (!ownedSyncId) throw new Error('transfer sync is running without sync_id');
+
+      while (true) {
+        state = await getSyncState(client);
+        if (state.status !== 'running' || state.sync_id !== ownedSyncId) {
+          throw new Error('Transfer sync lease ownership was lost during full run');
+        }
+        const result = await processSnapshotBatch(client, state, batchSize, concurrency, {
+          allowLargeShrink: options.allowLargeShrink,
+        });
+        if (result.action !== 'batch') return result;
+        await delay();
+      }
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+      await reportSyncError(error, {
+        component: 'transfer-sync', action: 'transfer-sync',
+        context: { cursor: state?.cursor ?? null, expected_count: state?.expected_count ?? null, imported_count: state?.imported_count ?? null, failed_experience_count: state?.failed_experience_count ?? null, sync_id: state?.sync_id ?? null, status: state?.status ?? null, allow_large_shrink: options.allowLargeShrink ?? false, vercel_env: process.env.VERCEL_ENV ?? null },
+        tags: ['cron', 'transfer-sync'],
+      });
+      try { await setSyncError(client, message); } catch { /* preserve primary failure */ }
       return { action: 'error', error: message };
     }
   });

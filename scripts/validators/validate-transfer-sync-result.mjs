@@ -1,11 +1,10 @@
 import { readFileSync } from "node:fs";
 
-const allowedActions = new Set(["promoted", "skipped", "error", "batch"]);
+const allowedActions = new Set(["promoted", "skipped"]);
 
 export function validateTransferSyncResult(result) {
   if (!result || typeof result !== "object" || Array.isArray(result)) return "result must be a JSON object";
-  if (typeof result.action !== "string" || !allowedActions.has(result.action)) return "action must be one of promoted, skipped, error, or batch";
-  if (result.action === "error") return "sync reported action=error";
+  if (typeof result.action !== "string" || !allowedActions.has(result.action)) return "terminal action must be promoted or skipped";
   return null;
 }
 

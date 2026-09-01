@@ -38,6 +38,8 @@ export type CatalogSyncResult =
     }
   | { action: 'error'; error: string };
 
+export type CatalogTerminalSyncResult = Exclude<CatalogSyncResult, { action: 'batch' }>;
+
 async function mapWithConcurrency<T, R>(
   items: T[],
   concurrency: number,
@@ -292,6 +294,71 @@ export async function runCatalogSyncBatch(
       } catch {
         // ignore secondary failure
       }
+      return { action: 'error', error: message };
+    }
+  });
+}
+
+/** Trusted CLI path: claims a lease once, then continues only its owned sync_id. */
+export async function runCatalogSyncToCompletion(
+  options: { batchSize?: number; concurrency?: number; ignoreLease?: boolean } = {},
+): Promise<CatalogTerminalSyncResult> {
+  const batchSize = options.batchSize ?? CRON_BATCH_SIZE;
+  const concurrency = options.concurrency ?? CRON_CONCURRENCY;
+
+  return withCatalogDbClient({ direct: true }, async (client) => {
+    let state: CatalogSyncState | null = null;
+    try {
+      state = await getSyncState(client);
+      if (state.status === 'awaiting_bootstrap') {
+        return { action: 'skipped', reason: 'not_bootstrapped', state };
+      }
+      const wasRunning = state.status === 'running';
+      if (!wasRunning && (state.next_due_at === null || state.next_due_at.getTime() > Date.now())) {
+        return { action: 'skipped', reason: 'not_due', state };
+      }
+
+      const claimed = await tryClaimLease(client, { force: options.ignoreLease ?? false });
+      if (!claimed) return { action: 'skipped', reason: 'lease_held', state };
+
+      if (!wasRunning) {
+        await startRefresh(client, uniquePids(await loadCourseList()));
+        state = await getSyncState(client);
+      } else {
+        state = claimed;
+      }
+      const ownedSyncId = state.sync_id;
+      if (!ownedSyncId) throw new Error('catalog sync is running without sync_id');
+
+      while (true) {
+        state = await getSyncState(client);
+        if (state.status !== 'running' || state.sync_id !== ownedSyncId) {
+          throw new Error('Catalog sync lease ownership was lost during full run');
+        }
+        const expected = state.expected_count ?? 0;
+        if (state.cursor >= expected) {
+          await promoteStaging(client, ownedSyncId);
+          return { action: 'promoted', processed: 0, imported: state.imported_count, expected, done: true };
+        }
+        const slice = await getSyncItemsBatch(client, ownedSyncId, state.cursor, batchSize);
+        if (slice.length === 0) throw new Error('catalog_sync_items snapshot is missing an expected batch');
+        const parsed = await fetchAndParseBatch(slice, concurrency);
+        for (const course of parsed) await insertStagedCourse(client, course);
+        const cursor = state.cursor + slice.length;
+        await advanceCursor(client, ownedSyncId, cursor, parsed.length);
+        if (cursor >= expected) {
+          await promoteStaging(client, ownedSyncId);
+          return { action: 'promoted', processed: slice.length, imported: state.imported_count + parsed.length, expected, done: true };
+        }
+      }
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+      await reportSyncError(error, {
+        component: 'catalog-sync', action: 'runCatalogSyncToCompletion',
+        context: { cursor: state?.cursor ?? null, expected_count: state?.expected_count ?? null, imported_count: state?.imported_count ?? null, sync_id: state?.sync_id ?? null, sync_status: state?.status ?? null, vercel_env: process.env.VERCEL_ENV ?? null },
+        tags: ['cron', 'catalog-sync'],
+      });
+      try { await setSyncError(client, message); } catch { /* preserve primary failure */ }
       return { action: 'error', error: message };
     }
   });

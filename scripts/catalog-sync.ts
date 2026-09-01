@@ -1,5 +1,5 @@
 import dotenv from "dotenv";
-import { runCatalogSyncBatch } from "@/features/courses/sync";
+import { runCatalogSyncToCompletion } from "@/features/courses/sync";
 
 dotenv.config();
 
@@ -8,10 +8,7 @@ export async function main(args = process.argv.slice(2)): Promise<void> {
   if (unsupported.length > 0) throw new Error(`Unsupported argument(s): ${unsupported.join(", ")}`);
   if (!process.env.POSTGRES_URL) throw new Error("POSTGRES_URL is required");
 
-  let result = await runCatalogSyncBatch({ direct: true, ignoreLease: args.includes("--ignore-lease") });
-  while (result.action === "batch") {
-    result = await runCatalogSyncBatch({ direct: true, ignoreLease: args.includes("--ignore-lease") });
-  }
+  const result = await runCatalogSyncToCompletion({ ignoreLease: args.includes("--ignore-lease") });
   console.log(JSON.stringify(result));
   if (result.action === "error") process.exitCode = 1;
 }
