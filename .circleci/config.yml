@@ -4,127 +4,211 @@ parameters:
   run_program_sync:
     type: boolean
     default: false
+  run_course_sync:
+    type: boolean
+    default: false
+  run_transfer_sync:
+    type: boolean
+    default: false
 
 executors:
   node-executor:
     docker:
-      - image: cimg/node:24.0.0
+      - image: cimg/node:24.13
     resource_class: small
 
-jobs:
-  sync_program_catalog:
-    executor: node-executor
+commands:
+  install_dependencies:
     steps:
       - checkout
-
       - restore_cache:
           keys:
             - v1-deps-{{ checksum "package-lock.json" }}
             - v1-deps-
-
       - run:
-          name: Install Dependencies
+          name: Install dependencies
           command: npm ci
-
       - save_cache:
           paths:
             - ~/.npm
           key: v1-deps-{{ checksum "package-lock.json" }}
 
+jobs:
+  sync-program-catalog:
+    executor: node-executor
+    steps:
+      - install_dependencies
+      - run: { name: Run database migrations, command: npm run db:migrate }
       - run:
-          name: Run Database Migrations
-          command: npm run db:migrate
-
-      - run:
-          name: Execute Program Catalog Synchronization
+          name: Execute program catalog synchronization
           command: |
             set -uo pipefail
             mkdir -p /tmp/sync-results
-
             set +e
             npm run program:sync 2>&1 | tee /tmp/sync-results/sync-output.log
             SYNC_EXIT=${PIPESTATUS[0]}
             set -e
-
             printf '%s\n' "$SYNC_EXIT" > /tmp/sync-results/sync-exit-code
-            tail -n 1 /tmp/sync-results/sync-output.log \
-              > /tmp/sync-results/sync-output.json
-
+            tail -n 1 /tmp/sync-results/sync-output.log > /tmp/sync-results/sync-output.json
             set +e
             node scripts/validate-sync-result.mjs /tmp/sync-results/sync-output.json
             VALIDATION_EXIT=$?
             set -e
-
             printf '%s\n' "$VALIDATION_EXIT" > /tmp/sync-results/validation-exit-code
             exit 0
-
       - run:
-          name: Trigger Vercel Cache Revalidation on Promotion
+          name: Revalidate programs after promotion
           command: |
             set -euo pipefail
             SYNC_EXIT=$(cat /tmp/sync-results/sync-exit-code)
             VALIDATION_EXIT=$(cat /tmp/sync-results/validation-exit-code)
-
-            if [ "$SYNC_EXIT" -ne 0 ] || [ "$VALIDATION_EXIT" -ne 0 ]; then
-              echo "Skipping revalidation: synchronization result is not valid for promotion."
-              printf '0\n' > /tmp/sync-results/revalidation-exit-code
-              exit 0
-            fi
-
-            SYNC_ACTION=$(node -e 'const fs=require("fs"); console.log(JSON.parse(fs.readFileSync("/tmp/sync-results/sync-output.json", "utf8")).action);')
-            echo "Sync Action Result: ${SYNC_ACTION}"
-
-            if [ "${SYNC_ACTION}" = "promoted" ]; then
-              set +e
-              curl --fail --silent --show-error --request POST \
-                --header "X-Revalidate-Secret: ${REVALIDATE_SECRET}" \
-                "${SITE_URL}/api/revalidate" \
-                | tee /tmp/sync-results/revalidation-response.json
-              REVALIDATION_EXIT=${PIPESTATUS[0]}
-              set -e
+            REVALIDATION_EXIT=0
+            if [ "$SYNC_EXIT" -eq 0 ] && [ "$VALIDATION_EXIT" -eq 0 ]; then
+              SYNC_ACTION=$(node -e 'const fs=require("fs"); console.log(JSON.parse(fs.readFileSync("/tmp/sync-results/sync-output.json", "utf8")).action);')
+              if [ "$SYNC_ACTION" = "promoted" ]; then
+                set +e
+                curl --fail --silent --show-error --request POST --header "Authorization: Bearer ${REVALIDATE_SECRET}" "${SITE_URL}/api/revalidate?scope=programs" | tee /tmp/sync-results/revalidation-response.json
+                REVALIDATION_EXIT=${PIPESTATUS[0]}
+                set -e
+              else
+                echo "Skipping revalidation: sync action was '${SYNC_ACTION}'."
+              fi
             else
-              echo "Skipping revalidation: Sync action was '${SYNC_ACTION}'."
-              REVALIDATION_EXIT=0
+              echo "Skipping revalidation: synchronization or validation failed."
             fi
-
             printf '%s\n' "$REVALIDATION_EXIT" > /tmp/sync-results/revalidation-exit-code
-
-      - store_artifacts:
-          path: /tmp/sync-results
-          destination: sync-results
-
+      - store_artifacts: { path: /tmp/sync-results, destination: program-sync-results }
       - run:
-          name: Report Synchronization Result
+          name: Report program synchronization result
           command: |
             set -euo pipefail
             SYNC_EXIT=$(cat /tmp/sync-results/sync-exit-code)
             VALIDATION_EXIT=$(cat /tmp/sync-results/validation-exit-code)
-
-            if [ "$SYNC_EXIT" -ne 0 ]; then
-              echo "Catalog synchronization failed; artifacts were preserved."
-              exit "$SYNC_EXIT"
-            fi
-
-            if [ "$VALIDATION_EXIT" -ne 0 ]; then
-              echo "Catalog synchronization result was invalid; artifacts were preserved."
-              exit "$VALIDATION_EXIT"
-            fi
-
             SYNC_ACTION=$(node -e 'const fs=require("fs"); console.log(JSON.parse(fs.readFileSync("/tmp/sync-results/sync-output.json", "utf8")).action);')
-            if [ "$SYNC_ACTION" = "error" ]; then
-              echo "Catalog synchronization reported an error; artifacts were preserved."
-              exit 1
-            fi
+            if [ "$SYNC_EXIT" -ne 0 ] || [ "$VALIDATION_EXIT" -ne 0 ] || [ "$SYNC_ACTION" = "error" ]; then exit 1; fi
+            if [ "$SYNC_ACTION" = "promoted" ] && [ "$(cat /tmp/sync-results/revalidation-exit-code)" -ne 0 ]; then exit 1; fi
 
-            if [ "$SYNC_ACTION" = "promoted" ] && [ "$(cat /tmp/sync-results/revalidation-exit-code)" -ne 0 ]; then
-              echo "Catalog promotion succeeded but cache revalidation failed; artifacts were preserved."
-              exit 1
+  sync-course-catalog:
+    executor: node-executor
+    steps:
+      - install_dependencies
+      - run: { name: Run database migrations, command: npm run db:migrate }
+      - run:
+          name: Execute course catalog synchronization
+          command: |
+            set -uo pipefail
+            mkdir -p /tmp/sync-results
+            set +e
+            npm run catalog:sync 2>&1 | tee /tmp/sync-results/sync-output.log
+            SYNC_EXIT=${PIPESTATUS[0]}
+            set -e
+            printf '%s\n' "$SYNC_EXIT" > /tmp/sync-results/sync-exit-code
+            tail -n 1 /tmp/sync-results/sync-output.log > /tmp/sync-results/sync-output.json
+            set +e
+            node scripts/validators/validate-catalog-sync-result.mjs /tmp/sync-results/sync-output.json
+            VALIDATION_EXIT=$?
+            set -e
+            printf '%s\n' "$VALIDATION_EXIT" > /tmp/sync-results/validation-exit-code
+            exit 0
+      - run:
+          name: Revalidate courses after promotion
+          command: |
+            set -euo pipefail
+            SYNC_EXIT=$(cat /tmp/sync-results/sync-exit-code)
+            VALIDATION_EXIT=$(cat /tmp/sync-results/validation-exit-code)
+            REVALIDATION_EXIT=0
+            if [ "$SYNC_EXIT" -eq 0 ] && [ "$VALIDATION_EXIT" -eq 0 ]; then
+              SYNC_ACTION=$(node -e 'const fs=require("fs"); console.log(JSON.parse(fs.readFileSync("/tmp/sync-results/sync-output.json", "utf8")).action);')
+              if [ "$SYNC_ACTION" = "promoted" ]; then
+                set +e
+                curl --fail --silent --show-error --request POST --header "Authorization: Bearer ${REVALIDATE_SECRET}" "${SITE_URL}/api/revalidate?scope=courses" | tee /tmp/sync-results/revalidation-response.json
+                REVALIDATION_EXIT=${PIPESTATUS[0]}
+                set -e
+              else
+                echo "Skipping revalidation: sync action was '${SYNC_ACTION}'."
+              fi
+            else
+              echo "Skipping revalidation: synchronization or validation failed."
             fi
+            printf '%s\n' "$REVALIDATION_EXIT" > /tmp/sync-results/revalidation-exit-code
+      - store_artifacts: { path: /tmp/sync-results, destination: course-sync-results }
+      - run:
+          name: Report course synchronization result
+          command: |
+            set -euo pipefail
+            SYNC_EXIT=$(cat /tmp/sync-results/sync-exit-code)
+            VALIDATION_EXIT=$(cat /tmp/sync-results/validation-exit-code)
+            SYNC_ACTION=$(node -e 'const fs=require("fs"); console.log(JSON.parse(fs.readFileSync("/tmp/sync-results/sync-output.json", "utf8")).action);')
+            if [ "$SYNC_EXIT" -ne 0 ] || [ "$VALIDATION_EXIT" -ne 0 ] || [ "$SYNC_ACTION" = "error" ]; then exit 1; fi
+            if [ "$SYNC_ACTION" = "promoted" ] && [ "$(cat /tmp/sync-results/revalidation-exit-code)" -ne 0 ]; then exit 1; fi
+
+  sync-transfer-data:
+    executor: node-executor
+    steps:
+      - install_dependencies
+      - run: { name: Run database migrations, command: npm run db:migrate }
+      - run:
+          name: Execute transfer synchronization
+          command: |
+            set -uo pipefail
+            mkdir -p /tmp/sync-results
+            set +e
+            npm run transfer:sync 2>&1 | tee /tmp/sync-results/sync-output.log
+            SYNC_EXIT=${PIPESTATUS[0]}
+            set -e
+            printf '%s\n' "$SYNC_EXIT" > /tmp/sync-results/sync-exit-code
+            tail -n 1 /tmp/sync-results/sync-output.log > /tmp/sync-results/sync-output.json
+            set +e
+            node scripts/validators/validate-transfer-sync-result.mjs /tmp/sync-results/sync-output.json
+            VALIDATION_EXIT=$?
+            set -e
+            printf '%s\n' "$VALIDATION_EXIT" > /tmp/sync-results/validation-exit-code
+            exit 0
+      - run:
+          name: Revalidate transfers after promotion
+          command: |
+            set -euo pipefail
+            SYNC_EXIT=$(cat /tmp/sync-results/sync-exit-code)
+            VALIDATION_EXIT=$(cat /tmp/sync-results/validation-exit-code)
+            REVALIDATION_EXIT=0
+            if [ "$SYNC_EXIT" -eq 0 ] && [ "$VALIDATION_EXIT" -eq 0 ]; then
+              SYNC_ACTION=$(node -e 'const fs=require("fs"); console.log(JSON.parse(fs.readFileSync("/tmp/sync-results/sync-output.json", "utf8")).action);')
+              if [ "$SYNC_ACTION" = "promoted" ]; then
+                set +e
+                curl --fail --silent --show-error --request POST --header "Authorization: Bearer ${REVALIDATE_SECRET}" "${SITE_URL}/api/revalidate?scope=transfers" | tee /tmp/sync-results/revalidation-response.json
+                REVALIDATION_EXIT=${PIPESTATUS[0]}
+                set -e
+              else
+                echo "Skipping revalidation: sync action was '${SYNC_ACTION}'."
+              fi
+            else
+              echo "Skipping revalidation: synchronization or validation failed."
+            fi
+            printf '%s\n' "$REVALIDATION_EXIT" > /tmp/sync-results/revalidation-exit-code
+      - store_artifacts: { path: /tmp/sync-results, destination: transfer-sync-results }
+      - run:
+          name: Report transfer synchronization result
+          command: |
+            set -euo pipefail
+            SYNC_EXIT=$(cat /tmp/sync-results/sync-exit-code)
+            VALIDATION_EXIT=$(cat /tmp/sync-results/validation-exit-code)
+            SYNC_ACTION=$(node -e 'const fs=require("fs"); console.log(JSON.parse(fs.readFileSync("/tmp/sync-results/sync-output.json", "utf8")).action);')
+            if [ "$SYNC_EXIT" -ne 0 ] || [ "$VALIDATION_EXIT" -ne 0 ] || [ "$SYNC_ACTION" = "error" ]; then exit 1; fi
+            if [ "$SYNC_ACTION" = "promoted" ] && [ "$(cat /tmp/sync-results/revalidation-exit-code)" -ne 0 ]; then exit 1; fi
 
 workflows:
-  catalog_sync_workflow:
+  program_sync_workflow:
     when: << pipeline.parameters.run_program_sync >>
     jobs:
-      - sync_program_catalog:
-          context:
-            - snhu-degreemap-sync-context
+      - sync-program-catalog:
+          context: [snhu-tools-program-sync]
+  course_sync_workflow:
+    when: << pipeline.parameters.run_course_sync >>
+    jobs:
+      - sync-course-catalog:
+          context: [snhu-tools-course-sync]
+  transfer_sync_workflow:
+    when: << pipeline.parameters.run_transfer_sync >>
+    jobs:
+      - sync-transfer-data:
+          context: [snhu-tools-transfer-sync]

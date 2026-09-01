@@ -26,6 +26,7 @@
   - Courses and Transfers bootstrap/sync pipelines, structured CLI output, and validators are ported for future authoritative `POSTGRES_URL` write use.
   - No migration, bootstrap, or synchronization operation has been executed; the authoritative target remains unselected, runtime retains three temporary pools, provider topology inspection remains pending, and CircleCI consolidation remains Phase 5C.
   - Correction pass: trusted Course and Transfer CLIs now own one claimed lease and sync ID for their full run, use terminal-result validators, and explicitly report caught writer failures to Honeybadger when configured. Owned full-run tests, CLI wrapper tests, terminal validator tests, standalone tsx import smoke checks, and sanitized writer-error reporting now directly protect writer execution.
+  - Phase 5C local CircleCI configuration: three independently parameter-gated writer jobs now reference new snhu-tools contexts, use structured terminal validators, preserve sync artifacts, and issue explicit promotion-only scoped revalidation. No contexts, schedules, or remote CircleCI state were created or changed; authoritative database selection, provider topology inspection, and actual cutover remain approval-gated.
 
 ## Settled Decisions
 - Degree Map is the foundation and primary product experience of SNHU Tools
