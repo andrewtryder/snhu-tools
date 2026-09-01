@@ -8,6 +8,12 @@ describe("Observability & Secret Redaction Engine", () => {
     expect(sanitized).toContain("[REDACTED]");
   });
 
+  it("redacts postgresql URLs including URL-encoded credential characters", () => {
+    const sanitized = sanitizeLogValue("failed postgresql://user:p%40ss@example.invalid/db");
+    expect(sanitized).toContain("[REDACTED]");
+    expect(sanitized).not.toContain("p%40ss");
+  });
+
   it("redacts bearer secret tokens in strings", () => {
     const rawHeader = "Bearer secret_token_xyz_123";
     const sanitized = sanitizeLogValue(rawHeader);

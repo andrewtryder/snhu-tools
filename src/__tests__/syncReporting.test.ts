@@ -26,7 +26,8 @@ describe("sync error reporting", () => {
 
   it("notifies with sanitized writer context and never exposes database values", async () => {
     process.env.HONEYBADGER_API_KEY = "test-key";
-    await reportSyncError(new Error("failed"), {
+    const rawError = new Error("connection failed for postgresql://user:p%40ss@example.invalid/db");
+    await reportSyncError(rawError, {
       component: "transfer-sync",
       action: "transfer-sync",
       tags: ["cron", "transfer-sync"],
@@ -40,6 +41,12 @@ describe("sync error reporting", () => {
       tags: ["cron", "transfer-sync"],
       POSTGRES_URL: "[REDACTED]",
     });
+    const reported = honeybadger.notifyAsync.mock.calls[0]?.[0] as Error;
+    expect(reported).not.toBe(rawError);
+    expect(reported.name).toBe("Error");
+    expect(reported.message).toContain("connection failed");
+    expect(reported.message).not.toContain("user:p%40ss@");
+    expect(reported.message).not.toContain("postgresql://");
   });
 
   it("swallows notifier failures", async () => {
