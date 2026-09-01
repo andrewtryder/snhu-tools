@@ -24,10 +24,11 @@ function validate(result: unknown): { status: number; output: string } {
 describe("CircleCI catalog synchronization configuration", () => {
   const baseResult = { status: "idle", importedCount: 236, skippedCount: 0, failedCount: 0 };
 
-  it("accepts structurally valid promoted, skipped, and error results", () => {
+  it("accepts structurally valid terminal promoted and skipped results", () => {
     expect(validate({ ...baseResult, action: "promoted" }).status).toBe(0);
     expect(validate({ ...baseResult, action: "skipped", status: "in_progress" }).status).toBe(0);
-    expect(validate({ ...baseResult, action: "error", status: "error", failedCount: 1 }).status).toBe(0);
+    expect(validate({ ...baseResult, action: "error", status: "error", failedCount: 1 }).status).not.toBe(0);
+    expect(validate({ ...baseResult, action: "batch" }).status).not.toBe(0);
   });
 
   it("rejects malformed and incomplete synchronization results", () => {

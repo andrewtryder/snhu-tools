@@ -7,6 +7,7 @@ import { persistProgramToStaging, persistCoursesToStaging, persistEdgesToStaging
 import { validateStaging, promoteStagingToLive } from "./promote";
 import { SyncResult, SyncOptions, ProgramSyncState } from "./types";
 import { kualiConfig } from "@/config/kualiConfig";
+import { reportSyncError } from "@/lib/syncReporting";
 
 export async function runProgramSync(options: SyncOptions = {}): Promise<SyncResult> {
   const catalogId = options.catalogId || kualiConfig.catalogId;
@@ -307,6 +308,16 @@ export async function runProgramSync(options: SyncOptions = {}): Promise<SyncRes
     const errorMsg = (err as Error).message;
     console.error("[Program Sync Error]", errorMsg);
 
+    try {
+      await reportSyncError(err, {
+        component: "program-sync",
+        action: "program-sync",
+        context: { sync_id: syncId, catalog_id: catalogId, vercel_env: process.env.VERCEL_ENV ?? null },
+        tags: ["cron", "program-sync"],
+      });
+    } catch {
+      // Reporting must not alter the writer's terminal result.
+    }
     await recordProgramSyncError(syncId, errorMsg);
 
     return {

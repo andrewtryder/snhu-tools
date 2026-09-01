@@ -5,6 +5,9 @@ import { join } from "node:path";
 import { spawnSync } from "node:child_process";
 import { validateCatalogSyncResult } from "../../scripts/validators/validate-catalog-sync-result.mjs";
 import { validateTransferSyncResult } from "../../scripts/validators/validate-transfer-sync-result.mjs";
+import { validateProgramSyncResult } from "../../scripts/validate-sync-result.mjs";
+
+const programResult = (action: string) => ({ action, status: "idle", importedCount: 1, skippedCount: 0, failedCount: 0 });
 
 describe("terminal sync result validators", () => {
   for (const validate of [validateCatalogSyncResult, validateTransferSyncResult]) {
@@ -21,6 +24,19 @@ describe("terminal sync result validators", () => {
   }
 });
 
+describe("Program terminal sync result validator", () => {
+  it("accepts only structurally valid promoted or skipped results", () => {
+    expect(validateProgramSyncResult(programResult("promoted"))).toBeNull();
+    expect(validateProgramSyncResult(programResult("skipped"))).toBeNull();
+    expect(validateProgramSyncResult(programResult("batch"))).toBeTruthy();
+    expect(validateProgramSyncResult(programResult("error"))).toBeTruthy();
+    expect(validateProgramSyncResult({ action: "promoted" })).toBeTruthy();
+    expect(validateProgramSyncResult({})).toBeTruthy();
+    expect(validateProgramSyncResult(null)).toBeTruthy();
+    expect(validateProgramSyncResult([])).toBeTruthy();
+  });
+});
+
 describe("terminal validator CLIs", () => {
   it("rejects missing files and malformed JSON result files", () => {
     const directory = mkdtempSync(join(tmpdir(), "snhu-validator-"));
@@ -28,6 +44,7 @@ describe("terminal validator CLIs", () => {
     writeFileSync(malformed, "{");
     try {
       for (const script of [
+        "scripts/validate-sync-result.mjs",
         "scripts/validators/validate-catalog-sync-result.mjs",
         "scripts/validators/validate-transfer-sync-result.mjs",
       ]) {
