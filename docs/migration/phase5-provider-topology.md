@@ -38,7 +38,7 @@ An Aiven GET-only inspection found one service, but no current domain connection
 | --- | --- | ---:| ---:| ---:| ---:| ---:|
 | DB-A | 17.11 | 106 | 1 / 1 | 0.9% | 18.7 MiB | 15 / 0 / 52 |
 | DB-B | 17.11 | 106 | 1 / 1 | 0.9% | 14.4 MiB | 8 / 1 / 36 |
-| DB-C | 17.11 | 106 | 1 / 1 | 0.9% | 13 / 1 / 47 |
+| DB-C | 17.11 | 106 | 1 / 1 | 0.9% | 16.0 MiB | 13 / 1 / 47 |
 
 Ordinary capacity is `max_connections` (112) minus PostgreSQL reserved connections (6). This is a point-in-time observation; historical peak utilization is unknown. Provider-reserved capacity beyond PostgreSQL metadata is unknown.
 
@@ -79,7 +79,7 @@ Each logical database had one open and one active connection during its individu
 
 ## Provider Pooling Availability
 
-Current non-pooling connection variables identify direct endpoints. The selected Programs and Courses URLs do not expose a pooled marker, and the Neon API reports one read-write endpoint per matched project without separately confirming a pooled endpoint. Provider pooling availability and its production recommendation remain unknown; no endpoint was changed.
+Current non-pooling connection variables identify direct endpoints. Neon metadata confirms provider pooling capability through `pooler_enabled` and `pooler_mode`, but pooling is disabled on DB-A, DB-B, and DB-C. No current production Vercel connection could be mapped; no endpoint was changed.
 
 ## Aiven Candidate Assessment
 
@@ -103,7 +103,7 @@ No relevant Aiven candidate exists: the sole read-only-discovered Aiven service 
 
 ## Human Decision Required
 
-DB-C is the provisional preferred host because it already holds the Courses and Transfers object groups and their approximate live/staging data. A final authoritative target must not be selected until an owner confirms whether DB-B or DB-C is the authoritative Course source and confirms Neon plan, storage, pooling, and connection-limit behavior. No inspected evidence establishes a clear reliability advantage between the three projects.
+DB-C is the provisional preferred host because it already holds the Courses and Transfers object groups and their approximate live/staging data. A subsequent exact parity inspection confirmed DB-B and DB-C Course data is identical, but historical Course serving/writer authority remains unobservable from the available Vercel/CircleCI evidence. Neon plan, storage, and pooling activation details remain approval-gated.
 
 A future fresh logical database on an approved existing service remains an option for clean rollback and bootstrap isolation. A fresh database on the same PostgreSQL service does not increase that service's maximum connection capacity. A future Neon branch requires separate provider-capacity confirmation before being treated as equivalent.
 
