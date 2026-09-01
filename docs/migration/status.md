@@ -21,6 +21,10 @@
   - `TRANSFER_COVERAGE_API_URL`, `NEXT_PUBLIC_TRANSFERS_URL`, and `NEXT_PUBLIC_COURSES_URL` are retired from runtime configuration.
   - Program, graph-drawer, and About navigation now use local `/courses/[id]` and `/transfers/courses/[slug]` routes. The public `/api/v1/transfer-coverage` contract remains available, including absolute `courseUrl` values for external consumers.
   - `POST /api/revalidate` now supports allowlisted `programs`, `courses`, `transfers`, and `all` scopes. No scope defaults to `programs` for existing callers; `transfer-data` also invalidates transfer-coverage cache entries.
+- Phase 5B — Domain write-pipeline port (code only)
+  - Unified code now contains Programs, Courses, and Transfers migration modules and a deterministic one-client migration orchestrator.
+  - Courses and Transfers bootstrap/sync pipelines, structured CLI output, and validators are ported for future authoritative `POSTGRES_URL` write use.
+  - No migration, bootstrap, or synchronization operation has been executed; the authoritative target remains unselected, runtime retains three temporary pools, provider topology inspection remains pending, and CircleCI consolidation remains Phase 5C.
 
 ## Settled Decisions
 - Degree Map is the foundation and primary product experience of SNHU Tools

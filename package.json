@@ -15,7 +15,11 @@
     "test:watch": "vitest",
     "db:migrate": "tsx scripts/migrate.ts",
     "program:bootstrap": "tsx scripts/program-bootstrap.ts",
-    "program:sync": "tsx scripts/program-sync.ts"
+    "program:sync": "tsx scripts/program-sync.ts",
+    "catalog:bootstrap": "tsx scripts/catalog-bootstrap.ts",
+    "catalog:sync": "tsx scripts/catalog-sync.ts",
+    "transfer:bootstrap": "tsx scripts/transfer-bootstrap.ts",
+    "transfer:sync": "tsx scripts/transfer-sync.ts"
   },
   "dependencies": {
     "@dagrejs/dagre": "^3.1.1",
