@@ -86,7 +86,7 @@ describe("CourseDetailDrawer relationship uncertainty", () => {
     );
     expect(screen.getByRole("link", { name: "View transfer listings" })).toHaveAttribute(
       "href",
-      "/transfers/courses/cs-210",
+      "/transfers/courses/cs210",
     );
     expect(screen.getByRole("link", { name: "View course details" })).not.toHaveAttribute("target", "_blank");
   });

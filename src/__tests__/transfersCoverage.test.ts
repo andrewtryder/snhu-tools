@@ -73,5 +73,19 @@ describe("Transfers transferCoverage domain service", () => {
         },
       ]);
     });
+
+    it("keeps public course URLs canonical for formatted equivalent inputs", () => {
+      const result = aggregateTransferCoverage(
+        ["CS 210"],
+        [],
+        null,
+        "https://snhu-degreemap.vercel.app",
+      );
+
+      expect(result.courses[0]!.courseUrl).toBe(
+        "https://snhu-degreemap.vercel.app/transfers/courses/cs210",
+      );
+      expect(result.courses[0]!.courseUrl).not.toContain("cs-210");
+    });
   });
 });

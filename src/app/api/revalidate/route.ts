@@ -1,6 +1,5 @@
 import { NextResponse } from "next/server";
 import { revalidatePath, revalidateTag } from "next/cache";
-import { CATALOG_TAG } from "@/features/courses/lib/courses";
 import { TRANSFER_CACHE_TAG } from "@/features/transfers/lib/constants";
 
 // This endpoint must read its secret at request time. Inlining it during a
@@ -8,6 +7,7 @@ import { TRANSFER_CACHE_TAG } from "@/features/transfers/lib/constants";
 export const dynamic = "force-dynamic";
 
 const PROGRAMS_TAG = "program-data";
+const CATALOG_TAG = "catalog-data";
 const REVALIDATION_SCOPES = ["programs", "courses", "transfers", "all"] as const;
 type RevalidationScope = (typeof REVALIDATION_SCOPES)[number];
 

@@ -5,6 +5,7 @@ import {
   normalizeTransferCourseCode,
   parseCoursesQuery,
 } from "@/features/transfers/lib/courseCode";
+import { transferCoursePath } from "@/features/transfers/lib/slug";
 
 describe("Transfers courseCode utilities", () => {
   describe("normalizeTransferCourseCode", () => {
@@ -93,6 +94,20 @@ describe("Transfers courseCode utilities", () => {
       if (result.ok) {
         expect(result.courseCodes).toHaveLength(100);
       }
+    });
+  });
+
+  describe("transferCoursePath", () => {
+    it("uses one canonical path for equivalent course-code formats", () => {
+      expect(transferCoursePath("CS210")).toBe("/transfers/courses/cs210");
+      expect(transferCoursePath("CS 210")).toBe("/transfers/courses/cs210");
+      expect(transferCoursePath("CS-210")).toBe("/transfers/courses/cs210");
+      expect(transferCoursePath("cs 210")).toBe("/transfers/courses/cs210");
+    });
+
+    it("preserves valid course-code suffixes", () => {
+      expect(transferCoursePath("BIO120L")).toBe("/transfers/courses/bio120l");
+      expect(transferCoursePath("ACC1ELE")).toBe("/transfers/courses/acc1ele");
     });
   });
 });

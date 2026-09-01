@@ -12,7 +12,7 @@ import {
   GraduationCapIcon,
 } from "lucide-react";
 import type { FacetSummary } from "@/features/transfers/lib/seoQueries";
-import { slugify } from "@/features/transfers/lib/slug";
+import { slugify, transferCoursePath } from "@/features/transfers/lib/slug";
 
 export type ViewType = "subject" | "organization" | "level";
 
@@ -375,7 +375,7 @@ export function TransfersClientPage({
                                           <td className="px-4 py-3 text-sm font-medium text-on-surface">
                                             {courseCode ? (
                                               <Link
-                                                href={`/transfers/courses/${slugify(courseCode)}`}
+                                                href={transferCoursePath(courseCode)}
                                                 className="text-secondary transition-colors hover:text-primary hover:underline"
                                               >
                                                 {courseCode}

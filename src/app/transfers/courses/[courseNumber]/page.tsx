@@ -6,7 +6,7 @@ import { AppFooter } from "@/components/AppFooter";
 import { EquivalencyTable } from "@/features/transfers/components/EquivalencyTable";
 import { getRelatedFacets, getRowsByCourseNumber } from "@/features/transfers/lib/seoQueries";
 import { summarizeCoursePage } from "@/features/transfers/lib/seoSummaries";
-import { canonicalPath, normalizeCourseNumber, slugify } from "@/features/transfers/lib/slug";
+import { canonicalPath, normalizeCourseNumber, slugify, transferCoursePath } from "@/features/transfers/lib/slug";
 import { serializeJsonLd } from "@/lib/safeJsonLd";
 import { getSiteUrl } from "@/lib/siteUrl";
 
@@ -28,7 +28,7 @@ export async function generateMetadata({ params }: { params: Promise<Params> }):
 
   const title = `SNHU ${normalizedCourse} Transfer Options`;
   const description = `Find unofficial SNHU ${normalizedCourse} transfer options and accepted transfer credits, including providers, mapped titles, academic levels, and eligibility details.`;
-  const canonical = canonicalPath(`/transfers/courses/${slugify(normalizedCourse)}`, siteUrl);
+  const canonical = canonicalPath(transferCoursePath(normalizedCourse), siteUrl);
 
   return {
     title,
@@ -62,7 +62,7 @@ export default async function CourseTransferPage({ params }: { params: Promise<P
           "@type": "ListItem",
           position: index + 1,
           name: row.title || `${normalizedCourse} Transfer Option`,
-          url: canonicalPath(`/transfers/courses/${slugify(normalizedCourse)}`, siteUrl),
+          url: canonicalPath(transferCoursePath(normalizedCourse), siteUrl),
         })),
       },
       {

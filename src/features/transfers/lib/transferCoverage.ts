@@ -9,7 +9,7 @@ import {
 } from "./constants";
 import { formatTransferCourseCode } from "./courseCode";
 import { getTransferLastModified } from "./seoQueries";
-import { canonicalPath, slugify } from "./slug";
+import { canonicalPath, transferCoursePath } from "./slug";
 
 export type TransferCoverageCourse = {
   courseCode: string;
@@ -144,7 +144,7 @@ export function aggregateTransferCoverage(
       equivalencyCount,
       providerCount: providers.length,
       providers,
-      courseUrl: canonicalPath(`/transfers/courses/${slugify(courseCode)}`, baseUrl),
+      courseUrl: canonicalPath(transferCoursePath(courseCode), baseUrl),
     };
   });
 

@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { slugify } from "@/features/transfers/lib/slug";
+import { slugify, transferCoursePath } from "@/features/transfers/lib/slug";
 import type { TransferRow } from "@/features/transfers/lib/seoQueries";
 
 type EquivalencyTableProps = {
@@ -42,7 +42,7 @@ export function EquivalencyTable({ rows }: EquivalencyTableProps) {
                   <td className="px-4 py-3 text-sm font-medium text-on-surface">
                     {row.courseNumber ? (
                       <Link
-                        href={`/transfers/courses/${slugify(row.courseNumber)}`}
+                        href={transferCoursePath(row.courseNumber)}
                         className="text-secondary transition-colors hover:text-primary hover:underline"
                       >
                         {courseValue}

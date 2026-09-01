@@ -1,4 +1,5 @@
 import { render, screen } from "@testing-library/react";
+import Link from "next/link";
 import { describe, it, expect, vi } from "vitest";
 import { ProgramDetailContent } from "@/app/programs/[slug]/page";
 
@@ -19,12 +20,12 @@ vi.mock("@/components/programs/ProgramTransferCoverage", () => ({
     <div>
       <h2>Transfer Integration</h2>
       <p>2 of 10 identified program courses have known transfer listings.</p>
-      <a
+      <Link
         href="/transfers/courses/cs210"
         aria-label="View transfer equivalencies for CS 210"
       >
         CS 210
-      </a>
+      </Link>
     </div>
   ),
 }));

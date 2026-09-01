@@ -15,7 +15,7 @@ export function normalizeCourseNumber(value: string): string {
 
 /** Canonical local route for a transfer-equivalency course page. */
 export function transferCoursePath(courseCode: string): string {
-  return `/transfers/courses/${slugify(courseCode)}`;
+  return `/transfers/courses/${slugify(normalizeCourseNumber(courseCode))}`;
 }
 
 export function canonicalPath(pathname: string, baseUrl: string): string {

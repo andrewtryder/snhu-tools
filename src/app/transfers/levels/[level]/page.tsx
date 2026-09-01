@@ -10,7 +10,7 @@ import {
   resolveLevelBySlug,
 } from "@/features/transfers/lib/seoQueries";
 import { summarizeLevelPage } from "@/features/transfers/lib/seoSummaries";
-import { canonicalPath, slugify } from "@/features/transfers/lib/slug";
+import { canonicalPath, slugify, transferCoursePath } from "@/features/transfers/lib/slug";
 import { serializeJsonLd } from "@/lib/safeJsonLd";
 import { getSiteUrl } from "@/lib/siteUrl";
 
@@ -67,7 +67,7 @@ export default async function LevelPage({ params }: { params: Promise<Params> })
           position: index + 1,
           name: `${row.courseNumber || "Unknown"} - ${row.title || "Transfer"}`,
           url: row.courseNumber
-            ? canonicalPath(`/transfers/courses/${slugify(row.courseNumber)}`, siteUrl)
+            ? canonicalPath(transferCoursePath(row.courseNumber), siteUrl)
             : canonicalPath(`/transfers/levels/${level}`, siteUrl),
         })),
       },
@@ -145,7 +145,7 @@ export default async function LevelPage({ params }: { params: Promise<Params> })
               {related.courses.slice(0, 12).map((course) => (
                 <li key={course}>
                   <Link
-                    href={`/transfers/courses/${slugify(course)}`}
+                    href={transferCoursePath(course)}
                     className="hover:text-primary hover:underline"
                   >
                     {course}

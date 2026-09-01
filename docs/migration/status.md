@@ -37,7 +37,7 @@
 - **Phase 7: Production Cutover & Legacy Redirects**: Deploy unified application to production, submit XML sitemap to search engines, and deploy HTTP 308 redirect configurations to legacy repositories.
 
 ## Known Deferred Decisions & Migration Items
-- **Temporary Dual-Database Bridge**: Courses connects via an isolated `coursesPgPool` using `COURSES_POSTGRES_URL`. This dual-database arrangement is a temporary migration bridge; before production cutover in Phase 5, database topology will be consolidated so a single Vercel instance does not maintain multiple provider pools.
+- **Temporary Three-Pool Runtime Topology**: Programs uses `POSTGRES_URL` / `pgPool`, Courses uses `COURSES_POSTGRES_URL` / `coursesPgPool`, and Transfers uses `TRANSFERS_POSTGRES_URL` / `transfersPgPool`. Each pool remains `max: 1`. This temporary multi-database bridge is not the desired final topology and will be evaluated during Phase 5.
 - **Courses Write/Sync Pipeline**: Catalog sync jobs (`scripts/catalog-sync.ts`, `scripts/catalog-bootstrap.ts`, `/api/cron/catalog-sync`) and CircleCI workflows remain deferred to Phase 5.
 - **Scoped Revalidation Callers**: CircleCI callers have not yet been changed to send revalidation scopes; they retain the backward-compatible default `programs` scope until Phase 5.
 - **Unified Sitemap & Indexing Cutover**: Addition of course URLs to `sitemap.ts` and removing temporary `noindex` headers on Courses routes remains deferred to the Phase 7 SEO cutover.
