@@ -18,11 +18,8 @@ describe("Transfers Landing Page", () => {
     vi.clearAllMocks();
   });
 
-  it("has noindex, nofollow metadata to prevent premature search indexing", () => {
-    expect(metadata.robots).toEqual({
-      index: false,
-      follow: false,
-    });
+  it("allows indexing by inheriting deployment-aware robots", () => {
+    expect(metadata.robots).toBeUndefined();
   });
 
   it("loads homepage payload with rows and facets", async () => {

@@ -17,10 +17,6 @@ export const metadata: Metadata = {
   title,
   description,
   alternates: { canonical },
-  robots: {
-    index: false,
-    follow: false,
-  },
   openGraph: { title, description, url: canonical },
   twitter: { card: "summary", title, description },
 };

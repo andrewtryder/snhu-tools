@@ -556,3 +556,25 @@ const _resolveLevelBySlug = cache(async (slug: string): Promise<string | null> =
 export function resolveLevelBySlug(slug: string) {
   return _resolveLevelBySlug(slugify(slug));
 }
+
+/**
+ * Returns distinct transfer course numbers, subjects, organizations, and levels
+ * for canonical sitemap generation along with the transfer sync last-modified timestamp.
+ */
+export async function getTransferSitemapData(): Promise<{
+  courseNumbers: string[];
+  subjects: string[];
+  organizations: string[];
+  levels: string[];
+  lastModified: Date | null;
+}> {
+  const [courseNumbers, subjects, organizations, levels, lastModified] = await Promise.all([
+    getDistinctCourseNumbers(),
+    getDistinctSubjects(),
+    getDistinctOrganizations(),
+    getDistinctLevels(),
+    getTransferLastModified(),
+  ]);
+
+  return { courseNumbers, subjects, organizations, levels, lastModified };
+}

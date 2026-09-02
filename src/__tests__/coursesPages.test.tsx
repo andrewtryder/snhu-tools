@@ -53,11 +53,8 @@ describe("Courses Pages", () => {
   });
 
   describe("/courses hub route", () => {
-    it("has temporary noindex, nofollow metadata during integration", () => {
-      expect(coursesMetadata.robots).toEqual({
-        index: false,
-        follow: false,
-      });
+    it("allows indexing by inheriting deployment-aware robots", () => {
+      expect(coursesMetadata.robots).toBeUndefined();
       expect(coursesMetadata.alternates?.canonical).toBe("/courses");
     });
 
@@ -114,7 +111,7 @@ describe("Courses Pages", () => {
       const metadata = await generateCourseMetadata({ params: Promise.resolve({ id: "cs300" }) });
       expect(metadata.title).toBe("CS300 (Data Structures and Algorithms) Prerequisites");
       expect(metadata.alternates?.canonical).toBe("/courses/CS300");
-      expect(metadata.robots).toEqual({ index: false, follow: false });
+      expect(metadata.robots).toBeUndefined();
     });
 
     it("renders course details, crawlable prerequisite tree, dependents, and graph", async () => {

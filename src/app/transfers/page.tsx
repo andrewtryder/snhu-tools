@@ -20,10 +20,6 @@ export const metadata: Metadata = {
   alternates: {
     canonical: `${siteUrl}/transfers`,
   },
-  robots: {
-    index: false,
-    follow: false,
-  },
   openGraph: {
     title: "SNHU Transfer Equivalency List | Search Accepted Transfer Credits",
     description:

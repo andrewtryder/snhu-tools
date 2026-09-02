@@ -50,6 +50,10 @@ export async function generateMetadata({ params }: CoursePageProps): Promise<Met
   if (!course) {
     return {
       title: "Course Not Found",
+      robots: {
+        index: false,
+        follow: false,
+      },
     };
   }
 
@@ -61,10 +65,6 @@ export async function generateMetadata({ params }: CoursePageProps): Promise<Met
     description,
     alternates: {
       canonical: `/courses/${courseId}`,
-    },
-    robots: {
-      index: false,
-      follow: false,
     },
     openGraph: {
       title: `${title} | SNHU Tools`,

@@ -23,10 +23,6 @@ export const metadata: Metadata = {
   alternates: {
     canonical: "/courses",
   },
-  robots: {
-    index: false,
-    follow: false,
-  },
   openGraph: {
     title: `${title} | SNHU Tools`,
     description,
