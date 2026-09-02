@@ -14,22 +14,33 @@ describe("getSiteUrl", () => {
     process.env = originalEnv;
   });
 
-  it("falls back to the production site URL", () => {
+  it("falls back to the canonical production site URL when no env is set", () => {
+    expect(getSiteUrl()).toBe("https://snhu-tools.vercel.app");
     expect(getSiteUrl()).toBe(PRODUCTION_SITE_URL);
   });
 
-  it("prefers configured production URL and strips trailing slashes", () => {
-    process.env.NEXT_PUBLIC_SITE_URL = "https://snhu-degreemap.vercel.app/";
-    expect(getSiteUrl()).toBe("https://snhu-degreemap.vercel.app");
+  it("prefers configured canonical production URL and strips trailing slashes", () => {
+    process.env.NEXT_PUBLIC_SITE_URL = "https://snhu-tools.vercel.app/";
+    expect(getSiteUrl()).toBe("https://snhu-tools.vercel.app");
   });
 
-  it("rejects Vercel preview deployment hosts", () => {
-    process.env.NEXT_PUBLIC_SITE_URL = "https://snhu-degreemap-7jluzupnl-andrewtryder.vercel.app";
-    expect(getSiteUrl()).toBe(PRODUCTION_SITE_URL);
+  it("prefers SITE_URL when NEXT_PUBLIC_SITE_URL is absent", () => {
+    process.env.SITE_URL = "https://snhu-tools.vercel.app/";
+    expect(getSiteUrl()).toBe("https://snhu-tools.vercel.app");
+  });
+
+  it("rejects arbitrary Vercel preview deployment hosts and falls back to canonical", () => {
+    process.env.NEXT_PUBLIC_SITE_URL = "https://snhu-tools-abc123-andrewtryder.vercel.app";
+    expect(getSiteUrl()).toBe("https://snhu-tools.vercel.app");
   });
 
   it("accepts a custom non-preview production host", () => {
-    process.env.NEXT_PUBLIC_SITE_URL = "https://degreemap.example.com/";
-    expect(getSiteUrl()).toBe("https://degreemap.example.com");
+    process.env.NEXT_PUBLIC_SITE_URL = "https://tools.example.com/";
+    expect(getSiteUrl()).toBe("https://tools.example.com");
+  });
+
+  it("falls back safely when configured URL is malformed", () => {
+    process.env.NEXT_PUBLIC_SITE_URL = "not-a-valid-url";
+    expect(getSiteUrl()).toBe("https://snhu-tools.vercel.app");
   });
 });

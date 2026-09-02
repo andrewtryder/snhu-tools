@@ -66,15 +66,18 @@ Completed:
 - Direct Neon endpoint used; Neon provider pooling remains unchanged / disabled.
 - Production environment on `snhu-tools` has zero database variables configured.
 - Legacy Vercel projects (`snhu-degreemap`, `snhu-courses`, `snhu-transfers`) remain completely untouched.
+- SNHU Tools canonical production fallback changed from legacy Degree Map host (`snhu-degreemap.vercel.app`) to settled canonical host (`https://snhu-tools.vercel.app`) in application runtime (`src/lib/siteUrl.ts`), environment docs, and tests.
+- Canonical redirect logic and unit tests updated to redirect legacy hosts to `https://snhu-tools.vercel.app` in production while preserving Preview-host rejection and skipping non-production redirects.
+- Courses and Transfers temporary `noindex` headers remain intact.
+- No remote Vercel Production environment variables configured; no Production deployment or promotion performed.
 
 Next approval-gated operations:
 
-1. Review and implement Production-readiness code fixes (canonical site URL correction in `src/lib/siteUrl.ts`).
-2. Neon pooled-endpoint decision / provider-pooling evaluation.
-3. Production environment variable cutover and production deployment cutover (Phase 7).
-4. Remote CircleCI context creation, schedule cutover, and legacy writer disablement.
+1. Neon pooled-endpoint decision / provider-pooling evaluation (Phase 6 pooled Preview gate).
+2. Production environment variable cutover and production deployment cutover (Phase 7).
+3. Remote CircleCI context creation, schedule cutover, and legacy writer disablement.
 
-**Next migration milestone:** Production-readiness fixes and/or Neon pooled Preview evaluation (Phase 6 follow-up / Phase 7 prep).
+**Next migration milestone:** Neon pooled-endpoint Preview evaluation (Phase 6 pooled Preview gate) or Phase 7 Production cutover preparation.
 
 ## Upcoming
 - **Phase 6: Vercel Preview & Staging Verification**: End-to-end audit of all route families, dynamic graphs, search autocomplete, transfer coverage, and sitemaps.

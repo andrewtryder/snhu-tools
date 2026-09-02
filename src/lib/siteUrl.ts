@@ -1,5 +1,5 @@
-export const PRODUCTION_SITE_URL = "https://snhu-degreemap.vercel.app";
-const PRODUCTION_HOST = "snhu-degreemap.vercel.app";
+export const PRODUCTION_SITE_URL = "https://snhu-tools.vercel.app";
+const PRODUCTION_HOST = "snhu-tools.vercel.app";
 
 function stripTrailingSlash(url: string): string {
   return url.replace(/\/+$/, "");

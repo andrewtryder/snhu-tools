@@ -18,8 +18,8 @@
 | **`KUALI_REQUEST_TIMEOUT_MS`** | Sync CLI | Request timeout in milliseconds (default: `10000`). |
 | **`KUALI_USER_AGENT`** | Sync CLI | Descriptive HTTP User-Agent string. |
 | **`REVALIDATE_SECRET`** | Vercel & CircleCI | Secret token protecting `POST /api/revalidate`. Must be set identically in Vercel and the CircleCI context. |
-| **`SITE_URL`** | CircleCI | Production application base URL (e.g. `https://snhu-degreemap.vercel.app`) used by CircleCI for revalidation triggers. |
-| **`NEXT_PUBLIC_SITE_URL`** | Client & Server | Preferred production origin for canonical metadata, sitemap/robots URLs, JSON-LD, and production hostname redirects (www / http / `*.vercel.app` → this host). Preview deployment hosts are rejected. |
+| **`SITE_URL`** | CircleCI | Production application base URL (e.g. `https://snhu-tools.vercel.app`) used by CircleCI for revalidation triggers. Required for later production cutover. |
+| **`NEXT_PUBLIC_SITE_URL`** | Client & Server | Preferred canonical public production origin (e.g. `https://snhu-tools.vercel.app`) for canonical metadata, sitemap/robots URLs, JSON-LD, and production hostname redirects (www / http / `*.vercel.app` → this host). Preview deployment hosts are rejected. Required for later production cutover. |
 
 ## Optional Environment Variables
 

@@ -16,7 +16,7 @@ describe("GET /api/v1/transfer-coverage route handler", () => {
   });
 
   it("returns 400 MISSING_COURSES when courses param is missing", async () => {
-    const request = new Request("https://snhu-degreemap.vercel.app/api/v1/transfer-coverage");
+    const request = new Request("https://snhu-tools.vercel.app/api/v1/transfer-coverage");
     const response = await GET(request);
 
     expect(response.status).toBe(400);
@@ -27,7 +27,7 @@ describe("GET /api/v1/transfer-coverage route handler", () => {
   it("returns 400 INVALID_COURSE_CODE when query exceeds 2000 characters", async () => {
     const longParam = "A".repeat(2001);
     const request = new Request(
-      `https://snhu-degreemap.vercel.app/api/v1/transfer-coverage?courses=${longParam}`,
+      `https://snhu-tools.vercel.app/api/v1/transfer-coverage?courses=${longParam}`,
     );
     const response = await GET(request);
 
@@ -38,7 +38,7 @@ describe("GET /api/v1/transfer-coverage route handler", () => {
 
   it("returns 400 INVALID_COURSE_CODE for malformed codes", async () => {
     const request = new Request(
-      "https://snhu-degreemap.vercel.app/api/v1/transfer-coverage?courses=CS110,bad-course",
+      "https://snhu-tools.vercel.app/api/v1/transfer-coverage?courses=CS110,bad-course",
     );
     const response = await GET(request);
 
@@ -54,7 +54,7 @@ describe("GET /api/v1/transfer-coverage route handler", () => {
     expect(codes.length).toBeLessThan(2000);
 
     const request = new Request(
-      `https://snhu-degreemap.vercel.app/api/v1/transfer-coverage?courses=${codes}`,
+      `https://snhu-tools.vercel.app/api/v1/transfer-coverage?courses=${codes}`,
     );
     const response = await GET(request);
 
@@ -79,14 +79,14 @@ describe("GET /api/v1/transfer-coverage route handler", () => {
           equivalencyCount: 1,
           providerCount: 1,
           providers: ["Sophia Learning"],
-          courseUrl: "https://snhu-degreemap.vercel.app/transfers/courses/cs110",
+          courseUrl: "https://snhu-tools.vercel.app/transfers/courses/cs110",
         },
       ],
     });
 
     // 4 variants of CS110 plus duplicates
     const request = new Request(
-      "https://snhu-degreemap.vercel.app/api/v1/transfer-coverage?courses=CS110,cs110,CS-110,CS 110,cs-110",
+      "https://snhu-tools.vercel.app/api/v1/transfer-coverage?courses=CS110,cs110,CS-110,CS 110,cs-110",
     );
     const response = await GET(request);
 
@@ -108,13 +108,13 @@ describe("GET /api/v1/transfer-coverage route handler", () => {
           equivalencyCount: 1,
           providerCount: 1,
           providers: ["Sophia Learning"],
-          courseUrl: "https://snhu-degreemap.vercel.app/transfers/courses/cs110",
+          courseUrl: "https://snhu-tools.vercel.app/transfers/courses/cs110",
         },
       ],
     });
 
     const request = new Request(
-      "https://snhu-degreemap.vercel.app/api/v1/transfer-coverage?courses=CS110",
+      "https://snhu-tools.vercel.app/api/v1/transfer-coverage?courses=CS110",
     );
     const response = await GET(request);
 
@@ -129,7 +129,7 @@ describe("GET /api/v1/transfer-coverage route handler", () => {
 
     const body = await response.json();
     expect(body.courses[0].courseUrl).toBe(
-      "https://snhu-degreemap.vercel.app/transfers/courses/cs110",
+      "https://snhu-tools.vercel.app/transfers/courses/cs110",
     );
   });
 
@@ -139,7 +139,7 @@ describe("GET /api/v1/transfer-coverage route handler", () => {
     );
 
     const request = new Request(
-      "https://snhu-degreemap.vercel.app/api/v1/transfer-coverage?courses=CS110",
+      "https://snhu-tools.vercel.app/api/v1/transfer-coverage?courses=CS110",
     );
     const response = await GET(request);
 

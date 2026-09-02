@@ -35,7 +35,7 @@ describe("Transfers transferCoverage domain service", () => {
         ["CS110", "IT140", "ENG122"],
         mockRows,
         "2026-08-31T12:00:00.000Z",
-        "https://snhu-degreemap.vercel.app",
+        "https://snhu-tools.vercel.app",
       );
 
       expect(result.schemaVersion).toBe(1);
@@ -51,7 +51,7 @@ describe("Transfers transferCoverage domain service", () => {
           equivalencyCount: 2,
           providerCount: 2,
           providers: ["Sophia Learning", "Study.com"],
-          courseUrl: "https://snhu-degreemap.vercel.app/transfers/courses/cs110",
+          courseUrl: "https://snhu-tools.vercel.app/transfers/courses/cs110",
         },
         {
           courseCode: "IT140",
@@ -60,7 +60,7 @@ describe("Transfers transferCoverage domain service", () => {
           equivalencyCount: 1,
           providerCount: 1,
           providers: ["Sophia Learning"],
-          courseUrl: "https://snhu-degreemap.vercel.app/transfers/courses/it140",
+          courseUrl: "https://snhu-tools.vercel.app/transfers/courses/it140",
         },
         {
           courseCode: "ENG122",
@@ -69,7 +69,7 @@ describe("Transfers transferCoverage domain service", () => {
           equivalencyCount: 0,
           providerCount: 0,
           providers: [],
-          courseUrl: "https://snhu-degreemap.vercel.app/transfers/courses/eng122",
+          courseUrl: "https://snhu-tools.vercel.app/transfers/courses/eng122",
         },
       ]);
     });
@@ -79,11 +79,11 @@ describe("Transfers transferCoverage domain service", () => {
         ["CS 210"],
         [],
         null,
-        "https://snhu-degreemap.vercel.app",
+        "https://snhu-tools.vercel.app",
       );
 
       expect(result.courses[0]!.courseUrl).toBe(
-        "https://snhu-degreemap.vercel.app/transfers/courses/cs210",
+        "https://snhu-tools.vercel.app/transfers/courses/cs210",
       );
       expect(result.courses[0]!.courseUrl).not.toContain("cs-210");
     });
