@@ -171,3 +171,31 @@ Completed:
 ## Operational Follow-Ups
 - **Search Console Submission**: Manual submission of `https://snhu-tools.vercel.app/sitemap.xml` in Google Search Console.
 - **Rollback Retention**: Retain all legacy rollback infrastructure through the stabilization period (do NOT delete legacy databases, projects, or CircleCI contexts yet).
+
+## Post-Migration Cleanup & Dependency Hygiene (Completed)
+- **Generated Diagnostic Artifacts Removed**:
+  - Removed committed probe output files: `.diagnostics/raw-computer-science-program.json`, `.diagnostics/raw-course-list.json`, `.diagnostics/raw-program-list.json`.
+  - Added `/.diagnostics/` to `.gitignore`.
+  - Updated `docs/kuali-source-contract.md` clarifying that `.diagnostics/` is transient scratch output.
+  - Retained `scripts/probe-kuali-programs.ts` and committed test fixtures under `src/data/fixtures/`.
+- **Dependency Classification Audit**:
+  - Reclassified 14 development/build/test dependencies from `dependencies` to `devDependencies`:
+    `@tailwindcss/postcss`, `@testing-library/dom`, `@testing-library/jest-dom`, `@testing-library/react`, `@types/dagre`, `@types/node`, `@types/pg`, `@types/react`, `@types/react-dom`, `eslint`, `eslint-config-next`, `jsdom`, `tailwindcss`, `typescript`, `vitest`.
+  - Retained runtime dependencies in `dependencies`:
+    `@dagrejs/dagre`, `@honeybadger-io/nextjs`, `@vercel/analytics`, `@vercel/functions`, `@xyflow/react`, `cheerio`, `dotenv`, `drizzle-orm`, `html-to-image`, `lucide-react`, `next`, `pg`, `react`, `react-dom`, `server-only`.
+  - Retained `tsx` in `devDependencies`.
+- **Dependencies Removed**:
+  - Removed `@types/dotenv` after confirming it is a deprecated stub package (`dotenv@17.4.2` supplies built-in TypeScript definitions) and proving build, lint, and test pass with zero regressions.
+- **Items Explicitly Retained for Rollback**:
+  - `SNHU_TOOLS_DATABASE_MODE` dual-mode support (legacy/unified).
+  - Legacy pool adapters and environment variables: `COURSES_POSTGRES_URL`, `TRANSFERS_POSTGRES_URL`, `COURSES_POSTGRES_CA_CERT`, `TRANSFERS_POSTGRES_CA_CERT`.
+  - Legacy-mode unit and integration tests.
+  - Fixture fallback support (`fixturePrograms`, `ENABLE_PROGRAM_FIXTURES`) for DB-free local/preview testing.
+- **Future Post-Stabilization Cleanup Candidates**:
+  - Deletion of legacy database mode adapters (`coursesPgPool`, `transfersPgPool`, `runtimeMode.ts`, `SNHU_TOOLS_DATABASE_MODE` branching) once the post-stabilization decommission gate is formally cleared.
+  - Archival / disabling of Dependabot on legacy repositories.
+- **Legacy Repositories Intentionally Left Unchanged**:
+  - `~/code/snhu-degreemap` (clean at HEAD `2600c316caef72329be7db0950f9d47201eacefd`)
+  - `~/code/snhu-courses` (clean at HEAD `5fdf3b44d27496a8cbb1cdf1609190584890844f`)
+  - `~/code/snhu-transfers` (clean at HEAD `db1024b6e4a69c963126ed848318bc5817b2c94b`)
+  - Dependencies and package-lock files remain frozen at their historical rollback baselines without upgrades. Dependabot remains enabled on `snhu-tools`.

@@ -88,7 +88,9 @@ Kuali publishes program requirements as embedded HTML containing semantic sectio
 
 ## 5. How to Refresh Committed Test Fixtures
 
-Run the automated probe script:
+The `.diagnostics/` directory is transient, gitignored scratch output used solely for intermediate probe inspection.
+
+Run the automated probe script to generate local diagnostic output:
 ```bash
 npx tsx scripts/probe-kuali-programs.ts --pid V1S14E8tg
 ```
