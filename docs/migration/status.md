@@ -104,10 +104,20 @@ Completed:
   - Schedule authority has completely transitioned to `snhu-tools` as the sole recurring writer authority.
   - Legacy contexts and database instances retained for rollback throughout the 7-day stabilization period.
   - Next upcoming scheduled writer cycle: Sunday, September 6, 2026 starting at 03:00 UTC.
+- Product Readiness: Unified Global Search implemented locally:
+  - Global header search (`AppHeader` / `GlobalSearch`) now queries all three product domains: Degree Programs, Courses, and Transfer Options.
+  - Reusable server search functions implemented for Courses (`searchCourses`) matching code + title with deterministic ranking, and Transfers (`searchTransferCourses`) grouping by canonical SNHU course.
+  - Server orchestrator `searchAll` executes sequentially to respect the `max: 1` unified runtime pool, provides domain failure isolation, and returns canonical relative hrefs.
+  - New API endpoint `GET /api/global-search` implemented with public CDN caching.
+  - Existing `GET /api/search` preserved as Programs-only for backward compatibility.
+  - User-facing search results page `/search?q=...` created, with `robots: { index: false, follow: true }` to avoid indexing internal search result URLs.
+  - Dedicated Course Explorer and Transfer page search UX preserved.
+  - Legacy redirects and SEO cutover remain deferred until this product feature is reviewed and deployed.
 
-**Next migration milestone:** Phase 7 Legacy Domain Redirects & SEO Cutover.
+**Next migration milestone:** Review and Deploy Unified Global Search, followed by Phase 7 Legacy Domain Redirects & SEO Cutover.
 
 ## Upcoming
+- **Phase 7: Deploy Unified Global Search**: Promote global search implementation to Vercel Production.
 - **Phase 7: Legacy Domain Redirects & SEO**: Deploy HTTP 308 redirects to legacy Vercel projects, remove temporary `noindex`, and publish consolidated sitemap.
 - **Phase 7: Post-Launch Stabilization**: Monitor first automated weekly execution window on Sunday, September 6, 2026.
 

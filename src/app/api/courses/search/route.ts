@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { withPoolClient } from "@/features/courses/db/pool";
+import { searchCourses } from "@/features/courses/lib/searchCourses";
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
@@ -12,22 +12,7 @@ export async function GET(request: Request) {
   }
 
   try {
-    const prefixPattern = `${query}%`;
-    const containsPattern = `%${query}%`;
-
-    const rows = await withPoolClient(async (client) => {
-      const result = await client.sql`
-        SELECT catalog_course_id, title
-        FROM courses_data
-        WHERE catalog_course_id ILIKE ${containsPattern}
-        ORDER BY
-            CASE WHEN catalog_course_id ILIKE ${prefixPattern} THEN 0 ELSE 1 END,
-            catalog_course_id
-        LIMIT ${limit}
-      `;
-      return result.rows;
-    });
-
+    const rows = await searchCourses(query, { limit });
     return NextResponse.json(rows);
   } catch (e) {
     console.error("Error searching courses", e);

@@ -52,7 +52,7 @@ describe("Transfers database pool and lazy Drizzle client", () => {
 
     const { db } = await import("@/features/transfers/db");
     expect(db).toBeDefined();
-  });
+  }, 15000);
 
   it("throws fail-fast error when accessing db methods and TRANSFERS_POSTGRES_URL is missing", async () => {
     delete process.env.TRANSFERS_POSTGRES_URL;

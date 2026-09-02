@@ -2,11 +2,12 @@
 
 import React, { useState } from "react";
 import Link from "next/link";
-import { useRouter, usePathname } from "next/navigation";
-import { SearchIcon, GridIcon } from "lucide-react";
+import { usePathname } from "next/navigation";
+import { GridIcon } from "lucide-react";
 import { ProgramBrowserDialog } from "./ProgramBrowserDialog";
 import { Button } from "./ui/Button";
 import { BrandBadge } from "./BrandBadge";
+import { GlobalSearch } from "./GlobalSearch";
 
 export interface AppHeaderProps {
   currentPage?: "home" | "programs" | "program-detail" | "courses" | "transfers" | "about";
@@ -49,25 +50,11 @@ const NAV_ITEMS: Array<{ id: NavSection; label: string; href: string }> = [
   { id: "about", label: "About", href: "/about" },
 ];
 
-const searchInputClassName =
-  "w-full rounded-full border border-outline-variant bg-surface-container-low py-2 pl-10 pr-4 text-sm text-on-surface outline-none transition-all placeholder:text-on-surface-variant focus:border-primary focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:ring-offset-surface";
-
 export function AppHeader({ currentPage = "home", initialPrograms = [] }: AppHeaderProps) {
-  const router = useRouter();
   const pathname = usePathname();
-  const [globalQuery, setGlobalQuery] = useState("");
   const [isBrowserOpen, setIsBrowserOpen] = useState(false);
 
   const activeSection = resolveActiveSection(pathname, currentPage);
-
-  const handleGlobalSearch = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (globalQuery.trim()) {
-      router.push(`/programs?q=${encodeURIComponent(globalQuery.trim())}`);
-    } else {
-      router.push("/programs");
-    }
-  };
 
   return (
     <>
@@ -101,21 +88,7 @@ export function AppHeader({ currentPage = "home", initialPrograms = [] }: AppHea
           </div>
 
           <div className="lg:col-start-2 lg:row-start-1">
-            <form onSubmit={handleGlobalSearch} role="search" className="relative w-full min-w-0">
-              <SearchIcon
-                className="pointer-events-none absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-outline"
-                aria-hidden="true"
-              />
-              <input
-                type="search"
-                name="q"
-                value={globalQuery}
-                onChange={(e) => setGlobalQuery(e.target.value)}
-                aria-label="Search degree programs and requirements"
-                className={searchInputClassName}
-                placeholder="Search programs, requirements, or courses (e.g. Computer Science)..."
-              />
-            </form>
+            <GlobalSearch />
           </div>
 
           <div className="flex items-center gap-2 lg:col-start-3 lg:row-start-1 lg:justify-self-end">

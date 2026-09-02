@@ -2,10 +2,12 @@ import { render, screen, fireEvent, within } from "@testing-library/react";
 import { describe, it, expect, vi } from "vitest";
 import { AppHeader } from "@/components/AppHeader";
 
+const pushMock = vi.fn();
+
 // Mock next/navigation
 vi.mock("next/navigation", () => ({
   useRouter: () => ({
-    push: vi.fn(),
+    push: pushMock,
   }),
   usePathname: () => "/",
 }));
@@ -56,14 +58,28 @@ describe("AppHeader Component", () => {
 
   it("renders global search input field", () => {
     render(<AppHeader />);
-    const searchInput = screen.getByRole("searchbox", {
-      name: /Search degree programs and requirements/i,
+    const searchInput = screen.getByRole("combobox", {
+      name: /Search SNHU programs, courses, and transfer options/i,
     });
     expect(searchInput).toBeInTheDocument();
     expect(searchInput).toHaveAttribute(
       "placeholder",
-      "Search programs, requirements, or courses (e.g. Computer Science)..."
+      "Search programs, courses, or transfer options..."
     );
+  });
+
+  it("submits plain search query to /search instead of /programs", () => {
+    pushMock.mockClear();
+
+    render(<AppHeader />);
+    const searchInput = screen.getByRole("combobox", {
+      name: /Search SNHU programs, courses, and transfer options/i,
+    });
+    fireEvent.change(searchInput, { target: { value: "CS210" } });
+    fireEvent.submit(searchInput.closest("form")!);
+
+    expect(pushMock).toHaveBeenCalledWith("/search?q=CS210");
+    expect(pushMock).not.toHaveBeenCalledWith(expect.stringContaining("/programs"));
   });
 
   it("renders Browse Programs button and opens modal dialog", () => {

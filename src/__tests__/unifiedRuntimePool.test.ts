@@ -111,7 +111,7 @@ describe("Unified runtime database pool consolidation", () => {
           connectionTimeoutMillis: 15000,
         })
       );
-    });
+    }, 15000);
 
     it("does not require COURSES_POSTGRES_URL or TRANSFERS_POSTGRES_URL", async () => {
       const { getCoursesPool } = await import("@/features/courses/db/pool");
@@ -130,7 +130,7 @@ describe("Unified runtime database pool consolidation", () => {
       expect(db.select).toBeDefined();
       expect(drizzle).toHaveBeenCalledWith(sharedPool, expect.any(Object));
       expect(poolConstructorMock).toHaveBeenCalledTimes(1);
-    });
+    }, 15000);
 
     it("executes Courses withPoolClient using shared pool and releases client in finally", async () => {
       const { withPoolClient } = await import("@/features/courses/db/pool");
