@@ -38,7 +38,7 @@
 - **Database target architecture**: one consolidated logical PostgreSQL database, `snhu_tools`, hosted on the approved DB-C Neon project; legacy DB-A, DB-B, and existing DB-C remain preserved during stabilization.
 - **CircleCI architecture**: three feature-specific contexts, `snhu-tools-program-sync`, `snhu-tools-course-sync`, and `snhu-tools-transfer-sync`; repository-side configuration is complete while remote context/schedule cutover remains pending.
 
-## Phase 5 Current State
+## Phase 5 & 6 Current State
 
 Completed:
 
@@ -55,26 +55,36 @@ Completed:
 - All three domain data-population gates are **COMPLETE**.
 - Shared runtime Pool consolidation implemented behind `SNHU_TOOLS_DATABASE_MODE` (default: `"legacy"`; unified mode: single shared `globalThis.pgPool` with `max: 1`).
 - Legacy rollback adapters and environment variables (`COURSES_POSTGRES_URL`, `TRANSFERS_POSTGRES_URL`) fully preserved.
+- New Vercel project `snhu-tools` created under `andrewtryder` with GitHub connection deferred for production safety.
+- First deployment on new project assigned to Production per Vercel CLI platform default (left untouched, unpromoted, with zero database credentials).
+- Initial Preview deployment identified framework preset issue (defaulted to `Other`), which was corrected to `Next.js` with automatic output directory detection.
+- Corrected controlled Preview deployment created and **PASSED** full end-to-end validation.
+- All Programs (`/programs`, `/programs/[slug]`, `/programs/[slug]/requirements`), Courses (`/courses`, `/courses/[id]`, search, prerequisite trees), and Transfers (`/transfers`, `/transfers/browse`, `/transfers/courses/[courseNumber]`, `/api/v1/transfer-coverage`) verified.
+- In-process cross-domain resolution verified: Program requirement transfer coverage computed with zero external HTTP dependency; Transfer records link back directly to the consolidated Course catalog.
+- Controlled error handling verified (clean 404/400 JSON/HTML with zero data leaks).
+- Runtime logs verified: 0 errors, 0 missing legacy environment variable warnings, 0 connection exhaustion issues.
+- Direct Neon endpoint used; Neon provider pooling remains unchanged / disabled.
+- Production environment on `snhu-tools` has zero database variables configured.
+- Legacy Vercel projects (`snhu-degreemap`, `snhu-courses`, `snhu-transfers`) remain completely untouched.
 
 Next approval-gated operations:
 
-1. Controlled unified-mode preview / staging verification (Phase 6).
-2. Vercel environment variable cutover (`SNHU_TOOLS_DATABASE_MODE=unified`, `POSTGRES_URL` pointing to `snhu_tools`).
-3. Neon pooled-endpoint decision / infrastructure configuration.
+1. Review and implement Production-readiness code fixes (canonical site URL correction in `src/lib/siteUrl.ts`).
+2. Neon pooled-endpoint decision / provider-pooling evaluation.
+3. Production environment variable cutover and production deployment cutover (Phase 7).
 4. Remote CircleCI context creation, schedule cutover, and legacy writer disablement.
 
-**Next migration milestone:** Controlled unified-mode preview / staging verification (Phase 6).
+**Next migration milestone:** Production-readiness fixes and/or Neon pooled Preview evaluation (Phase 6 follow-up / Phase 7 prep).
 
 ## Upcoming
-- **Phase 5: Database & CircleCI Pipeline Consolidation**: Schema migration and local CI configuration are complete; data bootstrap, parity validation, runtime cutover, and remote CI activation remain separately approval-gated.
 - **Phase 6: Vercel Preview & Staging Verification**: End-to-end audit of all route families, dynamic graphs, search autocomplete, transfer coverage, and sitemaps.
 - **Phase 7: Production Cutover & Legacy Redirects**: Deploy unified application to production, submit XML sitemap to search engines, and deploy HTTP 308 redirect configurations to legacy repositories.
 
 ## Known Deferred Decisions & Migration Items
-- **Temporary Three-Pool Runtime Topology**: Programs uses `POSTGRES_URL` / `pgPool`, Courses uses `COURSES_POSTGRES_URL` / `coursesPgPool`, and Transfers uses `TRANSFERS_POSTGRES_URL` / `transfersPgPool`. Each pool remains `max: 1`. The database target decision is complete; implementation of the eventual shared runtime Pool remains pending.
-- **Courses and Transfers Write/Sync Pipelines**: Migration/bootstrap/sync code exists in snhu-tools. Deferred work is actual bootstrap into `snhu_tools`, parity validation, and new CircleCI writer activation.
+- **Runtime Pool Consolidation**: Implemented in application code behind `SNHU_TOOLS_DATABASE_MODE`. Remote Vercel Production activation remains deferred until Phase 7.
+- **Write/Sync Pipelines**: Migration, bootstrap, and synchronization pipelines have been executed locally against `snhu_tools`. Remote CircleCI automated writer activation remains deferred.
 - **Scoped Revalidation Callers**: The local unified CircleCI configuration uses explicit `programs`, `courses`, and `transfers` scopes. Remote active callers remain on the legacy writer topology until cutover.
 - **Unified Sitemap & Indexing Cutover**: Addition of course URLs to `sitemap.ts` and removing temporary `noindex` headers on Courses routes remains deferred to the Phase 7 SEO cutover.
 - **Legacy Domain Redirects**: 308 redirects from `snhu-courses.vercel.app/*` to `snhu-tools.vercel.app/courses/*` remain deferred until legacy redirect deployments in Phase 7.
-- **Production Database Topology**: `snhu_tools` on the approved DB-C Neon project is the consolidated database target. Runtime database/pool cutover remains pending until bootstrap, parity, and Vercel approval gates complete.
+- **Production Database Topology**: `snhu_tools` on the approved DB-C Neon project is the consolidated database target. Production cutover remains pending.
 - **CircleCI Context Migration**: Three new feature-specific contexts are selected; their remote creation, values, schedules, and writer activation remain pending.
