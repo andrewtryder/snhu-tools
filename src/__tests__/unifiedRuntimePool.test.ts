@@ -108,7 +108,7 @@ describe("Unified runtime database pool consolidation", () => {
           connectionString: "postgresql://unified-user:pass@unified-host:5432/snhu_tools",
           max: 1,
           idleTimeoutMillis: 5000,
-          connectionTimeoutMillis: 5000,
+          connectionTimeoutMillis: 15000,
         })
       );
     });

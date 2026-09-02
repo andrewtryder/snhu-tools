@@ -74,17 +74,19 @@ Completed:
 - Writers and migrations retain direct connection architecture; remote CircleCI writers remain inactive.
 - Legacy Vercel projects (`snhu-degreemap`, `snhu-courses`, `snhu-transfers`) remain completely untouched.
 - Production environment on `snhu-tools` has zero database or runtime environment variables; no Production deployment or promotion performed.
+- Runtime connection timeout hardened: Canonical runtime pool `connectionTimeoutMillis` increased from 5 seconds to 15 seconds (`15_000` ms) in `src/lib/db/pool.ts` to accommodate suspended Neon compute wake latency without adding retries or expanding pool size (`max: 1` preserved).
+- Code-only hardening complete locally; remote provider configuration was not changed. Revalidation against a cold/suspended pooled Preview deployment is still required before production cutover.
 
 Remaining Production Blockers & Next Gates:
 
-1. **Cold-Wake Timeout Hardening**: Initial requests against a suspended Neon compute encountered `Connection terminated due to connection timeout` with the runtime pool's current 5-second connection timeout (`connectionTimeoutMillis: 5_000`). Once awake, functional and sequential validation passed completely. Hardening `connectionTimeoutMillis` to 15 seconds in canonical pool and revalidating against cold Preview compute is required before production cutover.
+1. **Cold-Wake Preview Revalidation**: Deploy the hardened 15-second connection timeout to Preview and revalidate against an intentionally cold/suspended Neon compute to verify initial connection establishment succeeds without timeout.
 2. Phase 7: Production environment variable configuration on `snhu-tools` (`SNHU_TOOLS_DATABASE_MODE=unified`, `POSTGRES_URL=<pooled>`, `SITE_URL`, `NEXT_PUBLIC_SITE_URL`).
 3. Phase 7: Production deployment and promotion to `https://snhu-tools.vercel.app`.
 4. CircleCI remote context creation, schedule activation, and legacy writer disablement.
 5. Legacy domain HTTP 308 permanent redirect deployments on `snhu-degreemap`, `snhu-courses`, and `snhu-transfers`.
 6. Production XML sitemap submission and SEO cutover.
 
-**Next migration milestone:** Connection Timeout Hardening & Cold-Wake Preview Revalidation.
+**Next migration milestone:** Cold-Wake Pooled Preview Revalidation Gate.
 
 ## Upcoming
 - **Phase 6: Vercel Preview & Staging Verification**: End-to-end audit of all route families, dynamic graphs, search autocomplete, transfer coverage, and sitemaps.

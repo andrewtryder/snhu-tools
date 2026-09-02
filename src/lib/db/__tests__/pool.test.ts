@@ -45,7 +45,8 @@ describe("db pool", () => {
   });
 
   it("creates a single global pool with conservative options", async () => {
-    const { getPool, POOL_OPTIONS, RUNTIME_POOL_MAX } = await import("../pool");
+    const { getPool, POOL_OPTIONS, RUNTIME_POOL_MAX, RUNTIME_POOL_CONNECTION_TIMEOUT_MS } =
+      await import("../pool");
 
     const first = getPool();
     const second = getPool();
@@ -57,14 +58,15 @@ describe("db pool", () => {
       ssl: { rejectUnauthorized: true, ca: "test-ca" },
       max: 1,
       idleTimeoutMillis: 5_000,
-      connectionTimeoutMillis: 5_000,
+      connectionTimeoutMillis: 15_000,
     });
     expect(POOL_OPTIONS).toEqual({
       max: 1,
       idleTimeoutMillis: 5_000,
-      connectionTimeoutMillis: 5_000,
+      connectionTimeoutMillis: 15_000,
     });
     expect(RUNTIME_POOL_MAX).toBe(1);
+    expect(RUNTIME_POOL_CONNECTION_TIMEOUT_MS).toBe(15_000);
   });
 
   it("attaches the pool to the Vercel lifecycle helper exactly once", async () => {

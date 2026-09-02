@@ -5,7 +5,8 @@ import { resolvePgConnectionConfig } from "./ssl";
 export const POOL_OPTIONS = {
   max: 1,
   idleTimeoutMillis: 5_000,
-  connectionTimeoutMillis: 5_000,
+  // Allow enough time for suspended serverless Postgres compute to resume before failing the initial connection.
+  connectionTimeoutMillis: 15_000,
 } as const;
 
 const globalForPg = globalThis as typeof globalThis & {
@@ -41,3 +42,4 @@ export function getPool(): Pool {
 }
 
 export const RUNTIME_POOL_MAX = POOL_OPTIONS.max;
+export const RUNTIME_POOL_CONNECTION_TIMEOUT_MS = POOL_OPTIONS.connectionTimeoutMillis;
