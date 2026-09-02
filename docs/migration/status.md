@@ -123,16 +123,40 @@ Completed:
   - Representative deep links (`/programs/...`, `/course/...`, `/courses/...`, `/levels/...`, `/subjects/...`) preserve full semantic destinations with query parameters intact.
   - Legacy Git repositories (`~/code/snhu-degreemap`, `~/code/snhu-courses`, `~/code/snhu-transfers`) remain completely unchanged and unedited.
   - Prior application Production deployments recorded and retained on Vercel as immediate rollback targets (`dpl_31ZXTDUvonuFkmwk4CpG2kwCTr7S`, `dpl_AGCXL2vxcxwHGRq1Rw8PD8mWjFNR`, `dpl_BruVJV9xmXQ9eQa578PRYQ7meyoe`).
-  - Temporary `noindex, nofollow` headers on Courses and Transfers remain strictly enabled.
-  - Sitemap and indexing remain unchanged; no sitemap submissions or Search Console operations performed.
-  - Next gate: Phase 7 SEO & Indexing Activation.
+- Phase 7 SEO & Indexing Activation completed and verified in Production:
+  - Root site branding updated to `SNHU Tools` across default title, template, OpenGraph, and Twitter cards.
+  - Temporary migration-period `noindex, nofollow` removed from valid public Course Explorer (`/courses`) and Course detail (`/courses/[id]`) routes; now inheriting deployment-aware indexing permission (`index: true, follow: true` on indexable Production).
+  - Temporary migration-period `noindex, nofollow` removed from valid public Transfers pages (`/transfers`, `/transfers/browse`, `/transfers/courses`, `/transfers/courses/[courseNumber]`, `/transfers/subjects`, `/transfers/organizations`, `/transfers/levels`).
+  - Search results route (`/search`) strictly preserves intentional `noindex, follow`.
+  - Not-found and invalid dynamic routes (`/courses/NOTFOUND`, `/transfers/courses/NOTFOUND`, etc.) strictly preserve `noindex, nofollow`.
+  - Consolidated sitemap reconciled to 3,389 total canonical URLs across all three unified products:
+    - 2,394 Course detail routes (`/courses/[id]`)
+    - 361 Transfer Course detail routes (`/transfers/courses/[courseNumber]`)
+    - 227 Program detail routes (`/programs/[slug]`)
+    - 227 Program requirements routes (`/programs/[slug]/requirements`)
+    - 70 Transfer Subject routes (`/transfers/subjects/[subject]`)
+    - 93 Transfer Organization routes (`/transfers/organizations/[organization]`)
+    - 3 Transfer Level routes (`/transfers/levels/[level]`)
+    - 14 Static hub and category routes (Root, About, Programs hub, 4 Program categories, Courses hub, Transfers hub, Transfers browse, Transfers courses hub, Transfers subjects hub, Transfers orgs hub, Transfers levels hub)
+    - Prior report count of 2,755 explained: loose `/courses/` substring check matched both Course detail (2,394) and Transfer course detail (361) routes (`2,394 + 361 = 2,755`).
+  - SNHU Tools `robots.txt` live and advertising canonical `https://snhu-tools.vercel.app/sitemap.xml`.
+  - Legacy HTTP 308 redirects verified resolving directly to fully indexable canonical targets.
+  - Production runtime healthy with 0 HTTP 500 errors and 0 Honeybadger faults.
+  - Technical consolidation migration is **COMPLETE**:
+    - Legacy HTTP 308 redirects active across all three domains.
+    - Unified runtime active with zero dependency on legacy applications.
+    - Unified writer authority active in CircleCI as sole recurring updater.
+    - Unified global search active and serving all three domains.
+    - Consolidated sitemap active and verified.
+    - Search Console submission remains external/manual.
+    - 7-day infrastructure stabilization and rollback deployment retention remain in effect through September 9, 2026.
 
-**Next migration milestone:** Phase 7 SEO & Indexing Activation (Removing temporary `noindex` headers on Courses/Transfers and publishing consolidated sitemap).
+**Current migration milestone:** Technical Migration Complete (Stabilization Phase Active).
 
 ## Upcoming
-- **Phase 7: SEO & Indexing Activation**: Remove temporary `noindex` headers on Courses/Transfers and publish consolidated sitemap.
-- **Phase 7: Post-Launch Stabilization**: Monitor first automated weekly execution window on Sunday, September 6, 2026.
+- **Phase 7: Post-Launch Stabilization**: Monitor first automated weekly execution window on Sunday, September 6, 2026 (Course sync 03:00 UTC, Transfer sync 04:00 UTC, Program sync 05:00 UTC).
+- **Post-Stabilization**: Decommission legacy Neon databases and standalone Vercel projects following the 7-day stabilization period (after September 9, 2026).
 
-## Known Deferred Decisions & Migration Items
-- **Unified Sitemap & Indexing Cutover**: Addition of course URLs to `sitemap.ts` and removing temporary `noindex` headers on Courses/Transfers routes remains deferred to SEO/indexing activation.
-- **Legacy Database Decommissioning**: Deferred for 7-day stabilization period.
+## Operational Follow-Ups
+- **Search Console Submission**: Manual submission of `https://snhu-tools.vercel.app/sitemap.xml` in Google Search Console.
+- **Rollback Retention**: Retain legacy rollback infrastructure through the stabilization period (do NOT delete legacy databases, projects, or CircleCI contexts yet).
