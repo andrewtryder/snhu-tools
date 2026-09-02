@@ -150,13 +150,24 @@ Completed:
     - Consolidated sitemap active and verified.
     - Search Console submission remains external/manual.
     - 7-day infrastructure stabilization and rollback deployment retention remain in effect through September 9, 2026.
+- Phase 8 Decommission Readiness Audit completed (read-only):
+  - Current Production application verified healthy across all 10 core routes with 0 HTTP 500 errors and 0 Honeybadger faults.
+  - Legacy HTTP 308 redirects verified active, preserving paths and queries in 1 hop.
+  - SNHU Tools confirmed as sole recurring writer authority with 3 active weekly CircleCI schedules and 0 schedules on legacy projects.
+  - Natural weekly writer cycle on Sunday, September 6, 2026, identified as an active decommission blocker.
+  - Inventory and retirement categorization established:
+    - KEEP LONG TERM: `snhu-tools` Vercel project, `snhu_tools` Neon database, new CircleCI schedules/contexts, legacy Vercel redirect projects (`snhu-degreemap`, `snhu-courses`, `snhu-transfers`), and Git repositories.
+    - KEEP THROUGH STABILIZATION: Legacy databases (DB-A, DB-B, legacy DB-C), legacy CircleCI contexts, old application deployments on Vercel.
+  - Decommission readiness classified as **NOT READY** pending completion of the natural Sunday writer cycle, 7-day stabilization period, and offline database backups.
+  - Zero legacy resources, databases, deployments, or configurations deleted.
 
-**Current migration milestone:** Technical Migration Complete (Stabilization Phase Active).
+**Current migration milestone:** Phase 8 Post-Migration Stabilization & Decommission Readiness Audit (Stabilization Active).
 
 ## Upcoming
-- **Phase 7: Post-Launch Stabilization**: Monitor first automated weekly execution window on Sunday, September 6, 2026 (Course sync 03:00 UTC, Transfer sync 04:00 UTC, Program sync 05:00 UTC).
-- **Post-Stabilization**: Decommission legacy Neon databases and standalone Vercel projects following the 7-day stabilization period (after September 9, 2026).
+- **Sunday, September 6, 2026**: Monitor first natural automated weekly execution window (Courses 03:00 UTC, Transfers 04:00 UTC, Programs 05:00 UTC).
+- **Wednesday, September 9, 2026**: End of 7-day stabilization period; evaluate retirement conditions for legacy databases and contexts.
+- **Post-Stabilization**: Generate offline logical `pg_dump` backups, retire legacy CircleCI contexts, and drop legacy Neon databases (DB-A, DB-B, legacy DB-C).
 
 ## Operational Follow-Ups
 - **Search Console Submission**: Manual submission of `https://snhu-tools.vercel.app/sitemap.xml` in Google Search Console.
-- **Rollback Retention**: Retain legacy rollback infrastructure through the stabilization period (do NOT delete legacy databases, projects, or CircleCI contexts yet).
+- **Rollback Retention**: Retain all legacy rollback infrastructure through the stabilization period (do NOT delete legacy databases, projects, or CircleCI contexts yet).
