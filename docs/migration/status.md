@@ -114,17 +114,25 @@ Completed:
   - API contracts verified: new `GET /api/global-search` serves grouped results; legacy `GET /api/search` preserved as Programs-only; existing `GET /api/courses/search` preserved as array of `{ catalog_course_id, title }`.
   - Existing dedicated Program, Course Explorer, and Transfer search and filter flows preserved without regression.
   - Zero critical search or runtime errors observed in Vercel production logs.
-  - Legacy redirects remain disabled; legacy projects (`snhu-degreemap`, `snhu-courses`, `snhu-transfers`) remain untouched.
-  - Temporary `noindex` headers on Courses and Transfers remain strictly enabled.
-  - Next gate: Phase 7 Legacy Domain Redirects & SEO Cutover.
+- Phase 7 Legacy Domain Redirect Cutover completed and verified:
+  - Three legacy Vercel projects converted to pure static redirect-only Production deployments via `vercel.json` edge routing.
+  - Legacy Degree Map host (`snhu-degreemap.vercel.app`, `dpl_Du2ha6Xz4rpURQpaepcNAgArLj8Q`) now permanently redirects to `https://snhu-tools.vercel.app/`.
+  - Legacy Courses host (`snhu-courses.vercel.app`, `dpl_2GZ2QhGeatZuhWaQbVtKpHUbEWg8`) now permanently redirects to `https://snhu-tools.vercel.app/courses`.
+  - Legacy Transfers host (`snhu-transfers.vercel.app`, `dpl_7Sty5XJG5qVmZWoC2s1nja6Q3hpy`) now permanently redirects to `https://snhu-tools.vercel.app/transfers`.
+  - Permanent HTTP 308 status confirmed across all routes on all three legacy hosts.
+  - Representative deep links (`/programs/...`, `/course/...`, `/courses/...`, `/levels/...`, `/subjects/...`) preserve full semantic destinations with query parameters intact.
+  - Legacy Git repositories (`~/code/snhu-degreemap`, `~/code/snhu-courses`, `~/code/snhu-transfers`) remain completely unchanged and unedited.
+  - Prior application Production deployments recorded and retained on Vercel as immediate rollback targets (`dpl_31ZXTDUvonuFkmwk4CpG2kwCTr7S`, `dpl_AGCXL2vxcxwHGRq1Rw8PD8mWjFNR`, `dpl_BruVJV9xmXQ9eQa578PRYQ7meyoe`).
+  - Temporary `noindex, nofollow` headers on Courses and Transfers remain strictly enabled.
+  - Sitemap and indexing remain unchanged; no sitemap submissions or Search Console operations performed.
+  - Next gate: Phase 7 SEO & Indexing Activation.
 
-**Next migration milestone:** Phase 7 Legacy Domain Redirects & SEO Cutover.
+**Next migration milestone:** Phase 7 SEO & Indexing Activation (Removing temporary `noindex` headers on Courses/Transfers and publishing consolidated sitemap).
 
 ## Upcoming
-- **Phase 7: Legacy Domain Redirects & SEO**: Deploy HTTP 308 redirects to legacy Vercel projects, remove temporary `noindex`, and publish consolidated sitemap.
+- **Phase 7: SEO & Indexing Activation**: Remove temporary `noindex` headers on Courses/Transfers and publish consolidated sitemap.
 - **Phase 7: Post-Launch Stabilization**: Monitor first automated weekly execution window on Sunday, September 6, 2026.
 
 ## Known Deferred Decisions & Migration Items
-- **Unified Sitemap & Indexing Cutover**: Addition of course URLs to `sitemap.ts` and removing temporary `noindex` headers on Courses/Transfers routes remains deferred to post-stabilization SEO cutover.
-- **Legacy Domain Redirects**: 308 redirects from legacy projects to `snhu-tools.vercel.app` remain deferred until legacy redirect deployments.
+- **Unified Sitemap & Indexing Cutover**: Addition of course URLs to `sitemap.ts` and removing temporary `noindex` headers on Courses/Transfers routes remains deferred to SEO/indexing activation.
 - **Legacy Database Decommissioning**: Deferred for 7-day stabilization period.
