@@ -45,20 +45,21 @@ Completed:
 - Unified migration and domain write-pipeline code, owned full-run tests, terminal validators, and explicit writer Honeybadger reporting.
 - Provider/topology audit and DB-C target selection.
 - Creation of `snhu_tools` and successful unified Programs/Courses/Transfers schema migration.
-- Empty-schema verification: no domain application data or sync snapshots are bootstrapped.
+- Empty-schema verification: initial state verified with zero application rows.
 - Local unified CircleCI configuration with explicit `programs`, `courses`, and `transfers` revalidation scopes.
+- Programs bootstrap into `snhu_tools`: promoted 227 programs, 1,743 requirement groups, 3,391 requirement courses, and 1,599 degree courses without errors or skips.
+- Programs parity validation against DB-A: classified as `CURRENT_UPSTREAM_DRIFT` with 100% exact semantic fingerprint match across programs, requirement groups, requirement courses, and degree courses; DB-A, DB-B, and existing DB-C remain untouched.
+- Courses and Transfers non-mutation verified: 0 application rows in `snhu_tools`.
 
 Next approval-gated operations:
 
-1. Programs bootstrap into `snhu_tools`.
-2. Read-only Programs parity validation against DB-A.
-3. Courses bootstrap and parity validation.
-4. Transfers bootstrap and parity validation.
-5. Shared runtime Pool conversion and Neon pooled-endpoint/runtime decision.
-6. Vercel database cutover.
-7. Remote CircleCI context creation, schedule cutover, and legacy writer disablement.
+1. Courses bootstrap into `snhu_tools` and parity validation against DB-B/DB-C.
+2. Transfers bootstrap into `snhu_tools` and parity validation against DB-C.
+3. Shared runtime Pool conversion and Neon pooled-endpoint/runtime decision.
+4. Vercel database cutover.
+5. Remote CircleCI context creation, schedule cutover, and legacy writer disablement.
 
-**Next database write gate:** Programs bootstrap into `snhu_tools`, followed immediately by read-only parity validation against DB-A. No Course or Transfer bootstrap is approved before Programs parity review.
+**Next database write gate:** Courses bootstrap into `snhu_tools`, followed immediately by read-only parity validation. Courses bootstrap is pending explicit human approval.
 
 ## Upcoming
 - **Phase 5: Database & CircleCI Pipeline Consolidation**: Schema migration and local CI configuration are complete; data bootstrap, parity validation, runtime cutover, and remote CI activation remain separately approval-gated.
