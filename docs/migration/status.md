@@ -24,9 +24,9 @@
 - Phase 5B — Domain write-pipeline port (code only)
   - Unified code now contains Programs, Courses, and Transfers migration modules and a deterministic one-client migration orchestrator.
   - Courses and Transfers bootstrap/sync pipelines, structured CLI output, and validators are ported for future authoritative `POSTGRES_URL` write use.
-  - No migration, bootstrap, or synchronization operation has been executed; the authoritative target remains unselected, runtime retains three temporary pools, provider topology inspection remains pending, and CircleCI consolidation remains Phase 5C.
+  - At completion of Phase 5B, no migration, bootstrap, or synchronization operation had yet been executed; target selection, provider inspection, and CircleCI cutover were intentionally deferred to later Phase 5 subphases.
   - Correction pass: trusted Course and Transfer CLIs now own one claimed lease and sync ID for their full run, use terminal-result validators, and explicitly report caught writer failures to Honeybadger when configured. Owned full-run tests, CLI wrapper tests, terminal validator tests, standalone tsx import smoke checks, and sanitized writer-error reporting now directly protect writer execution.
-  - Phase 5C local CircleCI configuration: three independently parameter-gated writer jobs now reference new snhu-tools contexts, use structured terminal validators, preserve sync artifacts, and issue explicit promotion-only scoped revalidation. No contexts, schedules, or remote CircleCI state were created or changed; authoritative database selection, provider topology inspection, and actual cutover remain approval-gated.
+  - Phase 5C local CircleCI configuration: three independently parameter-gated writer jobs reference new snhu-tools contexts, use structured terminal validators, preserve sync artifacts, and issue explicit promotion-only scoped revalidation. No remote contexts, schedules, or writer activation have occurred.
   - Phase 5F database creation/migration: the approved DB-C Neon project now contains the new `snhu_tools` logical database with unified Programs, Courses, and Transfers schema only. No application data was bootstrapped; target writers remain inactive, runtime retains the legacy temporary topology, pooling remains disabled, and Vercel/CircleCI remain unchanged. The next approval gate is Programs bootstrap.
 
 ## Settled Decisions
@@ -35,19 +35,41 @@
 - Canonical target host: `https://snhu-tools.vercel.app`
 - Legacy sites (`snhu-degreemap.vercel.app`, `snhu-courses.vercel.app`, `snhu-transfers.vercel.app`) will remain standalone Vercel redirect-only projects
 - Permanent legacy redirects will use HTTP 308
-- Database topology and infrastructure consolidation deferred to a dedicated phase
-- CircleCI context strategy deferred to a dedicated phase
+- **Database target architecture**: one consolidated logical PostgreSQL database, `snhu_tools`, hosted on the approved DB-C Neon project; legacy DB-A, DB-B, and existing DB-C remain preserved during stabilization.
+- **CircleCI architecture**: three feature-specific contexts, `snhu-tools-program-sync`, `snhu-tools-course-sync`, and `snhu-tools-transfer-sync`; repository-side configuration is complete while remote context/schedule cutover remains pending.
+
+## Phase 5 Current State
+
+Completed:
+
+- Unified migration and domain write-pipeline code, owned full-run tests, terminal validators, and explicit writer Honeybadger reporting.
+- Provider/topology audit and DB-C target selection.
+- Creation of `snhu_tools` and successful unified Programs/Courses/Transfers schema migration.
+- Empty-schema verification: no domain application data or sync snapshots are bootstrapped.
+- Local unified CircleCI configuration with explicit `programs`, `courses`, and `transfers` revalidation scopes.
+
+Next approval-gated operations:
+
+1. Programs bootstrap into `snhu_tools`.
+2. Read-only Programs parity validation against DB-A.
+3. Courses bootstrap and parity validation.
+4. Transfers bootstrap and parity validation.
+5. Shared runtime Pool conversion and Neon pooled-endpoint/runtime decision.
+6. Vercel database cutover.
+7. Remote CircleCI context creation, schedule cutover, and legacy writer disablement.
+
+**Next database write gate:** Programs bootstrap into `snhu_tools`, followed immediately by read-only parity validation against DB-A. No Course or Transfer bootstrap is approved before Programs parity review.
 
 ## Upcoming
-- **Phase 5: Database & CircleCI Pipeline Consolidation**: Unify schema migrations (`scripts/migrate.ts`), catalog synchronization scripts, and CircleCI scheduled workflows.
+- **Phase 5: Database & CircleCI Pipeline Consolidation**: Schema migration and local CI configuration are complete; data bootstrap, parity validation, runtime cutover, and remote CI activation remain separately approval-gated.
 - **Phase 6: Vercel Preview & Staging Verification**: End-to-end audit of all route families, dynamic graphs, search autocomplete, transfer coverage, and sitemaps.
 - **Phase 7: Production Cutover & Legacy Redirects**: Deploy unified application to production, submit XML sitemap to search engines, and deploy HTTP 308 redirect configurations to legacy repositories.
 
 ## Known Deferred Decisions & Migration Items
-- **Temporary Three-Pool Runtime Topology**: Programs uses `POSTGRES_URL` / `pgPool`, Courses uses `COURSES_POSTGRES_URL` / `coursesPgPool`, and Transfers uses `TRANSFERS_POSTGRES_URL` / `transfersPgPool`. Each pool remains `max: 1`. This temporary multi-database bridge is not the desired final topology and will be evaluated during Phase 5.
-- **Courses Write/Sync Pipeline**: Catalog sync jobs (`scripts/catalog-sync.ts`, `scripts/catalog-bootstrap.ts`, `/api/cron/catalog-sync`) and CircleCI workflows remain deferred to Phase 5.
-- **Scoped Revalidation Callers**: CircleCI callers have not yet been changed to send revalidation scopes; they retain the backward-compatible default `programs` scope until Phase 5.
+- **Temporary Three-Pool Runtime Topology**: Programs uses `POSTGRES_URL` / `pgPool`, Courses uses `COURSES_POSTGRES_URL` / `coursesPgPool`, and Transfers uses `TRANSFERS_POSTGRES_URL` / `transfersPgPool`. Each pool remains `max: 1`. The database target decision is complete; implementation of the eventual shared runtime Pool remains pending.
+- **Courses and Transfers Write/Sync Pipelines**: Migration/bootstrap/sync code exists in snhu-tools. Deferred work is actual bootstrap into `snhu_tools`, parity validation, and new CircleCI writer activation.
+- **Scoped Revalidation Callers**: The local unified CircleCI configuration uses explicit `programs`, `courses`, and `transfers` scopes. Remote active callers remain on the legacy writer topology until cutover.
 - **Unified Sitemap & Indexing Cutover**: Addition of course URLs to `sitemap.ts` and removing temporary `noindex` headers on Courses routes remains deferred to the Phase 7 SEO cutover.
 - **Legacy Domain Redirects**: 308 redirects from `snhu-courses.vercel.app/*` to `snhu-tools.vercel.app/courses/*` remain deferred until legacy redirect deployments in Phase 7.
-- **Production Database Topology**: Final determination between consolidating all domain tables (`programs*`, `courses_data*`, `transfer_courses*`) into a single shared PostgreSQL database instance vs. maintaining separate database connections will be evaluated during Phase 5.
-- **CircleCI Context Migration**: Evaluation of whether to merge `snhu-degreemap-sync-context`, `snhu-courses-sync`, and `snhu-transfers-sync` into a unified `snhu-tools-sync-context` will occur during CircleCI consolidation.
+- **Production Database Topology**: `snhu_tools` on the approved DB-C Neon project is the consolidated database target. Runtime database/pool cutover remains pending until bootstrap, parity, and Vercel approval gates complete.
+- **CircleCI Context Migration**: Three new feature-specific contexts are selected; their remote creation, values, schedules, and writer activation remain pending.
