@@ -95,17 +95,23 @@ Completed:
   - Courses manual sync (Pipeline #3): `skipped` (`not_due`), `db:migrate` passed, 2394 courses intact.
   - Transfers manual sync (Pipeline #4): `skipped` (`not_due`), `db:migrate` passed, 1179 transfer courses intact.
   - Migration idempotency validated across all three jobs with zero schema/data errors.
-  - Legacy schedules remain enabled on legacy repositories; new automated schedules on `snhu-tools` remain at 0 (pending atomic schedule cutover gate).
+- Phase 7 CircleCI schedule cutover completed:
+  - Three unified weekly schedules activated on `gh/andrewtryder/snhu-tools` targeting `integration/snhu-tools`:
+    - Courses (`weekly-snhu-tools-course-catalog-sync`): Sunday 03:00 UTC (`run_course_sync: true`)
+    - Transfers (`weekly-snhu-tools-transfer-sync`): Sunday 04:00 UTC (`run_transfer_sync: true`)
+    - Programs (`weekly-snhu-tools-program-catalog-sync`): Sunday 05:00 UTC (`run_program_sync: true`)
+  - Legacy weekly schedules deleted across `snhu-courses`, `snhu-transfers`, and `snhu-degreemap`.
+  - Schedule authority has completely transitioned to `snhu-tools` as the sole recurring writer authority.
+  - Legacy contexts and database instances retained for rollback throughout the 7-day stabilization period.
+  - Next upcoming scheduled writer cycle: Sunday, September 6, 2026 starting at 03:00 UTC.
 
-**Next migration milestone:** Phase 7 Atomic Schedule Cutover & Legacy Schedule Retirement.
+**Next migration milestone:** Phase 7 Legacy Domain Redirects & SEO Cutover.
 
 ## Upcoming
-- **Phase 7: Atomic Schedule Cutover**: Create new staggered Sunday schedules on `snhu-tools` and disable legacy schedules on `snhu-courses`, `snhu-transfers`, and `snhu-degreemap`.
 - **Phase 7: Legacy Domain Redirects & SEO**: Deploy HTTP 308 redirects to legacy Vercel projects, remove temporary `noindex`, and publish consolidated sitemap.
+- **Phase 7: Post-Launch Stabilization**: Monitor first automated weekly execution window on Sunday, September 6, 2026.
 
 ## Known Deferred Decisions & Migration Items
-- **Automated Schedule Cutover**: Scheduled writer triggers on `snhu-tools` remain deferred until atomic schedule cutover.
-- **Scoped Revalidation Callers**: Scoped revalidation verified operational in manual CircleCI pipelines; active automated triggers remain on legacy schedule until cutover.
 - **Unified Sitemap & Indexing Cutover**: Addition of course URLs to `sitemap.ts` and removing temporary `noindex` headers on Courses/Transfers routes remains deferred to post-stabilization SEO cutover.
 - **Legacy Domain Redirects**: 308 redirects from legacy projects to `snhu-tools.vercel.app` remain deferred until legacy redirect deployments.
 - **Legacy Database Decommissioning**: Deferred for 7-day stabilization period.
