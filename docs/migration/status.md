@@ -49,17 +49,19 @@ Completed:
 - Local unified CircleCI configuration with explicit `programs`, `courses`, and `transfers` revalidation scopes.
 - Programs bootstrap into `snhu_tools`: promoted 227 programs, 1,743 requirement groups, 3,391 requirement courses, and 1,599 degree courses without errors or skips.
 - Programs parity validation against DB-A: classified as `CURRENT_UPSTREAM_DRIFT` with 100% exact semantic fingerprint match across programs, requirement groups, requirement courses, and degree courses; DB-A, DB-B, and existing DB-C remain untouched.
-- Courses and Transfers non-mutation verified: 0 application rows in `snhu_tools`.
+- Courses bootstrap into `snhu_tools`: promoted 2,394 courses, 2,394 courses_data, and 1,928 prerequisites without errors or skips (`npm run catalog:bootstrap`).
+- Courses parity validation against DB-B and existing DB-C: classified as `CURRENT_UPSTREAM_DRIFT` (reflecting ~35 days of upstream Kuali catalog refresh since July 2026); all 14 structural invariants and relational integrity checks passed completely.
+- Programs non-mutation verified: all 7 Programs tables and safety fingerprints remain identical.
+- Transfers non-mutation verified: 0 application rows in `snhu_tools`.
 
 Next approval-gated operations:
 
-1. Courses bootstrap into `snhu_tools` and parity validation against DB-B/DB-C.
-2. Transfers bootstrap into `snhu_tools` and parity validation against DB-C.
-3. Shared runtime Pool conversion and Neon pooled-endpoint/runtime decision.
-4. Vercel database cutover.
-5. Remote CircleCI context creation, schedule cutover, and legacy writer disablement.
+1. Transfers bootstrap into `snhu_tools` and parity validation against DB-C.
+2. Shared runtime Pool conversion and Neon pooled-endpoint/runtime decision.
+3. Vercel database cutover.
+4. Remote CircleCI context creation, schedule cutover, and legacy writer disablement.
 
-**Next database write gate:** Courses bootstrap into `snhu_tools`, followed immediately by read-only parity validation. Courses bootstrap is pending explicit human approval.
+**Next database write gate:** Transfers bootstrap into `snhu_tools`, followed immediately by read-only parity validation. Transfers bootstrap is pending explicit human approval.
 
 ## Upcoming
 - **Phase 5: Database & CircleCI Pipeline Consolidation**: Schema migration and local CI configuration are complete; data bootstrap, parity validation, runtime cutover, and remote CI activation remain separately approval-gated.
