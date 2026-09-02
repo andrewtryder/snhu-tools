@@ -66,18 +66,25 @@ Completed:
 - Direct Neon endpoint used; Neon provider pooling remains unchanged / disabled.
 - Production environment on `snhu-tools` has zero database variables configured.
 - Legacy Vercel projects (`snhu-degreemap`, `snhu-courses`, `snhu-transfers`) remain completely untouched.
-- SNHU Tools canonical production fallback changed from legacy Degree Map host (`snhu-degreemap.vercel.app`) to settled canonical host (`https://snhu-tools.vercel.app`) in application runtime (`src/lib/siteUrl.ts`), environment docs, and tests.
-- Canonical redirect logic and unit tests updated to redirect legacy hosts to `https://snhu-tools.vercel.app` in production while preserving Preview-host rejection and skipping non-production redirects.
-- Courses and Transfers temporary `noindex` headers remain intact.
-- No remote Vercel Production environment variables configured; no Production deployment or promotion performed.
+- SNHU Tools canonical production fallback changed from legacy Degree Map host (`snhu-degreemap.vercel.app`) to settled canonical host (`https://snhu-tools.vercel.app`) in application runtime (`src/lib/siteUrl.ts`), environment docs, and tests (committed in `6ccb045ff680ce1f3060590e7f4a040bf2615e32`).
+- Phase 6 Neon pooled Preview deployment (`dpl_B2PhzNHCeirLK1GeRC5S9apYAHeV`) verified: Preview `POSTGRES_URL` updated to use Neon PgBouncer pooled connection while retaining `SNHU_TOOLS_DATABASE_MODE=unified`.
+- Single shared application pool (`globalThis.pgPool`) remains active and verified across 26 sequential mixed requests with 100% success rate (26/26 HTTP 200).
+- Neon resource configuration was not mutated (no project, branch, endpoint, or compute changes).
+- Point-in-time PostgreSQL backend connections to `snhu_tools` remained at 2 (1 active inspection query + 1 idle serverless connection), confirming PgBouncer transaction-level multiplexing without backend connection bloat.
+- Writers and migrations retain direct connection architecture; remote CircleCI writers remain inactive.
+- Legacy Vercel projects (`snhu-degreemap`, `snhu-courses`, `snhu-transfers`) remain completely untouched.
+- Production environment on `snhu-tools` has zero database or runtime environment variables; no Production deployment or promotion performed.
 
-Next approval-gated operations:
+Remaining Production Blockers & Next Gates:
 
-1. Neon pooled-endpoint decision / provider-pooling evaluation (Phase 6 pooled Preview gate).
-2. Production environment variable cutover and production deployment cutover (Phase 7).
-3. Remote CircleCI context creation, schedule cutover, and legacy writer disablement.
+1. **Cold-Wake Timeout Hardening**: Initial requests against a suspended Neon compute encountered `Connection terminated due to connection timeout` with the runtime pool's current 5-second connection timeout (`connectionTimeoutMillis: 5_000`). Once awake, functional and sequential validation passed completely. Hardening `connectionTimeoutMillis` to 15 seconds in canonical pool and revalidating against cold Preview compute is required before production cutover.
+2. Phase 7: Production environment variable configuration on `snhu-tools` (`SNHU_TOOLS_DATABASE_MODE=unified`, `POSTGRES_URL=<pooled>`, `SITE_URL`, `NEXT_PUBLIC_SITE_URL`).
+3. Phase 7: Production deployment and promotion to `https://snhu-tools.vercel.app`.
+4. CircleCI remote context creation, schedule activation, and legacy writer disablement.
+5. Legacy domain HTTP 308 permanent redirect deployments on `snhu-degreemap`, `snhu-courses`, and `snhu-transfers`.
+6. Production XML sitemap submission and SEO cutover.
 
-**Next migration milestone:** Neon pooled-endpoint Preview evaluation (Phase 6 pooled Preview gate) or Phase 7 Production cutover preparation.
+**Next migration milestone:** Connection Timeout Hardening & Cold-Wake Preview Revalidation.
 
 ## Upcoming
 - **Phase 6: Vercel Preview & Staging Verification**: End-to-end audit of all route families, dynamic graphs, search autocomplete, transfer coverage, and sitemaps.
