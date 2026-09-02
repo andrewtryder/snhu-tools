@@ -47,21 +47,20 @@ Completed:
 - Creation of `snhu_tools` and successful unified Programs/Courses/Transfers schema migration.
 - Empty-schema verification: initial state verified with zero application rows.
 - Local unified CircleCI configuration with explicit `programs`, `courses`, and `transfers` revalidation scopes.
-- Programs bootstrap into `snhu_tools`: promoted 227 programs, 1,743 requirement groups, 3,391 requirement courses, and 1,599 degree courses without errors or skips.
-- Programs parity validation against DB-A: classified as `CURRENT_UPSTREAM_DRIFT` with 100% exact semantic fingerprint match across programs, requirement groups, requirement courses, and degree courses; DB-A, DB-B, and existing DB-C remain untouched.
-- Courses bootstrap into `snhu_tools`: promoted 2,394 courses, 2,394 courses_data, and 1,928 prerequisites without errors or skips (`npm run catalog:bootstrap`).
-- Courses parity validation against DB-B and existing DB-C: classified as `CURRENT_UPSTREAM_DRIFT` (reflecting ~35 days of upstream Kuali catalog refresh since July 2026); all 14 structural invariants and relational integrity checks passed completely.
-- Programs non-mutation verified: all 7 Programs tables and safety fingerprints remain identical.
-- Transfers non-mutation verified: 0 application rows in `snhu_tools`.
+- Programs bootstrap into `snhu_tools`: promoted 227 programs, 1,743 requirement groups, 3,391 requirement courses, and 1,599 degree courses without errors or skips (parity classification: `CURRENT_UPSTREAM_DRIFT`).
+- Courses bootstrap into `snhu_tools`: promoted 2,394 courses, 2,394 courses_data, and 1,928 prerequisites without errors or skips (parity classification: `CURRENT_UPSTREAM_DRIFT`).
+- Transfers bootstrap into `snhu_tools`: promoted 1,179 transfer courses from 889 experiences and enriched 700 course PIDs against the consolidated course catalog (parity classification: `CURRENT_UPSTREAM_DRIFT`).
+- Cross-domain non-mutation verified: Programs, Courses, and Transfers all reside with full referential integrity in `snhu_tools`.
+- Legacy databases (DB-A, DB-B, existing DB-C) remain completely untouched and available for rollback.
+- All three domain data-population gates are **COMPLETE**.
 
 Next approval-gated operations:
 
-1. Transfers bootstrap into `snhu_tools` and parity validation against DB-C.
-2. Shared runtime Pool conversion and Neon pooled-endpoint/runtime decision.
-3. Vercel database cutover.
-4. Remote CircleCI context creation, schedule cutover, and legacy writer disablement.
+1. Shared runtime Pool conversion (`pgPool`, `coursesPgPool`, `transfersPgPool` consolidation) and Neon pooled-endpoint decision.
+2. Vercel environment variable cutover and preview/staging verification (Phase 6).
+3. Remote CircleCI context creation, schedule cutover, and legacy writer disablement.
 
-**Next database write gate:** Transfers bootstrap into `snhu_tools`, followed immediately by read-only parity validation. Transfers bootstrap is pending explicit human approval.
+**Next migration milestone:** Shared runtime Pool conversion in application code (Phase 5 runtime consolidation).
 
 ## Upcoming
 - **Phase 5: Database & CircleCI Pipeline Consolidation**: Schema migration and local CI configuration are complete; data bootstrap, parity validation, runtime cutover, and remote CI activation remain separately approval-gated.
