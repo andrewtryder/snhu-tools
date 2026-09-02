@@ -53,14 +53,17 @@ Completed:
 - Cross-domain non-mutation verified: Programs, Courses, and Transfers all reside with full referential integrity in `snhu_tools`.
 - Legacy databases (DB-A, DB-B, existing DB-C) remain completely untouched and available for rollback.
 - All three domain data-population gates are **COMPLETE**.
+- Shared runtime Pool consolidation implemented behind `SNHU_TOOLS_DATABASE_MODE` (default: `"legacy"`; unified mode: single shared `globalThis.pgPool` with `max: 1`).
+- Legacy rollback adapters and environment variables (`COURSES_POSTGRES_URL`, `TRANSFERS_POSTGRES_URL`) fully preserved.
 
 Next approval-gated operations:
 
-1. Shared runtime Pool conversion (`pgPool`, `coursesPgPool`, `transfersPgPool` consolidation) and Neon pooled-endpoint decision.
-2. Vercel environment variable cutover and preview/staging verification (Phase 6).
-3. Remote CircleCI context creation, schedule cutover, and legacy writer disablement.
+1. Controlled unified-mode preview / staging verification (Phase 6).
+2. Vercel environment variable cutover (`SNHU_TOOLS_DATABASE_MODE=unified`, `POSTGRES_URL` pointing to `snhu_tools`).
+3. Neon pooled-endpoint decision / infrastructure configuration.
+4. Remote CircleCI context creation, schedule cutover, and legacy writer disablement.
 
-**Next migration milestone:** Shared runtime Pool conversion in application code (Phase 5 runtime consolidation).
+**Next migration milestone:** Controlled unified-mode preview / staging verification (Phase 6).
 
 ## Upcoming
 - **Phase 5: Database & CircleCI Pipeline Consolidation**: Schema migration and local CI configuration are complete; data bootstrap, parity validation, runtime cutover, and remote CI activation remain separately approval-gated.

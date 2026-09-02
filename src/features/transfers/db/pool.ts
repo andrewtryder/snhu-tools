@@ -1,5 +1,7 @@
 import { attachDatabasePool } from "@vercel/functions";
 import { Pool } from "pg";
+import { getPool } from "@/lib/db/pool";
+import { isUnifiedDatabaseRuntime } from "@/lib/db/runtimeMode";
 import { resolvePgConnectionConfig } from "@/lib/db/ssl";
 
 export const TRANSFERS_POOL_OPTIONS = {
@@ -33,6 +35,10 @@ function createTransfersPool(): Pool {
 }
 
 export function getTransfersPool(): Pool {
+  if (isUnifiedDatabaseRuntime()) {
+    return getPool();
+  }
+
   if (!globalForTransfersPg.transfersPgPool) {
     globalForTransfersPg.transfersPgPool = createTransfersPool();
   }

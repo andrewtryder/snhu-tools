@@ -1,5 +1,7 @@
 import { attachDatabasePool } from "@vercel/functions";
 import { Pool } from "pg";
+import { getPool } from "@/lib/db/pool";
+import { isUnifiedDatabaseRuntime } from "@/lib/db/runtimeMode";
 import { resolvePgConnectionConfig } from "@/lib/db/ssl";
 import { augmentQueryClient } from "./sql";
 import type { QueryClient } from "./types";
@@ -35,6 +37,10 @@ function createCoursesPool(): Pool {
 }
 
 export function getCoursesPool(): Pool {
+  if (isUnifiedDatabaseRuntime()) {
+    return getPool();
+  }
+
   if (!globalForCoursesPg.coursesPgPool) {
     globalForCoursesPg.coursesPgPool = createCoursesPool();
   }

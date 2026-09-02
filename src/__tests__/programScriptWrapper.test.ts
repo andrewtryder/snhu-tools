@@ -10,8 +10,18 @@ afterEach(() => { process.env = { ...env }; process.exitCode = undefined; });
 
 describe("Program sync script wrapper", () => {
   it("forwards valid options", async () => {
-    await main([]); await main(["--ignore-lease"]); await main(["--allow-large-shrink"]); await main(["--catalog", "abc"]); await main(["--ignore-lease", "--allow-large-shrink", "--catalog", "abc"]);
-    expect(sync.mock.calls).toEqual([{}, [{ ignoreLease: true }], [{ allowLargeShrink: true }], [{ catalogId: "abc" }], [{ ignoreLease: true, allowLargeShrink: true, catalogId: "abc" }]]);
+    await main([]);
+    await main(["--ignore-lease"]);
+    await main(["--allow-large-shrink"]);
+    await main(["--catalog", "abc"]);
+    await main(["--ignore-lease", "--allow-large-shrink", "--catalog", "abc"]);
+    expect(sync.mock.calls).toEqual([
+      [{}],
+      [{ ignoreLease: true }],
+      [{ allowLargeShrink: true }],
+      [{ catalogId: "abc" }],
+      [{ ignoreLease: true, allowLargeShrink: true, catalogId: "abc" }],
+    ]);
   });
   it("rejects unknown or malformed flags before invoking synchronization", async () => {
     await expect(main(["--unknown"])).rejects.toThrow("Unsupported");

@@ -9,11 +9,6 @@ const globalForTransfersDb = globalThis as typeof globalThis & {
 };
 
 function createDb(): TransfersDatabase {
-  const connectionString = process.env.TRANSFERS_POSTGRES_URL;
-  if (!connectionString) {
-    throw new Error("TRANSFERS_POSTGRES_URL is required to query transfer data");
-  }
-
   return drizzle(getTransfersPool(), { schema });
 }
 
