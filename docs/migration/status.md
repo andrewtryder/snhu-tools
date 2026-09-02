@@ -81,25 +81,31 @@ Completed:
   - Functional routes, APIs, and cross-domain linking passed with 100% success rate across 25 sequential mixed requests.
   - Point-in-time PostgreSQL backend connections to `snhu_tools` remained at 1 (0 active), confirming PgBouncer transaction-level multiplexing without connection bloat.
   - Pooled unified database runtime is verified and production-ready from a database connectivity perspective.
-- Phase 7 Production runtime launched and verified live on canonical `https://snhu-tools.vercel.app` (`dpl_AtKxJSsr7HaUUsEgFmY8gr1i5z5D`):
-  - Production environment configured: `SNHU_TOOLS_DATABASE_MODE=unified`, `POSTGRES_URL` (Neon PgBouncer pooled to `snhu_tools`), `REVALIDATE_SECRET`, `NEXT_PUBLIC_SITE_URL=https://snhu-tools.vercel.app`, and dedicated `snhu-tools` Honeybadger project keys.
+- Phase 7 Production runtime launched and verified live on canonical `https://snhu-tools.vercel.app` (`dpl_Be3sxfaANGB4ABpfLqEtiZ2JqNv9`):
+  - Production environment configured: `SNHU_TOOLS_DATABASE_MODE=unified`, `POSTGRES_URL` (Neon PgBouncer pooled to `snhu_tools`), rotated `REVALIDATE_SECRET`, `NEXT_PUBLIC_SITE_URL=https://snhu-tools.vercel.app`, and dedicated `snhu-tools` Honeybadger project keys.
   - Canonical aliases `snhu-tools.vercel.app` and `snhu-tools-andrewtryder.vercel.app` promoted and serving live traffic.
   - Smoke tests passed across Programs, Courses, Transfers, and APIs with 0 application/database errors in logs.
   - Scoped revalidation endpoint authenticated and tested successfully (`POST /api/revalidate?scope=programs`).
   - Single pooled database connection observed with zero connection accumulation under mixed traffic.
   - Legacy applications (`snhu-degreemap`, `snhu-courses`, `snhu-transfers`) remain active, untouched, and serving traffic on standalone domains.
   - Temporary `noindex` controls retained on Courses and Transfers.
-  - CircleCI remote contexts, schedules, and writers NOT yet cut over (pending next approval gate).
+- Phase 7 CircleCI manual writer validation completed against `snhu_tools`:
+  - `gh/andrewtryder/snhu-tools` followed in CircleCI; three dedicated contexts created (`snhu-tools-program-sync`, `snhu-tools-course-sync`, `snhu-tools-transfer-sync`) with direct Neon database connection and rotated revalidation secret.
+  - Programs manual sync (Pipeline #2): `promoted` 227 programs, `db:migrate` passed, scoped revalidation returned HTTP 200 OK.
+  - Courses manual sync (Pipeline #3): `skipped` (`not_due`), `db:migrate` passed, 2394 courses intact.
+  - Transfers manual sync (Pipeline #4): `skipped` (`not_due`), `db:migrate` passed, 1179 transfer courses intact.
+  - Migration idempotency validated across all three jobs with zero schema/data errors.
+  - Legacy schedules remain enabled on legacy repositories; new automated schedules on `snhu-tools` remain at 0 (pending atomic schedule cutover gate).
 
-**Next migration milestone:** Phase 7 CircleCI Writer Cutover & Legacy Schedule Retirement.
+**Next migration milestone:** Phase 7 Atomic Schedule Cutover & Legacy Schedule Retirement.
 
 ## Upcoming
-- **Phase 7: CircleCI Writer Cutover**: Create new contexts, manually validate writers, activate new Sunday schedules, and retire legacy writer schedules.
+- **Phase 7: Atomic Schedule Cutover**: Create new staggered Sunday schedules on `snhu-tools` and disable legacy schedules on `snhu-courses`, `snhu-transfers`, and `snhu-degreemap`.
 - **Phase 7: Legacy Domain Redirects & SEO**: Deploy HTTP 308 redirects to legacy Vercel projects, remove temporary `noindex`, and publish consolidated sitemap.
 
 ## Known Deferred Decisions & Migration Items
-- **Write/Sync Pipelines**: Migration, bootstrap, and synchronization pipelines have been executed locally against `snhu_tools`. Remote CircleCI automated writer activation on `snhu-tools` remains pending.
-- **Scoped Revalidation Callers**: The local unified CircleCI configuration uses explicit `programs`, `courses`, and `transfers` scopes. Remote active callers remain on the legacy writer topology until writer cutover.
+- **Automated Schedule Cutover**: Scheduled writer triggers on `snhu-tools` remain deferred until atomic schedule cutover.
+- **Scoped Revalidation Callers**: Scoped revalidation verified operational in manual CircleCI pipelines; active automated triggers remain on legacy schedule until cutover.
 - **Unified Sitemap & Indexing Cutover**: Addition of course URLs to `sitemap.ts` and removing temporary `noindex` headers on Courses/Transfers routes remains deferred to post-stabilization SEO cutover.
 - **Legacy Domain Redirects**: 308 redirects from legacy projects to `snhu-tools.vercel.app` remain deferred until legacy redirect deployments.
 - **Legacy Database Decommissioning**: Deferred for 7-day stabilization period.
