@@ -1,5 +1,8 @@
 # Phase 5 CircleCI Cutover
 
+> [!NOTE]
+> **Execution Status**: Superseded for remote execution and scheduling by [Phase 7 Production Cutover Plan](file:///Users/atr/code/snhu-tools/docs/migration/phase7-production-cutover-plan.md).
+
 ## Current State
 
 - Unified configuration exists locally; its three writer workflows are opt-in and default off.
