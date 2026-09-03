@@ -11,11 +11,13 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
+    "lint:actions": "github-actionlint",
+    "lint:commit": "commitlint",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "test:watch": "vitest",
-    "check": "npm run typecheck && npm run lint && npm test && npm run build",
-    "check:quick": "npm run typecheck && npm run lint",
+    "check": "npm run typecheck && npm run lint && npm run lint:actions && npm test && npm run build",
+    "check:quick": "npm run typecheck && npm run lint && npm run lint:actions",
     "prepare": "husky",
     "db:migrate": "tsx scripts/migrate.ts",
     "program:bootstrap": "tsx scripts/program-bootstrap.ts",
@@ -43,6 +45,8 @@
     "server-only": "^0.0.1"
   },
   "devDependencies": {
+    "@commitlint/cli": "^21.2.2",
+    "@commitlint/config-conventional": "^21.2.2",
     "@tailwindcss/postcss": "^4",
     "@testing-library/dom": "^10.4.1",
     "@testing-library/jest-dom": "^7.0.1",
@@ -54,11 +58,17 @@
     "@types/react-dom": "^19",
     "eslint": "^10.9.1",
     "eslint-config-next": "16.3.2",
+    "github-actionlint": "^1.7.12",
     "husky": "^9.1.7",
     "jsdom": "^30.0.1",
     "tailwindcss": "^4",
     "tsx": "^4.23.12",
     "typescript": "^5.9.3",
     "vitest": "^4.1.11"
+  },
+  "overrides": {
+    "github-actionlint": {
+      "adm-zip": "^0.6.0"
+    }
   }
 }

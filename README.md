@@ -95,15 +95,28 @@ npm run check
 This runs:
 1. **TypeScript typecheck** (`tsc --noEmit`)
 2. **ESLint** (`eslint`)
-3. **Vitest test suite** (`vitest run`)
-4. **Next.js production build** (`next build`)
+3. **Actionlint** (`github-actionlint`)
+4. **Vitest test suite** (`vitest run`)
+5. **Next.js production build** (`next build`)
 
 Local Git hooks and CI enforce this pipeline:
+- **commit-msg**: enforces Conventional Commits via `commitlint`
 - **pre-commit**: runs `npm run lint`
 - **pre-push**: runs `npm run check`
-- **GitHub Actions**: runs `npm run check` on pull requests and pushes to `main`
+- **GitHub Actions**: runs `npm run check` on pull requests and pushes to `main`, plus semantic PR title validation
 
 The check requires zero database credentials and must pass before pushing or merging.
+
+## Conventional Commits & Release Process
+
+- **Commit Formatting**: All commits and PR titles must follow the [Conventional Commits](https://www.conventionalcommits.org/) specification:
+  - `feat: ...` (SemVer minor)
+  - `fix: ...` (SemVer patch)
+  - `feat!: ...` or `BREAKING CHANGE:` (SemVer major)
+  - `docs: ...`, `ci: ...`, `chore: ...`, `refactor: ...`, `test: ...`, `perf: ...`, `build: ...`
+- **Merge Strategy**: PRs are squash-merged to place the validated conventional PR title onto `main`.
+- **Release Please**: Automated release workflows track conventional commits on `main`, maintain `CHANGELOG.md`, manage versioning, and generate GitHub Releases and SemVer tags.
+- **Deployment Isolation**: Release creation is purely versioning/changelog automation; Vercel Production deployments remain separate and controlled. No npm packages are published (`private: true`).
 
 ## Contributing
 

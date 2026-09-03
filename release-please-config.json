@@ -1,0 +1,13 @@
+{
+  "$schema": "https://raw.githubusercontent.com/googleapis/release-please/main/schemas/config.json",
+  "bootstrap-sha": "5b982127b065442385ec9b599262bc65598c395c",
+  "packages": {
+    ".": {
+      "release-type": "node",
+      "package-name": "snhu-tools",
+      "include-component-in-tag": false,
+      "include-v-in-tag": true,
+      "changelog-path": "CHANGELOG.md"
+    }
+  }
+}

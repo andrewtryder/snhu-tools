@@ -217,3 +217,12 @@ Completed:
 - **Schedule Integrity**: Timings (Sunday 03:00, 04:00, 05:00 UTC) and parameters (`run_*_sync=true`) completely preserved; 0 writers triggered.
 - **Platform Boundaries**: Vercel Git integration remains disconnected; 0 production deployments triggered. Database and Neon configuration untouched.
 - **Next Steps**: Subsequent release-engineering automation (Conventional Commits, Release Please, branch protection) will target `main`.
+
+## Conventional Commits, Actionlint & Release Automation (Completed)
+- **Conventional Commits Enforcement**: Added `@commitlint/cli` and `@commitlint/config-conventional` with `commitlint.config.mjs` and Husky `.husky/commit-msg` hook.
+- **Actionlint Quality Gate**: Added `github-actionlint` with pinned upstream `rhysd/actionlint v1.7.12`, integrated into `npm run check` and `npm run check:quick`.
+- **Semantic PR Title Validation**: Added `.github/workflows/pr-title.yml` using `amannn/action-semantic-pull-request` with `pull_request_target` (zero PR code checkout).
+- **Release Please Automation**: Added `.github/workflows/release-please.yml`, `release-please-config.json`, and `.release-please-manifest.json` configured for `release-type: node`, baseline version `0.1.0`, bootstrapped from commit `5b982127b065442385ec9b599262bc65598c395c`.
+- **Dependabot GitHub Actions Updates**: Added `github-actions` ecosystem to `.github/dependabot.yml` for automated pinned Action maintenance.
+- **Repository Merge Semantics**: Enforced squash-merge only (`allow_squash_merge = true`, `allow_merge_commit = false`, `allow_rebase_merge = false`) with `squash_merge_commit_title = "PR_TITLE"` and `squash_merge_commit_message = "PR_BODY"`.
+- **Strict Boundary Preservation**: Zero automated Vercel deployments, zero npm publication, zero database/writer mutation.
