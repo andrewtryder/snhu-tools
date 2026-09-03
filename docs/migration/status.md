@@ -201,10 +201,19 @@ Completed:
   - Dependencies and package-lock files remain frozen at their historical rollback baselines without upgrades. Dependabot remains enabled on `snhu-tools`.
 
 ## CI & Git-Hook Quality Gates (Completed)
-- **GitHub Actions Source CI**: Added workflow `.github/workflows/ci.yml` running on `ubuntu-latest` with Node 24 and `npm ci`. Triggers on pull requests, pushes to `integration/snhu-tools` and `main`, and `workflow_dispatch`.
+- **GitHub Actions Source CI**: Added workflow `.github/workflows/ci.yml` running on `ubuntu-latest` with Node 24 and `npm ci`. Triggers on pull requests, pushes to `main`, and `workflow_dispatch`.
 - **Husky Local Validation Hooks**: Added Husky v9 with `.husky/pre-commit` (`npm run lint`) and `.husky/pre-push` (`npm run check`).
 - **Canonical Check Pipeline**: Added `npm run check` (`npm run typecheck && npm run lint && npm test && npm run build`) and `npm run check:quick`, establishing unified parity between local pre-push and GitHub Actions CI.
 - **Strict Boundary Preservation**:
   - No automated deployment or CD added (Vercel remains controlled CLI deployment platform).
   - CircleCI remains the isolated scheduled data-writer authority.
   - Zero database credentials or secrets required for local or CI quality checks.
+
+## Permanent Default Branch Normalization (Completed)
+- **Migration Branch Retired**: Migration-era `integration/snhu-tools` branch retired.
+- **Permanent Default Branch**: `main` (both GitHub remote default and local working branch).
+- **GitHub CI Targeting**: `.github/workflows/ci.yml` targets `main` on push.
+- **CircleCI Writer Schedules**: All 3 active scheduled triggers (`weekly-snhu-tools-course-catalog-sync`, `weekly-snhu-tools-transfer-sync`, `weekly-snhu-tools-program-catalog-sync`) updated to target `main`.
+- **Schedule Integrity**: Timings (Sunday 03:00, 04:00, 05:00 UTC) and parameters (`run_*_sync=true`) completely preserved; 0 writers triggered.
+- **Platform Boundaries**: Vercel Git integration remains disconnected; 0 production deployments triggered. Database and Neon configuration untouched.
+- **Next Steps**: Subsequent release-engineering automation (Conventional Commits, Release Please, branch protection) will target `main`.

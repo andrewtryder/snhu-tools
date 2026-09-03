@@ -101,7 +101,7 @@ This runs:
 Local Git hooks and CI enforce this pipeline:
 - **pre-commit**: runs `npm run lint`
 - **pre-push**: runs `npm run check`
-- **GitHub Actions**: runs `npm run check` on pull requests and pushes to `integration/snhu-tools` and `main`
+- **GitHub Actions**: runs `npm run check` on pull requests and pushes to `main`
 
 The check requires zero database credentials and must pass before pushing or merging.
 
