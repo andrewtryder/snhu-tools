@@ -125,7 +125,10 @@ describe("Phase 7 SEO & Indexing Activation", () => {
       });
       expect(rootMetadata.openGraph?.title).toBe("SNHU Tools");
       expect(rootMetadata.twitter?.title).toBe("SNHU Tools");
-      expect(rootMetadata.verification?.google).toBe("WwHM9rI4JHcup_jIeQIw3OfnUDJzydWo-3RdLQnNHnM");
+      expect(rootMetadata.verification?.google).toEqual([
+        "WwHM9rI4JHcup_jIeQIw3OfnUDJzydWo-3RdLQnNHnM",
+        "google-site-verification=WwHM9rI4JHcup_jIeQIw3OfnUDJzydWo-3RdLQnNHnM",
+      ]);
     });
   });
 
