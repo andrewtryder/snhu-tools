@@ -199,3 +199,12 @@ Completed:
   - `~/code/snhu-courses` (clean at HEAD `5fdf3b44d27496a8cbb1cdf1609190584890844f`)
   - `~/code/snhu-transfers` (clean at HEAD `db1024b6e4a69c963126ed848318bc5817b2c94b`)
   - Dependencies and package-lock files remain frozen at their historical rollback baselines without upgrades. Dependabot remains enabled on `snhu-tools`.
+
+## CI & Git-Hook Quality Gates (Completed)
+- **GitHub Actions Source CI**: Added workflow `.github/workflows/ci.yml` running on `ubuntu-latest` with Node 24 and `npm ci`. Triggers on pull requests, pushes to `integration/snhu-tools` and `main`, and `workflow_dispatch`.
+- **Husky Local Validation Hooks**: Added Husky v9 with `.husky/pre-commit` (`npm run lint`) and `.husky/pre-push` (`npm run check`).
+- **Canonical Check Pipeline**: Added `npm run check` (`npm run typecheck && npm run lint && npm test && npm run build`) and `npm run check:quick`, establishing unified parity between local pre-push and GitHub Actions CI.
+- **Strict Boundary Preservation**:
+  - No automated deployment or CD added (Vercel remains controlled CLI deployment platform).
+  - CircleCI remains the isolated scheduled data-writer authority.
+  - Zero database credentials or secrets required for local or CI quality checks.

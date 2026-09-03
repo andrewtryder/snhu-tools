@@ -75,11 +75,35 @@ _Note: Database-backed program pages require a valid PostgreSQL connection and r
 - `npm run build` - Create a production build
 - `npm run start` - Run the production server
 - `npm run lint` - Run ESLint
+- `npm run typecheck` - Run TypeScript typecheck (`tsc --noEmit`)
 - `npm test` - Run Vitest tests
 - `npm run test:watch` - Run Vitest tests in watch mode
+- `npm run check` - Canonical full validation (`typecheck` + `lint` + `test` + `build`)
+- `npm run check:quick` - Fast local check (`typecheck` + `lint`)
 - `npm run db:migrate` - Run database migrations to create or update catalog tables
 - `npm run program:bootstrap` - Run an initial catalog import directly to live tables
 - `npm run program:sync` - Run the standard catalog synchronization, staging, validation, and promotion process
+
+## Quality Checks
+
+All code changes are validated using the canonical check script:
+
+```bash
+npm run check
+```
+
+This runs:
+1. **TypeScript typecheck** (`tsc --noEmit`)
+2. **ESLint** (`eslint`)
+3. **Vitest test suite** (`vitest run`)
+4. **Next.js production build** (`next build`)
+
+Local Git hooks and CI enforce this pipeline:
+- **pre-commit**: runs `npm run lint`
+- **pre-push**: runs `npm run check`
+- **GitHub Actions**: runs `npm run check` on pull requests and pushes to `integration/snhu-tools` and `main`
+
+The check requires zero database credentials and must pass before pushing or merging.
 
 ## Contributing
 
