@@ -11,5 +11,5 @@ export const kualiConfig: KualiConfig = {
   timeoutMs: Number(process.env.KUALI_REQUEST_TIMEOUT_MS) || 10000,
   userAgent:
     process.env.KUALI_USER_AGENT ||
-    "snhu-degreemap-bot/1.0 (+https://github.com/andrewtryder/snhu-degreemap)",
+    "SNHU-Tools-Sync/1.0 (+https://github.com/andrewtryder/snhu-tools)",
 };

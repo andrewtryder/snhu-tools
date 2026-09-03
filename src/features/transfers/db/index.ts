@@ -1,5 +1,5 @@
 import { drizzle } from "drizzle-orm/node-postgres";
-import { getTransfersPool } from "./pool";
+import { getPool } from "@/lib/db/pool";
 import * as schema from "./schema";
 
 export type TransfersDatabase = ReturnType<typeof drizzle<typeof schema>>;
@@ -9,7 +9,7 @@ const globalForTransfersDb = globalThis as typeof globalThis & {
 };
 
 function createDb(): TransfersDatabase {
-  return drizzle(getTransfersPool(), { schema });
+  return drizzle(getPool(), { schema });
 }
 
 function getDb(): TransfersDatabase {

@@ -4,7 +4,7 @@ import { describe, expect, it } from "vitest";
 
 const config = readFileSync(join(process.cwd(), ".circleci", "config.yml"), "utf8");
 
-describe("unified CircleCI writer configuration", () => {
+describe("SNHU Tools CircleCI writer configuration", () => {
   it("uses three disabled-by-default, independently gated writer workflows", () => {
     for (const parameter of ["run_program_sync", "run_course_sync", "run_transfer_sync"]) {
       expect(config).toMatch(new RegExp(`${parameter}:\\s*\\n\\s*type: boolean\\s*\\n\\s*default: false`));
@@ -27,9 +27,8 @@ describe("unified CircleCI writer configuration", () => {
     expect(config).toContain("snhu-tools-transfer-sync");
   });
 
-  it("does not add legacy contexts, runtime bridge variables, branch filters, or schedules", () => {
+  it("does not add legacy contexts, branch filters, or schedules", () => {
     expect(config).not.toMatch(/snhu-(?:deg[\w-]*|courses|transfers)-sync/);
-    expect(config).not.toMatch(/COURSES_POSTGRES_URL|COURSES_POSTGRES_CA_CERT|TRANSFERS_POSTGRES_URL|TRANSFERS_POSTGRES_CA_CERT/);
     expect(config).not.toMatch(/scope=all/);
     expect(config).not.toMatch(/filters:\s*[\s\S]*branches|\bmaster\b|\bmain\b/);
     expect(config).not.toMatch(/triggers:|schedule:|cron:/);

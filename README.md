@@ -32,24 +32,13 @@ This site is a planning and visualization aid, not an official degree audit or p
 - A displayed graph is not an official recommended course sequence.
 - Students must verify requirements against the official SNHU Academic Catalog and with an academic advisor before making academic or financial decisions.
 
-## Related Projects
-
-- **[SNHU Course Prerequisites Tool](https://github.com/andrewtryder/snhu-courses)** ([Live Site](https://snhu-courses.vercel.app))
-- **[SNHU Transfer Equivalency List](https://github.com/andrewtryder/snhu-transfers)** ([Live Site](https://snhu-transfers.vercel.app))
-
-**How they differ:**
-
-- **Degree Map** visualizes requirements within a specific degree program.
-- **Courses** explores course-level prerequisite relationships independently of a degree.
-- **Transfers** explores unofficial transfer equivalencies from outside providers.
-
 ## Local Development
 
 Install dependencies:
 
 ```bash
-git clone https://github.com/andrewtryder/snhu-degreemap.git
-cd snhu-degreemap
+git clone https://github.com/andrewtryder/snhu-tools.git
+cd snhu-tools
 npm ci
 ```
 
