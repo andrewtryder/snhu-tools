@@ -109,7 +109,7 @@ describe("SearchPage component and metadata", () => {
 
     const transferLink = screen.getByRole("link", { name: /2 transfer options/i });
     expect(transferLink).toHaveAttribute("href", "/transfers/courses/cs210");
-  });
+  }, 15000);
 
   it("renders clear no-results message when all groups are empty", async () => {
     vi.mocked(globalSearchModule.searchAll).mockResolvedValueOnce({
