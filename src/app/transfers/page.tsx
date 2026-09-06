@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import { connection } from "next/server";
 import { Suspense } from "react";
 import { AppHeader } from "@/components/AppHeader";
 import { AppFooter } from "@/components/AppFooter";
@@ -79,8 +78,9 @@ export async function getHomepagePayload() {
   }
 }
 
+export const revalidate = 604800; // 7 days in seconds
+
 export default async function TransfersPage() {
-  await connection();
   const { rows, facets, dataUnavailable } = await getHomepagePayload();
 
   const webSiteJsonLd = {

@@ -22,6 +22,33 @@ function revalidateCourses(paths: string[]) {
   paths.push("/courses", "/courses/[id]");
 }
 
+function revalidateTransfers(paths: string[]) {
+  revalidateTag(TRANSFER_CACHE_TAG, "max");
+  // Flush the route-level Full Route Cache for all cached transfer pages.
+  // revalidateTag alone clears unstable_cache entries but not the ISR page
+  // cache — revalidatePath is required to purge the CDN-cached rendered page.
+  revalidatePath("/transfers");
+  revalidatePath("/transfers/subjects");
+  revalidatePath("/transfers/subjects/[subject]", "page");
+  revalidatePath("/transfers/organizations");
+  revalidatePath("/transfers/organizations/[organization]", "page");
+  revalidatePath("/transfers/levels");
+  revalidatePath("/transfers/levels/[level]", "page");
+  revalidatePath("/transfers/courses");
+  revalidatePath("/transfers/courses/[courseNumber]", "page");
+  paths.push(
+    "/transfers",
+    "/transfers/subjects",
+    "/transfers/subjects/[subject]",
+    "/transfers/organizations",
+    "/transfers/organizations/[organization]",
+    "/transfers/levels",
+    "/transfers/levels/[level]",
+    "/transfers/courses",
+    "/transfers/courses/[courseNumber]",
+  );
+}
+
 export async function POST(request: Request) {
   const secret = process.env["REVALIDATE_SECRET"];
 
@@ -63,7 +90,7 @@ export async function POST(request: Request) {
       tags.push(CATALOG_TAG);
     }
     if (scope === "transfers" || scope === "all") {
-      revalidateTag(TRANSFER_CACHE_TAG, "max");
+      revalidateTransfers(paths);
       tags.push(TRANSFER_CACHE_TAG);
     }
 

@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import {
   ReactFlow,
   Controls,
@@ -62,7 +62,13 @@ export function CourseExplorerClient({
   initialError,
 }: CourseExplorerClientProps) {
   const router = useRouter();
-  const [courseQuery, setCourseQuery] = useState(initialIds ?? "");
+  const searchParams = useSearchParams();
+  // Lazy initializer: read ?ids= from the URL on the very first render so the
+  // search box is pre-populated before any effect runs. This avoids a
+  // synchronous setState inside a useEffect (which triggers cascading renders).
+  const [courseQuery, setCourseQuery] = useState(
+    () => initialIds ?? (typeof window !== "undefined" ? searchParams.get("ids") ?? "" : ""),
+  );
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(initialError ?? null);
   const initialGraph = initialTrees ? layoutCourseGraph(initialTrees) : null;
@@ -73,6 +79,9 @@ export function CourseExplorerClient({
     initialTrees ? (initialIds ?? "") : "",
   );
   const graphSectionRef = useRef<HTMLElement>(null);
+  // Track whether we have already initialized from URL search params so the
+  // effect does not re-trigger on every render.
+  const searchParamsInitializedRef = useRef(false);
 
   const onConnect = useCallback(
     (params: Connection | Edge) => setEdges((eds) => addEdge(params, eds)),
@@ -181,6 +190,29 @@ export function CourseExplorerClient({
     : showGraph
       ? `Course prerequisite graph ready for ${lastSearchedIds.replace(/,/g, ", ")}`
       : "";
+
+  // Initialize from ?ids= query parameter when the page is loaded statically.
+  // This runs once on mount: if the parent did not supply pre-loaded trees (the
+  // normal case after removing server searchParams), we read the URL ourselves
+  // so that shared links like /courses?ids=CS330,CS350 still work correctly.
+  useEffect(() => {
+    if (searchParamsInitializedRef.current) return;
+    searchParamsInitializedRef.current = true;
+
+    // Skip if the parent already provided a pre-initialized state.
+    if (initialIds || initialTrees || initialError) return;
+
+    const idsParam = searchParams.get("ids");
+    if (!idsParam) return;
+
+    const queryIds = idsParam.split(",").map((s) => s.trim()).filter(Boolean);
+    if (queryIds.length > 0) {
+      queueMicrotask(() => {
+        void handleSearch(queryIds);
+      });
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // intentionally empty — run exactly once on mount
 
   useEffect(() => {
     if (!showGraph) return;

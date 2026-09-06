@@ -1,16 +1,16 @@
 import type { Metadata } from "next";
-import { Suspense } from "react";
 import Link from "next/link";
 import { AppHeader } from "@/components/AppHeader";
 import { AppFooter } from "@/components/AppFooter";
-import { CourseExplorerClient } from "@/features/courses/components/CourseExplorerClient";
-import { getAllCourseSummaries, getCourseTrees, type CourseSummary } from "@/features/courses/lib/courses";
-import { parseCourseIdList } from "@/features/courses/lib/courseIds";
-import type { CourseTree } from "@/features/courses/lib/courseGraphLayout";
+import { CourseExplorerShell } from "@/features/courses/components/CourseExplorerShell";
+import { getAllCourseSummaries, type CourseSummary } from "@/features/courses/lib/courses";
 import { getSiteUrl } from "@/lib/siteUrl";
 
 import { serializeJsonLd } from "@/lib/safeJsonLd";
 
+// Indefinite Full Route Cache — invalidated on demand by POST /api/revalidate?scope=courses.
+// Removing the searchParams prop was the prerequisite: accessing searchParams in a Server
+// Component is a dynamic API that opts the entire route out of static rendering.
 export const revalidate = false;
 
 const title = "SNHU Courses & Prerequisite Explorer";
@@ -35,67 +35,6 @@ export const metadata: Metadata = {
     description,
   },
 };
-
-interface CoursesPageProps {
-  searchParams: Promise<{ ids?: string }>;
-}
-
-interface InitialLoadResult {
-  trees?: CourseTree[];
-  error?: string;
-  ids?: string;
-}
-
-async function loadInitialTrees(ids?: string): Promise<InitialLoadResult> {
-  if (!ids) {
-    return {};
-  }
-
-  const parsed = parseCourseIdList(ids);
-
-  if (parsed.errors.length > 0) {
-    return {
-      error: parsed.errors.map((e) => e.message).join(" "),
-      ids,
-    };
-  }
-
-  if (parsed.ids.length <= 1) {
-    return { ids };
-  }
-
-  try {
-    const results = await getCourseTrees(parsed.ids);
-    const trees: CourseTree[] = [];
-    const missing: string[] = [];
-
-    for (const { id, tree } of results) {
-      if (tree) {
-        trees.push(tree);
-      } else {
-        missing.push(id);
-      }
-    }
-
-    if (missing.length > 0) {
-      return {
-        trees: trees.length > 0 ? trees : undefined,
-        error: `Unknown course${missing.length > 1 ? "s" : ""}: ${missing.join(", ")}`,
-        ids: parsed.ids.join(","),
-      };
-    }
-
-    return {
-      trees: trees.length > 0 ? trees : undefined,
-      ids: parsed.ids.join(","),
-    };
-  } catch {
-    return {
-      error: "Could not load course data. Please try again later.",
-      ids: parsed.ids.join(","),
-    };
-  }
-}
 
 /** Subject prefix from a normalized course ID (e.g. IT-140 → IT). */
 function subjectPrefix(courseId: string): string {
@@ -161,11 +100,8 @@ function groupCoursesBySubject(summaries: CourseSummary[]): CourseGroup[] {
     }));
 }
 
-export default async function CoursesPage({ searchParams }: CoursesPageProps) {
-  const { ids } = await searchParams;
-  const [{ trees: initialTrees, error: initialError, ids: normalizedIds }, summaries] =
-    await Promise.all([loadInitialTrees(ids), getAllCourseSummaries()]);
-
+export default async function CoursesPage() {
+  const summaries = await getAllCourseSummaries();
   const groups = groupCoursesBySubject(summaries);
   const siteUrl = getSiteUrl();
 
@@ -195,7 +131,7 @@ export default async function CoursesPage({ searchParams }: CoursesPageProps) {
 
         <header className="mb-10 text-center max-w-2xl mx-auto">
           <h1 className="font-heading text-3xl font-extrabold tracking-tight text-on-surface sm:text-4xl">
-            SNHU Courses & Prerequisites
+            SNHU Courses &amp; Prerequisites
           </h1>
           <p className="mt-3 text-base leading-relaxed text-on-surface-variant">
             Explore interactive prerequisite trees for individual courses or multiple subjects, and browse the full SNHU course catalog directory.
@@ -206,13 +142,15 @@ export default async function CoursesPage({ searchParams }: CoursesPageProps) {
           <h2 id="explorer-heading" className="sr-only">
             Interactive Prerequisite Explorer
           </h2>
-          <Suspense>
-            <CourseExplorerClient
-              initialIds={normalizedIds ?? ids}
-              initialTrees={initialTrees}
-              initialError={initialError}
-            />
-          </Suspense>
+          {/*
+            CourseExplorerShell wraps CourseExplorerClient (which calls useSearchParams)
+            in a Suspense boundary. This is required by Next.js when useSearchParams is
+            used in a client child of a statically rendered server page.
+            The client component reads ?ids= from the URL on mount, preserving
+            the shared-link and browser-history behavior without a server searchParams
+            dependency.
+          */}
+          <CourseExplorerShell />
         </section>
 
         <section aria-labelledby="directory-heading" className="border-t border-surface-variant/70 pt-12">
@@ -263,6 +201,7 @@ export default async function CoursesPage({ searchParams }: CoursesPageProps) {
                       <Link
                         key={course.catalog_course_id}
                         href={`/courses/${course.catalog_course_id}`}
+                        prefetch={false}
                         className="rounded-md border border-surface-variant/40 bg-surface-container-lowest p-2.5 text-xs font-medium text-primary transition-all hover:border-primary/50 hover:bg-surface-container-high hover:shadow-2xs focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-primary"
                       >
                         <span className="font-bold text-primary">{course.catalog_course_id}</span>

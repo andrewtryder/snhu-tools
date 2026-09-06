@@ -1,28 +1,26 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { connection } from "next/server";
 import { AppHeader } from "@/components/AppHeader";
 import { AppFooter } from "@/components/AppFooter";
 import { getCourseDirectoryEntries } from "@/features/transfers/lib/seoQueries";
-import { canonicalPath } from "@/features/transfers/lib/slug";
 import { getSiteUrl } from "@/lib/siteUrl";
 
 const siteUrl = getSiteUrl();
 const title = "SNHU Transfer Courses Directory";
 const description =
-  "Browse the full directory of SNHU course numbers with unofficial transfer equivalency options.";
-const canonical = canonicalPath("/transfers/courses", siteUrl);
+  "Browse accepted transfer courses to SNHU grouped by subject prefix. Discover course codes, number of transfer rules, and canonical course details.";
 
 export const metadata: Metadata = {
   title,
   description,
-  alternates: { canonical },
-  openGraph: { title, description, url: canonical },
+  alternates: { canonical: `${siteUrl}/transfers/courses` },
+  openGraph: { title, description, url: `${siteUrl}/transfers/courses` },
   twitter: { card: "summary", title, description },
 };
 
+export const revalidate = 604800; // 7 days in seconds
+
 export default async function CoursesDirectoryPage() {
-  await connection();
   let entries: Awaited<ReturnType<typeof getCourseDirectoryEntries>> = [];
   let dataUnavailable = false;
   try {
@@ -76,6 +74,7 @@ export default async function CoursesDirectoryPage() {
                   <li key={`${subjectPrefix}-${course.value}`} className="mb-1 break-inside-avoid text-sm">
                     <Link
                       href={`/transfers/courses/${course.slug}`}
+                      prefetch={false}
                       className="text-on-surface-variant transition-colors hover:text-primary hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
                     >
                       {course.value} ({course.count})

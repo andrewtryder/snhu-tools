@@ -9,10 +9,6 @@ vi.mock("next/navigation", () => ({
   useSearchParams: () => new URLSearchParams(),
 }));
 
-vi.mock("next/server", () => ({
-  connection: vi.fn().mockResolvedValue(undefined),
-}));
-
 describe("Transfers Landing Page", () => {
   beforeEach(() => {
     vi.clearAllMocks();

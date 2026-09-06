@@ -18,10 +18,6 @@ vi.mock("next/navigation", () => ({
   notFound: vi.fn(),
 }));
 
-vi.mock("next/server", () => ({
-  connection: vi.fn().mockResolvedValue(undefined),
-}));
-
 describe("Transfers UI Components and Pages", () => {
   beforeEach(() => {
     vi.clearAllMocks();

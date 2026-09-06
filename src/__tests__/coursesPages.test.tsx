@@ -25,6 +25,7 @@ const {
 vi.mock("next/navigation", () => ({
   useRouter: () => ({ push: vi.fn() }),
   usePathname: () => "/courses",
+  useSearchParams: () => new URLSearchParams(),
   notFound: notFoundMock,
 }));
 
@@ -65,7 +66,7 @@ describe("Courses Pages", () => {
         { catalog_course_id: "IT140", title: "Introduction to Scripting" },
       ]);
 
-      const page = await CoursesPage({ searchParams: Promise.resolve({}) });
+      const page = await CoursesPage();
       render(page);
 
       expect(
@@ -73,8 +74,11 @@ describe("Courses Pages", () => {
       ).toBeInTheDocument();
       expect(screen.getByRole("heading", { name: "Course Catalog Directory", level: 2 })).toBeInTheDocument();
 
-      expect(screen.getByRole("heading", { name: /CS/i, level: 3 })).toBeInTheDocument();
-      expect(screen.getByRole("heading", { name: /IT/i, level: 3 })).toBeInTheDocument();
+      // Grouped subject headings
+      const csHeading = screen.getAllByRole("heading", { level: 3 }).find(h => h.textContent?.includes("CS"));
+      expect(csHeading).toBeInTheDocument();
+      const itHeading = screen.getAllByRole("heading", { level: 3 }).find(h => h.textContent?.includes("IT"));
+      expect(itHeading).toBeInTheDocument();
 
       const cs110Link = screen.getByRole("link", { name: /CS110/i });
       expect(cs110Link).toHaveAttribute("href", "/courses/CS110");
