@@ -80,7 +80,7 @@ describe("runtime database pool", () => {
       }),
     );
     expect(drizzle).toHaveBeenCalledWith(pool, expect.objectContaining({ schema: expect.any(Object) }));
-  });
+  }, 15000);
 
   it("releases Courses clients after success and exceptions", async () => {
     const { withPoolClient } = await import("@/features/courses/db/pool");

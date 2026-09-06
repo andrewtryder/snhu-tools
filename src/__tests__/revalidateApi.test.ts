@@ -108,26 +108,41 @@ describe("POST /api/revalidate Endpoint", () => {
     expect(revalidatePath).toHaveBeenCalledWith("/courses/[id]", "page");
   });
 
-  it("revalidates only transfer data for transfers scope", async () => {
+  it("revalidates transfer data and all transfer route paths for transfers scope", async () => {
     process.env.REVALIDATE_SECRET = "correct-secret-123";
     const response = await POST(new Request("http://localhost/api/revalidate?scope=transfers", {
       method: "POST", headers: { Authorization: "Bearer correct-secret-123" },
     }));
 
     expect(response.status).toBe(200);
+    const json = await response.json();
+    expect(json.scope).toBe("transfers");
+    expect(json.tags).toEqual(["transfer-data"]);
     expect(revalidateTag).toHaveBeenCalledWith("transfer-data", "max");
-    expect(revalidatePath).not.toHaveBeenCalled();
+    // revalidateTransfers must flush all 9 transfer route patterns
+    expect(revalidatePath).toHaveBeenCalledWith("/transfers");
+    expect(revalidatePath).toHaveBeenCalledWith("/transfers/subjects");
+    expect(revalidatePath).toHaveBeenCalledWith("/transfers/subjects/[subject]", "page");
+    expect(revalidatePath).toHaveBeenCalledWith("/transfers/organizations");
+    expect(revalidatePath).toHaveBeenCalledWith("/transfers/organizations/[organization]", "page");
+    expect(revalidatePath).toHaveBeenCalledWith("/transfers/levels");
+    expect(revalidatePath).toHaveBeenCalledWith("/transfers/levels/[level]", "page");
+    expect(revalidatePath).toHaveBeenCalledWith("/transfers/courses");
+    expect(revalidatePath).toHaveBeenCalledWith("/transfers/courses/[courseNumber]", "page");
+    expect(json.paths).toHaveLength(9);
   });
 
-  it("revalidates all tags and Courses paths once for all scope", async () => {
+  it("revalidates all tags and paths once for all scope", async () => {
     process.env.REVALIDATE_SECRET = "correct-secret-123";
     const response = await POST(new Request("http://localhost/api/revalidate?scope=all", {
       method: "POST", headers: { Authorization: "Bearer correct-secret-123" },
     }));
 
     expect(response.status).toBe(200);
+    // 3 tags: program-data, catalog-data, transfer-data
     expect(revalidateTag).toHaveBeenCalledTimes(3);
-    expect(revalidatePath).toHaveBeenCalledTimes(2);
+    // 2 courses paths + 9 transfer paths = 11 total revalidatePath calls
+    expect(revalidatePath).toHaveBeenCalledTimes(11);
   });
 
   it("rejects unknown scopes before invalidating caches", async () => {

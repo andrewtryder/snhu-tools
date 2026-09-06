@@ -18,6 +18,10 @@ const siteUrl = getSiteUrl();
 
 type Params = { subject: string };
 
+export const dynamicParams = true;
+export const revalidate = false;
+export async function generateStaticParams() { return []; }
+
 export async function generateMetadata({ params }: { params: Promise<Params> }): Promise<Metadata> {
   const { subject } = await params;
   const subjectValue = await resolveSubjectBySlug(subject);
@@ -112,6 +116,7 @@ export default async function SubjectPage({ params }: { params: Promise<Params> 
                 <li key={org}>
                   <Link
                     href={`/transfers/organizations/${slugify(org)}`}
+                    prefetch={false}
                     className="hover:text-primary hover:underline"
                   >
                     {org}
@@ -127,6 +132,7 @@ export default async function SubjectPage({ params }: { params: Promise<Params> 
                 <li key={level}>
                   <Link
                     href={`/transfers/levels/${slugify(level)}`}
+                    prefetch={false}
                     className="hover:text-primary hover:underline"
                   >
                     {level}
@@ -142,6 +148,7 @@ export default async function SubjectPage({ params }: { params: Promise<Params> 
                 <li key={course}>
                   <Link
                     href={transferCoursePath(course)}
+                    prefetch={false}
                     className="hover:text-primary hover:underline"
                   >
                     {course}

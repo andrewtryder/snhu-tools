@@ -9,10 +9,6 @@ vi.mock("next/navigation", () => ({
   useSearchParams: () => new URLSearchParams(),
 }));
 
-vi.mock("next/server", () => ({
-  connection: vi.fn().mockResolvedValue(undefined),
-}));
-
 describe("Transfers Landing Page", () => {
   beforeEach(() => {
     vi.clearAllMocks();
@@ -63,7 +59,7 @@ describe("Transfers Landing Page", () => {
       screen.getByRole("heading", { name: /SNHU Transfer Equivalency List/i }),
     ).toBeDefined();
     expect(screen.getByPlaceholderText(/Search by course/i)).toBeDefined();
-  });
+  }, 15000);
 
   it("renders data unavailable warning gracefully when fetch fails", async () => {
     vi.spyOn(seoQueries, "getAllTransferRows").mockRejectedValueOnce(

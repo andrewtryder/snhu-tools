@@ -14,6 +14,10 @@ const siteUrl = getSiteUrl();
 
 type Params = { courseNumber: string };
 
+export const dynamicParams = true;
+export const revalidate = false;
+export async function generateStaticParams() { return []; }
+
 export async function generateMetadata({ params }: { params: Promise<Params> }): Promise<Metadata> {
   const { courseNumber } = await params;
   const normalizedCourse = normalizeCourseNumber(courseNumber);
@@ -114,6 +118,7 @@ export default async function CourseTransferPage({ params }: { params: Promise<P
                 <li key={subject}>
                   <Link
                     href={`/transfers/subjects/${slugify(subject)}`}
+                    prefetch={false}
                     className="hover:text-primary hover:underline"
                   >
                     {subject}
@@ -129,6 +134,7 @@ export default async function CourseTransferPage({ params }: { params: Promise<P
                 <li key={org}>
                   <Link
                     href={`/transfers/organizations/${slugify(org)}`}
+                    prefetch={false}
                     className="hover:text-primary hover:underline"
                   >
                     {org}
@@ -144,6 +150,7 @@ export default async function CourseTransferPage({ params }: { params: Promise<P
                 <li key={level}>
                   <Link
                     href={`/transfers/levels/${slugify(level)}`}
+                    prefetch={false}
                     className="hover:text-primary hover:underline"
                   >
                     {level}

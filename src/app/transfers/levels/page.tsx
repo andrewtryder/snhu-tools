@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { connection } from "next/server";
 import { AppHeader } from "@/components/AppHeader";
 import { AppFooter } from "@/components/AppFooter";
 import { getLevelDirectoryEntries } from "@/features/transfers/lib/seoQueries";
@@ -21,8 +20,9 @@ export const metadata: Metadata = {
   twitter: { card: "summary", title, description },
 };
 
+export const revalidate = 604800; // 7 days in seconds
+
 export default async function LevelsDirectoryPage() {
-  await connection();
   let entries: Awaited<ReturnType<typeof getLevelDirectoryEntries>> = [];
   let dataUnavailable = false;
   try {
@@ -61,6 +61,7 @@ export default async function LevelsDirectoryPage() {
                 <li key={entry.slug} className="mb-1 break-inside-avoid text-sm">
                   <Link
                     href={`/transfers/levels/${entry.slug}`}
+                    prefetch={false}
                     className="text-on-surface-variant transition-colors hover:text-primary hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
                   >
                     {entry.value} ({entry.count})
