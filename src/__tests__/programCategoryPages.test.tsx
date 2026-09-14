@@ -99,7 +99,8 @@ describe("program category landing pages", () => {
 
     const proxySource = readFileSync(join(process.cwd(), "src/proxy.ts"), "utf8");
     expect(proxySource).toContain("resolveProgramsRedirect");
-    expect(proxySource).toContain("resolveCanonicalHostRedirect");
+    expect(proxySource).not.toContain("resolveCanonicalHostRedirect");
+    expect(proxySource).toContain('matcher: ["/programs"]');
     expect(proxySource).toContain("308");
   });
 });
