@@ -1,10 +1,15 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { revalidatePath, revalidateTag } from "next/cache";
+import { submitIndexNow } from "@/lib/indexNow";
 import { dynamic, POST } from "@/app/api/revalidate/route";
 
 vi.mock("next/cache", () => ({
   revalidateTag: vi.fn(),
   revalidatePath: vi.fn(),
+}));
+
+vi.mock("@/lib/indexNow", () => ({
+  submitIndexNow: vi.fn(),
 }));
 
 describe("POST /api/revalidate Endpoint", () => {
@@ -15,6 +20,14 @@ describe("POST /api/revalidate Endpoint", () => {
     process.env = { ...originalEnv };
     vi.mocked(revalidateTag).mockReset();
     vi.mocked(revalidatePath).mockReset();
+    vi.mocked(submitIndexNow)
+      .mockReset()
+      .mockImplementation(async (scope) => ({
+        submitted: true,
+        scope,
+        urlCount: 1,
+        status: 200,
+      }));
   });
 
   it("runs dynamically so the deployed secret is read at request time", () => {
@@ -69,6 +82,7 @@ describe("POST /api/revalidate Endpoint", () => {
     expect(revalidateTag).toHaveBeenCalledWith("program-data", "max");
     expect(revalidateTag).not.toHaveBeenCalledWith("catalog-data", "max");
     expect(revalidateTag).not.toHaveBeenCalledWith("transfer-data", "max");
+    expect(submitIndexNow).toHaveBeenCalledWith("programs");
   });
 
   it("revalidates only program data for the explicit programs scope", async () => {
@@ -130,6 +144,27 @@ describe("POST /api/revalidate Endpoint", () => {
     expect(revalidatePath).toHaveBeenCalledWith("/transfers/courses");
     expect(revalidatePath).toHaveBeenCalledWith("/transfers/courses/[courseNumber]", "page");
     expect(json.paths).toHaveLength(9);
+    expect(submitIndexNow).toHaveBeenCalledWith("transfers");
+  });
+
+  it("keeps successful revalidation non-fatal when IndexNow submission fails", async () => {
+    process.env.REVALIDATE_SECRET = "correct-secret-123";
+    vi.mocked(submitIndexNow).mockRejectedValueOnce(new Error("IndexNow unavailable"));
+
+    const response = await POST(new Request("http://localhost/api/revalidate?scope=courses", {
+      method: "POST", headers: { Authorization: "Bearer correct-secret-123" },
+    }));
+
+    expect(response.status).toBe(200);
+    expect(await response.json()).toMatchObject({
+      revalidated: true,
+      scope: "courses",
+      indexNow: {
+        submitted: false,
+        scope: "courses",
+        error: "submission_failed",
+      },
+    });
   });
 
   it("revalidates all tags and paths once for all scope", async () => {

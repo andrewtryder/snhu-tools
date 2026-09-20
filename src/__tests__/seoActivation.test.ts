@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { metadata as rootMetadata } from "@/app/layout";
+import { metadata as homeMetadata } from "@/app/page";
 import { siteConfig } from "@/lib/site";
 import { metadata as coursesMetadata } from "@/app/courses/page";
 import { generateMetadata as generateCourseMetadata } from "@/app/courses/[id]/page";
@@ -125,10 +126,19 @@ describe("Phase 7 SEO & Indexing Activation", () => {
       });
       expect(rootMetadata.openGraph?.title).toBe("SNHU Tools");
       expect(rootMetadata.twitter?.title).toBe("SNHU Tools");
-      expect(rootMetadata.verification?.google).toEqual([
+      expect(rootMetadata.verification?.google).toBe(
         "WwHM9rI4JHcup_jIeQIw3OfnUDJzydWo-3RdLQnNHnM",
-        "google-site-verification=WwHM9rI4JHcup_jIeQIw3OfnUDJzydWo-3RdLQnNHnM",
-      ]);
+      );
+    });
+
+    it("uses descriptive metadata for the homepage search result", () => {
+      expect(homeMetadata.title).toBe(
+        "SNHU Degree Maps, Course Prerequisites & Transfer Equivalencies",
+      );
+      expect(homeMetadata.alternates?.canonical).toBe("/");
+      expect(homeMetadata.openGraph?.title).toBe(
+        "SNHU Degree Maps, Course Prerequisites & Transfer Equivalencies",
+      );
     });
   });
 

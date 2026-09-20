@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { revalidatePath, revalidateTag } from "next/cache";
 import { TRANSFER_CACHE_TAG } from "@/features/transfers/lib/constants";
+import { submitIndexNow } from "@/lib/indexNow";
 
 // This endpoint must read its secret at request time. Inlining it during a
 // build can leave a newly deployed function comparing against a stale value.
@@ -94,11 +95,31 @@ export async function POST(request: Request) {
       tags.push(TRANSFER_CACHE_TAG);
     }
 
+    let indexNow:
+      | Awaited<ReturnType<typeof submitIndexNow>>
+      | { submitted: false; scope: RevalidationScope; urlCount: 0; error: "submission_failed" };
+
+    try {
+      indexNow = await submitIndexNow(scope);
+    } catch (error: unknown) {
+      console.error("[indexnow] Submission failed after successful revalidation", {
+        scope,
+        errorName: error instanceof Error ? error.name : "unknown",
+      });
+      indexNow = {
+        submitted: false,
+        scope,
+        urlCount: 0,
+        error: "submission_failed",
+      };
+    }
+
     return NextResponse.json({
       revalidated: true,
       scope,
       tags,
       paths,
+      indexNow,
       timestamp: new Date().toISOString(),
     });
   } catch (error: unknown) {
