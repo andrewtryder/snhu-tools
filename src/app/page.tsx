@@ -1,4 +1,5 @@
 import React from "react";
+import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import { AppHeader } from "@/components/AppHeader";
@@ -7,6 +8,7 @@ import { Card } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
 import { getCatalogLastUpdated, getPrograms } from "@/lib/serverData";
 import { resolvePopularBachelorPrograms } from "@/lib/popularBachelorPrograms";
+import { siteConfig } from "@/lib/site";
 import {
   ArrowLeftRightIcon,
   ArrowRightIcon,
@@ -15,6 +17,25 @@ import {
 } from "lucide-react";
 
 export const revalidate = false;
+
+const homeTitle = "SNHU Degree Maps, Course Prerequisites & Transfer Equivalencies";
+
+export const metadata: Metadata = {
+  title: homeTitle,
+  description: siteConfig.description,
+  alternates: { canonical: "/" },
+  openGraph: {
+    title: homeTitle,
+    description: siteConfig.description,
+    url: "/",
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: homeTitle,
+    description: siteConfig.description,
+  },
+};
 
 const PREVIEW_IMAGE = {
   src: "/home/computer-science-degree-map-preview.webp",
