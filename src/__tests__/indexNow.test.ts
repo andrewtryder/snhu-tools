@@ -72,7 +72,10 @@ describe("IndexNow integration", () => {
   });
 
   it("submits a scoped canonical URL batch to the global IndexNow endpoint", async () => {
-    const fetchMock = vi.fn(() => Promise.resolve(new Response(null, { status: 200 })));
+    const fetchMock = vi.fn(
+      async (_input: string | URL | Request, _init?: RequestInit) =>
+        new Response(null, { status: 200 }),
+    );
     vi.stubGlobal("fetch", fetchMock);
 
     const result = await submitIndexNow("courses");
@@ -84,7 +87,7 @@ describe("IndexNow integration", () => {
     });
 
     expect(fetchMock).toHaveBeenCalledTimes(1);
-    const [endpoint, init] = fetchMock.mock.calls[0] as [string, RequestInit];
+    const [endpoint, init] = fetchMock.mock.calls[0];
     expect(endpoint).toBe(INDEXNOW_ENDPOINT);
 
     const payload = JSON.parse(String(init.body)) as {
