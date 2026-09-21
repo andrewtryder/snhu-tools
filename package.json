@@ -35,7 +35,7 @@
     "@vercel/speed-insights": "^2.0.0",
     "@xyflow/react": "^12.11.6",
     "cheerio": "^1.2.0",
-    "dotenv": "^17.4.2",
+    "dotenv": "^18.0.0",
     "drizzle-orm": "^0.45.2",
     "html-to-image": "1.11.13",
     "lucide-react": "^1.45.0",
