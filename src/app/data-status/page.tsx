@@ -9,7 +9,9 @@ import { getPrograms, getCatalogYears, getProgramSyncState } from "@/lib/serverD
 import { kualiConfig } from "@/config/kualiConfig";
 import { CheckCircle2Icon, DatabaseIcon, AlertTriangleIcon, ActivityIcon, RefreshCwIcon, XCircleIcon } from "lucide-react";
 
-export const revalidate = 300;
+// Sync state changes only when the scheduled Programs writer runs. Keep this
+// page static between promotions and refresh it through the revalidation webhook.
+export const revalidate = false;
 
 export const metadata = {
   title: "Data Status & Catalog Sync Health | SNHU Degree Map",
