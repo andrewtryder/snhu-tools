@@ -120,10 +120,10 @@ describe("GET /api/v1/transfer-coverage route handler", () => {
 
     expect(response.status).toBe(200);
     expect(response.headers.get("Cache-Control")).toBe(
-      "public, s-maxage=300, stale-while-revalidate=3600",
+      "public, s-maxage=3600, stale-while-revalidate=3600",
     );
     expect(response.headers.get("CDN-Cache-Control")).toBe(
-      "public, s-maxage=300, stale-while-revalidate=3600",
+      "public, s-maxage=3600, stale-while-revalidate=3600",
     );
     expect(response.headers.get("Last-Modified")).toBe("Mon, 31 Aug 2026 12:00:00 GMT");
 
