@@ -82,6 +82,14 @@ describe("Courses API Routes", () => {
       expect(data).toEqual([]);
     });
 
+    it("does not query the database for one-character autocomplete", async () => {
+      const request = new Request("https://localhost/api/courses/search?q=C");
+      const response = await searchCourses(request);
+      expect(response.status).toBe(200);
+      expect(await response.json()).toEqual([]);
+      expect(withPoolClientMock).not.toHaveBeenCalled();
+    });
+
     it("returns matching suggestions with query limit", async () => {
       const client = {
         sql: vi.fn().mockResolvedValueOnce({
@@ -96,6 +104,9 @@ describe("Courses API Routes", () => {
       const request = new Request("https://localhost/api/courses/search?q=CS&limit=5");
       const response = await searchCourses(request);
       expect(response.status).toBe(200);
+      expect(response.headers.get("Cache-Control")).toBe(
+        "public, s-maxage=900, stale-while-revalidate=3600",
+      );
       const data = await response.json();
       expect(data).toHaveLength(2);
     });
