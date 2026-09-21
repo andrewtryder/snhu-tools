@@ -12,9 +12,9 @@ import { parseCoursesQuery } from "@/features/transfers/lib/courseCode";
 import { getTransferCoverageResponse } from "@/features/transfers/lib/transferCoverage";
 
 /** Shared by browsers/proxies; Vercel may strip s-maxage from the client-visible value. */
-const CACHE_CONTROL = "public, s-maxage=300, stale-while-revalidate=3600";
+const CACHE_CONTROL = "public, s-maxage=3600, stale-while-revalidate=3600";
 /** Explicit CDN directive so Vercel edge caching remains bounded after sync. */
-const CDN_CACHE_CONTROL = "public, s-maxage=300, stale-while-revalidate=3600";
+const CDN_CACHE_CONTROL = "public, s-maxage=3600, stale-while-revalidate=3600";
 
 type ErrorBody = {
   error: {

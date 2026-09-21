@@ -62,8 +62,9 @@ describe("GET /api/global-search API Route", () => {
     const req = new Request("http://localhost/api/global-search?q=cs210&limit=5");
     const res = await globalSearchGET(req);
     expect(res.status).toBe(200);
-    expect(res.headers.get("Cache-Control")).toContain("public");
-    expect(res.headers.get("Cache-Control")).toContain("s-maxage=");
+    expect(res.headers.get("Cache-Control")).toBe(
+      "public, s-maxage=900, stale-while-revalidate=3600",
+    );
 
     const json = await res.json();
     expect(json.counts.courses).toBe(1);

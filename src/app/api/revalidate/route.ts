@@ -16,6 +16,12 @@ function isRevalidationScope(value: string): value is RevalidationScope {
   return REVALIDATION_SCOPES.includes(value as RevalidationScope);
 }
 
+function revalidatePrograms(paths: string[]) {
+  revalidateTag(PROGRAMS_TAG, "max");
+  revalidatePath("/data-status");
+  paths.push("/data-status");
+}
+
 function revalidateCourses(paths: string[]) {
   revalidateTag(CATALOG_TAG, "max");
   revalidatePath("/courses");
@@ -37,6 +43,7 @@ function revalidateTransfers(paths: string[]) {
   revalidatePath("/transfers/levels/[level]", "page");
   revalidatePath("/transfers/courses");
   revalidatePath("/transfers/courses/[courseNumber]", "page");
+  revalidatePath("/api/v1/transfer-coverage");
   paths.push(
     "/transfers",
     "/transfers/subjects",
@@ -47,6 +54,7 @@ function revalidateTransfers(paths: string[]) {
     "/transfers/levels/[level]",
     "/transfers/courses",
     "/transfers/courses/[courseNumber]",
+    "/api/v1/transfer-coverage",
   );
 }
 
@@ -83,7 +91,7 @@ export async function POST(request: Request) {
     const paths: string[] = [];
 
     if (scope === "programs" || scope === "all") {
-      revalidateTag(PROGRAMS_TAG, "max");
+      revalidatePrograms(paths);
       tags.push(PROGRAMS_TAG);
     }
     if (scope === "courses" || scope === "all") {

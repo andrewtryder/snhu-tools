@@ -15,6 +15,9 @@ describe("GET /api/search API Endpoint", () => {
     const req = new Request("http://localhost/api/search?q=Computer");
     const res = await GET(req);
     expect(res.status).toBe(200);
+    expect(res.headers.get("Cache-Control")).toBe(
+      "public, s-maxage=900, stale-while-revalidate=3600",
+    );
 
     const json = await res.json();
     expect(json.results.length).toBeGreaterThan(0);

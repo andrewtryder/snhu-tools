@@ -94,7 +94,9 @@ describe("POST /api/revalidate Endpoint", () => {
     expect(response.status).toBe(200);
     expect(revalidateTag).toHaveBeenCalledTimes(1);
     expect(revalidateTag).toHaveBeenCalledWith("program-data", "max");
-    expect(revalidatePath).not.toHaveBeenCalled();
+    expect(revalidatePath).toHaveBeenCalledTimes(1);
+    expect(revalidatePath).toHaveBeenCalledWith("/data-status");
+    expect(await response.json()).toMatchObject({ paths: ["/data-status"] });
   });
 
   it("accepts the dedicated revalidation header", async () => {
@@ -133,7 +135,7 @@ describe("POST /api/revalidate Endpoint", () => {
     expect(json.scope).toBe("transfers");
     expect(json.tags).toEqual(["transfer-data"]);
     expect(revalidateTag).toHaveBeenCalledWith("transfer-data", "max");
-    // revalidateTransfers must flush all 9 transfer route patterns
+    // revalidateTransfers must flush all transfer route patterns plus the public coverage API
     expect(revalidatePath).toHaveBeenCalledWith("/transfers");
     expect(revalidatePath).toHaveBeenCalledWith("/transfers/subjects");
     expect(revalidatePath).toHaveBeenCalledWith("/transfers/subjects/[subject]", "page");
@@ -143,7 +145,8 @@ describe("POST /api/revalidate Endpoint", () => {
     expect(revalidatePath).toHaveBeenCalledWith("/transfers/levels/[level]", "page");
     expect(revalidatePath).toHaveBeenCalledWith("/transfers/courses");
     expect(revalidatePath).toHaveBeenCalledWith("/transfers/courses/[courseNumber]", "page");
-    expect(json.paths).toHaveLength(9);
+    expect(revalidatePath).toHaveBeenCalledWith("/api/v1/transfer-coverage");
+    expect(json.paths).toHaveLength(10);
     expect(submitIndexNow).toHaveBeenCalledWith("transfers");
   });
 
@@ -176,8 +179,8 @@ describe("POST /api/revalidate Endpoint", () => {
     expect(response.status).toBe(200);
     // 3 tags: program-data, catalog-data, transfer-data
     expect(revalidateTag).toHaveBeenCalledTimes(3);
-    // 2 courses paths + 9 transfer paths = 11 total revalidatePath calls
-    expect(revalidatePath).toHaveBeenCalledTimes(11);
+    // 1 programs path + 2 courses paths + 10 transfer paths = 13 total revalidatePath calls
+    expect(revalidatePath).toHaveBeenCalledTimes(13);
   });
 
   it("rejects unknown scopes before invalidating caches", async () => {

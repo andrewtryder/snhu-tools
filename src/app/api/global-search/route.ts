@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { searchAll } from "@/lib/search/globalSearch";
+import { SEARCH_CACHE_CONTROL } from "@/lib/search/cache";
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
@@ -28,7 +29,7 @@ export async function GET(request: Request) {
     const data = await searchAll(q, { limit });
     return NextResponse.json(data, {
       headers: {
-        "Cache-Control": "public, s-maxage=120, stale-while-revalidate=300",
+        "Cache-Control": SEARCH_CACHE_CONTROL,
       },
     });
   } catch (err) {

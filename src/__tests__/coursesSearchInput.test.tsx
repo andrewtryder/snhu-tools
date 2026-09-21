@@ -8,6 +8,7 @@ describe("CourseSearchInput component", () => {
   });
 
   afterEach(() => {
+    vi.useRealTimers();
     vi.restoreAllMocks();
   });
 
@@ -109,6 +110,25 @@ describe("CourseSearchInput component", () => {
   });
 
   describe("Autocomplete API Requests", () => {
+    it("does not fetch autocomplete for a one-character token", async () => {
+      vi.useFakeTimers();
+      const fetchSpy = vi.spyOn(globalThis, "fetch");
+
+      render(
+        <CourseSearchInput
+          value="C"
+          onChange={vi.fn()}
+          onSubmit={vi.fn()}
+          variant="inline"
+        />,
+      );
+
+      fireEvent.focus(screen.getByRole("combobox"));
+      await vi.advanceTimersByTimeAsync(300);
+      expect(fetchSpy).not.toHaveBeenCalled();
+      vi.useRealTimers();
+    });
+
     it("debounces autocomplete fetch and displays accessible error on failure", async () => {
       const fetchSpy = vi.spyOn(globalThis, "fetch").mockResolvedValueOnce({
         ok: false,
