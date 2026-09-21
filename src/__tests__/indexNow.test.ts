@@ -67,15 +67,12 @@ describe("IndexNow integration", () => {
     expect(urls).toContain("https://snhu-tools.vercel.app/programs/bachelors");
     expect(urls).toContain("https://snhu-tools.vercel.app/programs/computer-science-bs");
     expect(urls).toContain("https://snhu-tools.vercel.app/programs/computer-science-bs/requirements");
-    expect(urls.every((url) => url.startsWith("https://snhu-tools.vercel.app"))).toBe(true);
+    expect(urls.every((url) => new URL(url).origin === "https://snhu-tools.vercel.app")).toBe(true);
     expect(urls.some((url) => url.includes("/search"))).toBe(false);
   });
 
   it("submits a scoped canonical URL batch to the global IndexNow endpoint", async () => {
-    const fetchMock = vi.fn(
-      async (_input: string | URL | Request, _init?: RequestInit) =>
-        new Response(null, { status: 200 }),
-    );
+    const fetchMock = vi.fn(async () => new Response(null, { status: 200 }));
     vi.stubGlobal("fetch", fetchMock);
 
     const result = await submitIndexNow("courses");
