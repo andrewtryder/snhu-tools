@@ -8,6 +8,7 @@ describe("CourseSearchInput component", () => {
   });
 
   afterEach(() => {
+    vi.useRealTimers();
     vi.restoreAllMocks();
   });
 
