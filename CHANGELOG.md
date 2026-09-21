@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.3.1](https://github.com/andrewtryder/snhu-tools/compare/v0.3.0...v0.3.1) (2026-09-21)
+
+
+### Bug Fixes
+
+* **security:** sanitize URL check in indexNow test to resolve CodeQL alert ([4a9bf68](https://github.com/andrewtryder/snhu-tools/commit/4a9bf68abead9b2ec85267aee6af42ba82c0e650))
+
+
+### Performance Improvements
+
+* reduce Neon compute wakeups ([#20](https://github.com/andrewtryder/snhu-tools/issues/20)) ([1b304ad](https://github.com/andrewtryder/snhu-tools/commit/1b304ad62e7583e033597678d634cc3beecb310e))
+
 ## [0.3.0](https://github.com/andrewtryder/snhu-tools/compare/v0.2.0...v0.3.0) (2026-09-14)
 
 
