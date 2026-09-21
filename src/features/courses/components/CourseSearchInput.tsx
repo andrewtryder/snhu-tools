@@ -71,9 +71,10 @@ export function CourseSearchInput({
     const controller = new AbortController();
 
     const timeout = setTimeout(async () => {
-      if (!isFocused || activeToken.length < 1) {
+      if (!isFocused || activeToken.length < 2) {
         setIsOpen(false);
         setIsSearching(false);
+        setSuggestions([]);
         return;
       }
 
