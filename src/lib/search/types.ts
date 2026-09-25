@@ -42,6 +42,8 @@ export interface GlobalSearchResponse {
   results: GlobalSearchGroupedResults;
   counts: GlobalSearchCounts;
   unavailable?: SearchDomain[];
+  /** True when results are empty because data sources were unavailable (not a real miss). */
+  degraded?: boolean;
 }
 
 export interface SearchOptions {

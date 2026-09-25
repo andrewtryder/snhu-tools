@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { searchCourses } from "@/features/courses/lib/searchCourses";
-import { SEARCH_CACHE_CONTROL } from "@/lib/search/cache";
+import { SEARCH_CACHE_CONTROL, SEARCH_DEGRADED_CACHE_CONTROL } from "@/lib/search/cache";
+import { isDbAvailabilityError } from "@/lib/snapshots/availability";
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
@@ -19,6 +20,15 @@ export async function GET(request: Request) {
     });
   } catch (e) {
     console.error("Error searching courses", e);
-    return NextResponse.json({ error: "Failed to search courses." }, { status: 500 });
+    const degraded = isDbAvailabilityError(e);
+    return NextResponse.json(
+      { error: "Failed to search courses." },
+      {
+        status: 500,
+        headers: {
+          "Cache-Control": degraded ? SEARCH_DEGRADED_CACHE_CONTROL : "no-store",
+        },
+      },
+    );
   }
 }

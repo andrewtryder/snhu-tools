@@ -2,6 +2,10 @@
 
 import { useEffect } from 'react'
 import { Honeybadger } from '@honeybadger-io/react'
+import {
+  isHoneybadgerBrowserEnabled,
+  isHoneybadgerTransportNoise,
+} from '@/lib/honeybadgerShared.js'
 
 /**
  * error.[js|tsx]: https://nextjs.org/docs/app/building-your-application/routing/error-handling
@@ -12,6 +16,9 @@ import { Honeybadger } from '@honeybadger-io/react'
  *  - on the client, when getInitialProps throws or rejects
  *  - on the client, when a React lifecycle method (render, componentDidMount, etc) throws or rejects
  *      and was caught by the built-in Next.js error boundary
+ *
+ * Honeybadger notify here is the official @honeybadger-io/nextjs App Router path.
+ * Server onRequestError intentionally does not also notify (avoids duplicates).
  */
 export default function Error({
   error,
@@ -21,7 +28,14 @@ export default function Error({
   reset: () => void;
 }) {
   useEffect(() => {
-    Honeybadger.notify(error)
+    if (!isHoneybadgerBrowserEnabled() || isHoneybadgerTransportNoise(error)) {
+      return
+    }
+    try {
+      Honeybadger.notify(error)
+    } catch {
+      // Monitoring failures must never break the error UI.
+    }
   }, [error])
 
   return (

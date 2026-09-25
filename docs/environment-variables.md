@@ -7,7 +7,7 @@
 | **`POSTGRES_URL`** | Vercel (Production & Preview), CircleCI, Local | PostgreSQL connection string for the consolidated `snhu_tools` database. Vercel runtime must use Neon’s pooled/PgBouncer endpoint. |
 | **`POSTGRES_CA_CERT`** | Vercel, CircleCI, Local | Optional verified TLS CA certificate, supplied as an inline PEM string or filesystem path. |
 
-Programs, Courses, and Transfers share one lazy `pg.Pool` per serverless instance. It uses `max: 1`, `idleTimeoutMillis: 5000`, and `connectionTimeoutMillis: 15000`, and is registered with Vercel `attachDatabasePool()` for lifecycle handling. Migration and writer commands use short-lived direct `pg.Client` connections instead of the runtime pool.
+Programs, Courses, and Transfers share one lazy `pg.Pool` per serverless instance. It uses `max: 3`, `idleTimeoutMillis: 5000`, and `connectionTimeoutMillis: 15000` (Fluid Compute may keep instances warm; stay under Neon pooled limits), and is registered with Vercel `attachDatabasePool()` for lifecycle handling. Migration and writer commands use short-lived direct `pg.Client` connections instead of the runtime pool.
 
 ## Application variables
 
@@ -21,11 +21,23 @@ Programs, Courses, and Transfers share one lazy `pg.Pool` per serverless instanc
 | **`SITE_URL`** | CircleCI | Production application base URL used by CircleCI for revalidation triggers. |
 | **`NEXT_PUBLIC_SITE_URL`** | Client & Server | Canonical public production origin used by metadata, sitemap, robots, JSON-LD, and hostname redirects. |
 
+## Durable snapshots (Blob)
+
+| Variable Name | Context / Location | Description |
+| :--- | :--- | :--- |
+| **`BLOB_READ_WRITE_TOKEN`** | Vercel (all envs, read), CircleCI writers (read+publish) | Vercel Blob token for durable last-known-good catalog snapshots. App runtimes may read with this token; publication is separately gated. |
+| **`SNAPSHOT_STORE`** | Local / tests / optional override | `blob` (default when `BLOB_READ_WRITE_TOKEN` is set) or `fs` (local filesystem under `.data/snapshots`, used in tests). |
+| **`SNAPSHOT_PUBLISH_ENABLED`** | CircleCI writer contexts / secure bootstrap only | Must be the string `true` to publish snapshots, flip manifests, roll back, or GC. Missing/false on Vercel Preview/Development/Production app deploys so those environments can read but never mutate the canonical production snapshot. |
+
+Snapshots are published after each successful domain promote. Public reads prefer the durable snapshot; Postgres is used for bootstrap when no snapshot exists yet. See `docs/operations.md`.
+
 ## Optional Environment Variables
 
 | Variable Name | Context / Location | Description |
 | :--- | :--- | :--- |
-| **`ENABLE_PROGRAM_FIXTURES`** | Development & tests | Enables fixture program data when no live database is configured. Defaults to enabled in tests unless set to `false`. |
+| **`ENABLE_PROGRAM_FIXTURES`** | Development & tests | Enables fixture program data when no live database is configured. Defaults to enabled in tests unless set to `false`. Never used as a production outage fallback. |
 | **`TEST_WITH_LIVE_DB`** | Tests | When `true`, allows tests to use a live database instead of fixtures. |
-| **`HONEYBADGER_API_KEY`** | Server | Honeybadger server error monitoring key. |
-| **`NEXT_PUBLIC_HONEYBADGER_API_KEY`** | Client | Honeybadger browser error monitoring key. |
+| **`HONEYBADGER_ENABLED`** | Server / edge / sync | Explicit kill switch. Must be the string `true` to allow server-side Honeybadger notices. Missing or any other value disables monitoring. Also requires a production runtime (`VERCEL_ENV=production`, or `NODE_ENV=production` when not on Vercel). Keep `false` while resolving quota exhaustion. |
+| **`NEXT_PUBLIC_HONEYBADGER_ENABLED`** | Client | Browser kill switch for App Router error-boundary reporting. Must be `true` and the runtime must be production. Keep `false` while resolving quota exhaustion. |
+| **`HONEYBADGER_API_KEY`** | Server | Honeybadger server error monitoring key. May remain configured when enabled flags are `false`; notices are not sent until the flags are turned on in production. |
+| **`NEXT_PUBLIC_HONEYBADGER_API_KEY`** | Client | Honeybadger browser error monitoring key. Same: keys alone do not enable reporting. |

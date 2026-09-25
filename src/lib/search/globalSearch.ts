@@ -115,5 +115,9 @@ export async function searchAll(
     response.unavailable = unavailable;
   }
 
+  if (counts.total === 0 && unavailable.length > 0) {
+    response.degraded = true;
+  }
+
   return response;
 }

@@ -18,7 +18,7 @@ export const metadata: Metadata = {
   twitter: { card: "summary", title, description },
 };
 
-export const revalidate = 604800; // 7 days in seconds
+export const revalidate = false; // event-driven: invalidate after successful transfer snapshot publish
 
 export default async function CoursesDirectoryPage() {
   let entries: Awaited<ReturnType<typeof getCourseDirectoryEntries>> = [];

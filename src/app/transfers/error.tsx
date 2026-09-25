@@ -4,6 +4,10 @@ import { useEffect } from "react";
 import { Honeybadger } from "@honeybadger-io/react";
 import { AppHeader } from "@/components/AppHeader";
 import { AppFooter } from "@/components/AppFooter";
+import {
+  isHoneybadgerBrowserEnabled,
+  isHoneybadgerTransportNoise,
+} from "@/lib/honeybadgerShared.js";
 
 export default function TransfersError({
   error,
@@ -14,6 +18,9 @@ export default function TransfersError({
 }) {
   useEffect(() => {
     console.error("[Transfers Error]", error);
+    if (!isHoneybadgerBrowserEnabled() || isHoneybadgerTransportNoise(error)) {
+      return;
+    }
     try {
       Honeybadger.notify(error);
     } catch {

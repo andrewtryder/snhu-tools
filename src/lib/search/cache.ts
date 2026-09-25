@@ -5,3 +5,6 @@
  */
 export const SEARCH_CACHE_CONTROL =
   "public, s-maxage=900, stale-while-revalidate=3600";
+
+/** Do not cache empty degraded outage responses as canonical. */
+export const SEARCH_DEGRADED_CACHE_CONTROL = "private, no-store";

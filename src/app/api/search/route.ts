@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { searchPrograms } from "@/lib/serverData";
-import { SEARCH_CACHE_CONTROL } from "@/lib/search/cache";
+import { SEARCH_CACHE_CONTROL, SEARCH_DEGRADED_CACHE_CONTROL } from "@/lib/search/cache";
+import { isDbAvailabilityError } from "@/lib/snapshots/availability";
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
@@ -21,9 +22,15 @@ export async function GET(request: Request) {
       { headers: { "Cache-Control": SEARCH_CACHE_CONTROL } },
     );
   } catch (err: unknown) {
+    const degraded = isDbAvailabilityError(err);
     return NextResponse.json(
       { error: `Search error: ${(err as Error).message}` },
-      { status: 500 }
+      {
+        status: 500,
+        headers: {
+          "Cache-Control": degraded ? SEARCH_DEGRADED_CACHE_CONTROL : "no-store",
+        },
+      },
     );
   }
 }

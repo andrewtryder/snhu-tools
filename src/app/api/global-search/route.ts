@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { searchAll } from "@/lib/search/globalSearch";
-import { SEARCH_CACHE_CONTROL } from "@/lib/search/cache";
+import { SEARCH_CACHE_CONTROL, SEARCH_DEGRADED_CACHE_CONTROL } from "@/lib/search/cache";
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
@@ -27,9 +27,12 @@ export async function GET(request: Request) {
 
   try {
     const data = await searchAll(q, { limit });
+    const cacheControl = data.degraded
+      ? SEARCH_DEGRADED_CACHE_CONTROL
+      : SEARCH_CACHE_CONTROL;
     return NextResponse.json(data, {
       headers: {
-        "Cache-Control": SEARCH_CACHE_CONTROL,
+        "Cache-Control": cacheControl,
       },
     });
   } catch (err) {

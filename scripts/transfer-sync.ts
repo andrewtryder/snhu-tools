@@ -1,5 +1,6 @@
 import dotenv from "dotenv";
 import { runTransferSyncToCompletion } from "@/features/transfers/sync";
+import { publishTransfersSnapshot, publishSearchSnapshot } from "@/lib/snapshots";
 
 dotenv.config();
 
@@ -9,6 +10,32 @@ export async function runToCompletion(
   if (!process.env.POSTGRES_URL) return 1;
   const result = await runTransferSyncToCompletion(options);
   console.log(JSON.stringify(result));
+
+  if (result.action === "promoted") {
+    try {
+      const transfers = await publishTransfersSnapshot();
+      const search = await publishSearchSnapshot({ fromPublishedDomains: true });
+      console.log(
+        JSON.stringify({
+          action: "snapshot-published",
+          domain: "transfers",
+          transfersVersion: transfers.version,
+          searchVersion: search.version,
+        }),
+      );
+    } catch (error) {
+      console.log(
+        JSON.stringify({
+          action: "error",
+          error: `Snapshot publish failed after transfer promote: ${
+            error instanceof Error ? error.message : String(error)
+          }`,
+        }),
+      );
+      return 1;
+    }
+  }
+
   return result.action === "error" ? 1 : 0;
 }
 

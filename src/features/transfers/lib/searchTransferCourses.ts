@@ -1,5 +1,6 @@
 import { sql } from "drizzle-orm";
 import { db } from "@/features/transfers/db";
+import { searchTransfersFromSnapshot } from "@/lib/search/snapshotSearch";
 import { normalizeTransferCourseCode } from "./courseCode";
 
 export interface TransferCourseSearchResult {
@@ -22,6 +23,9 @@ export async function searchTransferCourses(
 
   const parsedLimit = options.limit ?? 10;
   const limit = Math.min(Math.max(Number.isFinite(parsedLimit) ? parsedLimit : 10, 1), 50);
+
+  const fromSnapshot = await searchTransfersFromSnapshot(trimmed, { limit });
+  if (fromSnapshot) return fromSnapshot;
 
   const normalized = normalizeTransferCourseCode(trimmed);
   const prefixPattern = `${trimmed}%`;

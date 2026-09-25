@@ -1,4 +1,5 @@
 import { withPoolClient } from "@/features/courses/db/pool";
+import { searchCoursesFromSnapshot } from "@/lib/search/snapshotSearch";
 import { normalizeCourseId } from "./courseIds";
 
 export interface CourseSearchResult {
@@ -21,6 +22,9 @@ export async function searchCourses(
 
   const parsedLimit = options.limit ?? 10;
   const limit = Math.min(Math.max(Number.isFinite(parsedLimit) ? parsedLimit : 10, 1), 50);
+
+  const fromSnapshot = await searchCoursesFromSnapshot(trimmed, { limit });
+  if (fromSnapshot) return fromSnapshot;
 
   const normalized = normalizeCourseId(trimmed);
   const prefixPattern = `${trimmed}%`;

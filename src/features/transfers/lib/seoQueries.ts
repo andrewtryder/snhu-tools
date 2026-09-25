@@ -1,8 +1,10 @@
 import { asc, count, eq, isNotNull, sql } from "drizzle-orm";
-import { unstable_cache } from "next/cache";
 import { cache } from "react";
 import { db } from "@/features/transfers/db";
 import { transferCourses } from "@/features/transfers/db/schema";
+import type { TransfersSnapshotBundle } from "@/lib/snapshots/domains/transfers";
+import { durableCache } from "@/lib/snapshots/cache";
+import { readThroughSnapshot } from "@/lib/snapshots/readThrough";
 import {
   TRANSFER_CACHE_REVALIDATE,
   TRANSFER_CACHE_TAG,
@@ -292,31 +294,111 @@ async function _dbGetTransferLastModified(): Promise<Date | null> {
   return date;
 }
 
+/**
+ * Uncached transfer payload for durable snapshot publishing.
+ * Does not use unstable_cache — callers must tolerate DB unavailability.
+ */
+export async function loadTransferSnapshotSource(): Promise<{
+  rows: TransferRow[];
+  subjects: string[];
+  organizations: string[];
+  levels: string[];
+  courseNumbers: string[];
+  subjectDirectory: DirectoryEntry[];
+  organizationDirectory: DirectoryEntry[];
+  levelDirectory: DirectoryEntry[];
+  courseDirectory: CourseDirectoryEntry[];
+  lastUpdated: Date | null;
+}> {
+  const [
+    rows,
+    subjects,
+    organizations,
+    levels,
+    courseNumbers,
+    subjectDirectory,
+    organizationDirectory,
+    levelDirectory,
+    courseDirectory,
+    lastUpdated,
+  ] = await Promise.all([
+    _dbGetAllTransferRows(),
+    _dbGetDistinctSubjects(),
+    _dbGetDistinctOrganizations(),
+    _dbGetDistinctLevels(),
+    _dbGetDistinctCourseNumbers(),
+    _dbGetSubjectDirectoryEntries(),
+    _dbGetOrganizationDirectoryEntries(),
+    _dbGetLevelDirectoryEntries(),
+    _dbGetCourseDirectoryEntries(),
+    _dbGetTransferLastModified(),
+  ]);
+
+  return {
+    rows,
+    subjects,
+    organizations,
+    levels,
+    courseNumbers,
+    subjectDirectory,
+    organizationDirectory,
+    levelDirectory,
+    courseDirectory,
+    lastUpdated,
+  };
+}
+
+// ---------------------------------------------------------------------------
+// Snapshot-first bundle (request path never builds full transfer snapshot)
+// ---------------------------------------------------------------------------
+
+async function loadTransfersBundleFromSnapshot(): Promise<TransfersSnapshotBundle | null> {
+  const result = await readThroughSnapshot<TransfersSnapshotBundle>({
+    domain: "transfers",
+    cacheKey: "transfers.bundle",
+    preferSnapshot: true,
+    loadFromDatabase: async () =>
+      ({ rows: [] }) as unknown as TransfersSnapshotBundle,
+    fromBundle: (b) => b as TransfersSnapshotBundle,
+    validate: (b) => Array.isArray(b?.rows) && b.rows.length > 0,
+  });
+  return result.value;
+}
+
+export const getTransfersSnapshotBundleCached = durableCache(
+  loadTransfersBundleFromSnapshot,
+  ["transfers-snapshot-bundle"],
+  { tags: [TRANSFER_CACHE_TAG], revalidate: TRANSFER_CACHE_REVALIDATE },
+);
+
 // ---------------------------------------------------------------------------
 // Cached slug maps — one per dimension, keyed slug → canonical value
 // ---------------------------------------------------------------------------
 
-const _cachedSubjectSlugMap = unstable_cache(
+const _cachedSubjectSlugMap = durableCache(
   async (): Promise<Record<string, string>> => {
-    const values = await _dbGetDistinctSubjects();
+    const bundle = await getTransfersSnapshotBundleCached();
+    const values = bundle ? bundle.subjects : await _dbGetDistinctSubjects();
     return Object.fromEntries(values.map((v) => [slugify(v), v]));
   },
   ["subject-slug-map"],
   { tags: [TRANSFER_CACHE_TAG], revalidate: TRANSFER_CACHE_REVALIDATE }
 );
 
-const _cachedOrganizationSlugMap = unstable_cache(
+const _cachedOrganizationSlugMap = durableCache(
   async (): Promise<Record<string, string>> => {
-    const values = await _dbGetDistinctOrganizations();
+    const bundle = await getTransfersSnapshotBundleCached();
+    const values = bundle ? bundle.organizations : await _dbGetDistinctOrganizations();
     return Object.fromEntries(values.map((v) => [slugify(v), v]));
   },
   ["organization-slug-map"],
   { tags: [TRANSFER_CACHE_TAG], revalidate: TRANSFER_CACHE_REVALIDATE }
 );
 
-const _cachedLevelSlugMap = unstable_cache(
+const _cachedLevelSlugMap = durableCache(
   async (): Promise<Record<string, string>> => {
-    const values = await _dbGetDistinctLevels();
+    const bundle = await getTransfersSnapshotBundleCached();
+    const values = bundle ? bundle.levels : await _dbGetDistinctLevels();
     return Object.fromEntries(values.map((v) => [slugify(v), v]));
   },
   ["level-slug-map"],
@@ -327,100 +409,162 @@ const _cachedLevelSlugMap = unstable_cache(
 // Public cached wrappers — these are what the app imports
 // ---------------------------------------------------------------------------
 
-/** Full transfer dataset, cached for 7 days and tagged 'transfer-data'. */
-const _cachedAllTransferRows = unstable_cache(
-  _dbGetAllTransferRows,
+/** Full transfer dataset; snapshot-first with tag invalidation after promote. */
+const _cachedAllTransferRows = durableCache(
+  async (): Promise<TransferRow[]> => {
+    const bundle = await getTransfersSnapshotBundleCached();
+    if (bundle) return bundle.rows;
+    return _dbGetAllTransferRows();
+  },
   ["all-transfer-rows"],
   { tags: [TRANSFER_CACHE_TAG], revalidate: TRANSFER_CACHE_REVALIDATE }
 );
 
 /**
- * Sorted unique subject prefixes, resolved in SQL (no JS deduplication).
- * Cached for 7 days and tagged 'transfer-data'.
+ * Sorted unique subject prefixes. Snapshot-first; otherwise SQL distinct.
+ * Cached indefinitely until tag invalidation.
  */
-const _cachedDistinctSubjects = unstable_cache(
-  _dbGetDistinctSubjects,
+const _cachedDistinctSubjects = durableCache(
+  async (): Promise<string[]> => {
+    const bundle = await getTransfersSnapshotBundleCached();
+    if (bundle) return bundle.subjects;
+    return _dbGetDistinctSubjects();
+  },
   ["distinct-subjects"],
   { tags: [TRANSFER_CACHE_TAG], revalidate: TRANSFER_CACHE_REVALIDATE }
 );
 
 /**
- * Sorted unique organization names, resolved in SQL (no JS deduplication).
- * Cached for 7 days and tagged 'transfer-data'.
+ * Sorted unique organization names. Snapshot-first; otherwise SQL distinct.
  */
-const _cachedDistinctOrganizations = unstable_cache(
-  _dbGetDistinctOrganizations,
+const _cachedDistinctOrganizations = durableCache(
+  async (): Promise<string[]> => {
+    const bundle = await getTransfersSnapshotBundleCached();
+    if (bundle) return bundle.organizations;
+    return _dbGetDistinctOrganizations();
+  },
   ["distinct-organizations"],
   { tags: [TRANSFER_CACHE_TAG], revalidate: TRANSFER_CACHE_REVALIDATE }
 );
 
 /**
- * Sorted unique academic levels, resolved in SQL (no JS deduplication).
- * Cached for 7 days and tagged 'transfer-data'.
+ * Sorted unique academic levels. Snapshot-first; otherwise SQL distinct.
  */
-const _cachedDistinctLevels = unstable_cache(
-  _dbGetDistinctLevels,
+const _cachedDistinctLevels = durableCache(
+  async (): Promise<string[]> => {
+    const bundle = await getTransfersSnapshotBundleCached();
+    if (bundle) return bundle.levels;
+    return _dbGetDistinctLevels();
+  },
   ["distinct-levels"],
   { tags: [TRANSFER_CACHE_TAG], revalidate: TRANSFER_CACHE_REVALIDATE }
 );
 
 /**
- * Sorted unique course numbers, resolved in SQL (no JS deduplication).
- * Cached for 7 days and tagged 'transfer-data'.
+ * Sorted unique course numbers. Snapshot-first; otherwise SQL distinct.
  */
-const _cachedDistinctCourseNumbers = unstable_cache(
-  _dbGetDistinctCourseNumbers,
+const _cachedDistinctCourseNumbers = durableCache(
+  async (): Promise<string[]> => {
+    const bundle = await getTransfersSnapshotBundleCached();
+    if (bundle) return bundle.courseNumbers;
+    return _dbGetDistinctCourseNumbers();
+  },
   ["distinct-course-numbers"],
   { tags: [TRANSFER_CACHE_TAG], revalidate: TRANSFER_CACHE_REVALIDATE }
 );
 
-const _cachedSubjectDirectoryEntries = unstable_cache(
-  _dbGetSubjectDirectoryEntries,
+const _cachedSubjectDirectoryEntries = durableCache(
+  async (): Promise<DirectoryEntry[]> => {
+    const bundle = await getTransfersSnapshotBundleCached();
+    if (bundle) return bundle.subjectDirectory;
+    return _dbGetSubjectDirectoryEntries();
+  },
   ["subject-directory"],
   { tags: [TRANSFER_CACHE_TAG], revalidate: TRANSFER_CACHE_REVALIDATE }
 );
 
-const _cachedOrganizationDirectoryEntries = unstable_cache(
-  _dbGetOrganizationDirectoryEntries,
+const _cachedOrganizationDirectoryEntries = durableCache(
+  async (): Promise<DirectoryEntry[]> => {
+    const bundle = await getTransfersSnapshotBundleCached();
+    if (bundle) return bundle.organizationDirectory;
+    return _dbGetOrganizationDirectoryEntries();
+  },
   ["organization-directory"],
   { tags: [TRANSFER_CACHE_TAG], revalidate: TRANSFER_CACHE_REVALIDATE }
 );
 
-const _cachedLevelDirectoryEntries = unstable_cache(
-  _dbGetLevelDirectoryEntries,
+const _cachedLevelDirectoryEntries = durableCache(
+  async (): Promise<DirectoryEntry[]> => {
+    const bundle = await getTransfersSnapshotBundleCached();
+    if (bundle) return bundle.levelDirectory;
+    return _dbGetLevelDirectoryEntries();
+  },
   ["level-directory"],
   { tags: [TRANSFER_CACHE_TAG], revalidate: TRANSFER_CACHE_REVALIDATE }
 );
 
-const _cachedCourseDirectoryEntries = unstable_cache(
-  _dbGetCourseDirectoryEntries,
+const _cachedCourseDirectoryEntries = durableCache(
+  async (): Promise<CourseDirectoryEntry[]> => {
+    const bundle = await getTransfersSnapshotBundleCached();
+    if (bundle) return bundle.courseDirectory;
+    return _dbGetCourseDirectoryEntries();
+  },
   ["course-directory"],
   { tags: [TRANSFER_CACHE_TAG], revalidate: TRANSFER_CACHE_REVALIDATE }
 );
 
-const _cachedTransferLastModified = unstable_cache(
-  _dbGetTransferLastModified,
+const _cachedTransferLastModified = durableCache(
+  async (): Promise<Date | null> => {
+    const bundle = await getTransfersSnapshotBundleCached();
+    if (bundle) {
+      if (!bundle.lastUpdated) return null;
+      const date = new Date(bundle.lastUpdated);
+      return Number.isNaN(date.getTime()) ? null : date;
+    }
+    return _dbGetTransferLastModified();
+  },
   ["transfer-last-modified"],
   { tags: [TRANSFER_CACHE_TAG], revalidate: TRANSFER_CACHE_REVALIDATE }
 );
 
 /** Cached rows for a single subject prefix. Key includes the subject value. */
-const _cachedRowsBySubject = unstable_cache(
-  _dbGetRowsBySubject,
+const _cachedRowsBySubject = durableCache(
+  async (subjectPrefix: string): Promise<TransferRow[]> => {
+    const bundle = await getTransfersSnapshotBundleCached();
+    if (bundle) {
+      const needle = subjectPrefix.trim();
+      return bundle.rows.filter((r) => (r.subjectPrefix ?? "").trim() === needle);
+    }
+    return _dbGetRowsBySubject(subjectPrefix);
+  },
   ["rows-by-subject"],
   { tags: [TRANSFER_CACHE_TAG], revalidate: TRANSFER_CACHE_REVALIDATE }
 );
 
 /** Cached rows for a single organization. Key includes the organization value. */
-const _cachedRowsByOrganization = unstable_cache(
-  _dbGetRowsByOrganization,
+const _cachedRowsByOrganization = durableCache(
+  async (organization: string): Promise<TransferRow[]> => {
+    const bundle = await getTransfersSnapshotBundleCached();
+    if (bundle) {
+      const needle = organization.trim();
+      return bundle.rows.filter((r) => (r.groupFilter2Name ?? "").trim() === needle);
+    }
+    return _dbGetRowsByOrganization(organization);
+  },
   ["rows-by-organization"],
   { tags: [TRANSFER_CACHE_TAG], revalidate: TRANSFER_CACHE_REVALIDATE }
 );
 
 /** Cached rows for a single academic level. Key includes the level value. */
-const _cachedRowsByLevel = unstable_cache(
-  _dbGetRowsByLevel,
+const _cachedRowsByLevel = durableCache(
+  async (level: string): Promise<TransferRow[]> => {
+    const bundle = await getTransfersSnapshotBundleCached();
+    if (bundle) {
+      const needle = level.trim();
+      return bundle.rows.filter((r) => (r.academicLevel ?? "").trim() === needle);
+    }
+    return _dbGetRowsByLevel(level);
+  },
   ["rows-by-level"],
   { tags: [TRANSFER_CACHE_TAG], revalidate: TRANSFER_CACHE_REVALIDATE }
 );
@@ -429,8 +573,17 @@ const _cachedRowsByLevel = unstable_cache(
  * Cached rows for a course number. Input is automatically normalized to
  * uppercase before the query and the cache key.
  */
-const _cachedRowsByCourseNumber = unstable_cache(
-  _dbGetRowsByCourseNumber,
+const _cachedRowsByCourseNumber = durableCache(
+  async (courseNumber: string): Promise<TransferRow[]> => {
+    const bundle = await getTransfersSnapshotBundleCached();
+    if (bundle) {
+      const needle = normalizeCourseNumber(courseNumber);
+      return bundle.rows.filter(
+        (r) => normalizeCourseNumber(r.courseNumber ?? "") === needle,
+      );
+    }
+    return _dbGetRowsByCourseNumber(courseNumber);
+  },
   ["rows-by-course-number"],
   { tags: [TRANSFER_CACHE_TAG], revalidate: TRANSFER_CACHE_REVALIDATE }
 );

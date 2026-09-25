@@ -1,17 +1,24 @@
-import { unstable_cache } from "next/cache";
 import { cache } from "react";
 import { withPoolClient } from "@/features/courses/db/pool";
 import type { QueryClient } from "@/features/courses/db/types";
+import type { CoursesSnapshotBundle } from "@/lib/snapshots/domains/courses";
+import { durableCache } from "@/lib/snapshots/cache";
+import { readThroughSnapshot } from "@/lib/snapshots/readThrough";
 import type { CourseTree } from "./courseGraphLayout";
 
 // ─── Shared constants ─────────────────────────────────────────────────────────
 
 /** Shared tag for all read-only catalog caches. Invalidate via POST /api/revalidate. */
 export const CATALOG_TAG = "catalog-data";
-/** 24-hour revalidation for course catalog data (changes ~bimonthly). */
-export const CATALOG_TTL = 86_400;
-/** 1-hour revalidation for the sync timestamp (changes on each successful sync). */
-export const SYNC_STATE_TTL = 3_600;
+/**
+ * Event-driven catalog cache: durable snapshots + tag invalidation after promote.
+ * Formerly 86400 (24h TTL); TTL must not erase last-known-good on outage.
+ */
+export const CATALOG_REVALIDATE = false as const;
+/** @deprecated Use CATALOG_REVALIDATE (false). Kept as alias for any lingering imports. */
+export const CATALOG_TTL = CATALOG_REVALIDATE;
+/** @deprecated Sync timestamp now follows CATALOG_REVALIDATE (tag invalidation). */
+export const SYNC_STATE_TTL = CATALOG_REVALIDATE;
 
 // ─── Public types ─────────────────────────────────────────────────────────────
 
@@ -318,12 +325,51 @@ async function getDirectPrerequisiteIdsUncached(courseId: string): Promise<strin
   });
 }
 
+// ─── Snapshot-first bundle loader (request path never builds full snapshot) ───
+
+/**
+ * Load the durable courses bundle when present. Does NOT call the full
+ * publish builder on the request path — bootstrap without a snapshot falls
+ * through to the existing Uncached DB helpers below.
+ */
+async function loadCoursesBundleFromSnapshot(): Promise<CoursesSnapshotBundle | null> {
+  const result = await readThroughSnapshot<CoursesSnapshotBundle>({
+    domain: "courses",
+    cacheKey: "courses.bundle",
+    preferSnapshot: true,
+    // Intentionally do not build on request bootstrap; return invalid so
+    // readThrough yields source "none" when no durable snapshot exists.
+    loadFromDatabase: async () =>
+      ({ summaries: [] }) as unknown as CoursesSnapshotBundle,
+    fromBundle: (b) => b as CoursesSnapshotBundle,
+    validate: (b) =>
+      Array.isArray(b?.summaries) &&
+      b.summaries.length > 0 &&
+      !!b.records &&
+      typeof b.records === "object" &&
+      Array.isArray(b.ids),
+  });
+  return result.value;
+}
+
+export const getCoursesSnapshotBundleCached = durableCache(
+  loadCoursesBundleFromSnapshot,
+  ["courses-snapshot-bundle"],
+  { tags: [CATALOG_TAG], revalidate: CATALOG_REVALIDATE },
+);
+
 // ─── Exported cached helpers ─────────────────────────────────────────────────
 
-const getCourseByIdCached = unstable_cache(
-  getCourseByIdUncached,
+const getCourseByIdCached = durableCache(
+  async (courseId: string): Promise<CourseRecord | null> => {
+    const bundle = await getCoursesSnapshotBundleCached();
+    if (bundle?.records) {
+      return bundle.records[courseId] ?? null;
+    }
+    return getCourseByIdUncached(courseId);
+  },
   ["course"],
-  { tags: [CATALOG_TAG], revalidate: CATALOG_TTL },
+  { tags: [CATALOG_TAG], revalidate: CATALOG_REVALIDATE },
 );
 
 const getCourseByIdRequestCached = cache((courseId: string) => getCourseByIdCached(courseId));
@@ -332,10 +378,16 @@ export function getCourseById(courseId: string): Promise<CourseRecord | null> {
   return getCourseByIdRequestCached(courseId.toUpperCase());
 }
 
-const getCourseTreeCached = unstable_cache(
-  getCourseTreeUncached,
+const getCourseTreeCached = durableCache(
+  async (courseId: string): Promise<CourseTree | null> => {
+    const bundle = await getCoursesSnapshotBundleCached();
+    if (bundle?.trees) {
+      return bundle.trees[courseId] ?? null;
+    }
+    return getCourseTreeUncached(courseId);
+  },
   ["course-tree"],
-  { tags: [CATALOG_TAG], revalidate: CATALOG_TTL },
+  { tags: [CATALOG_TAG], revalidate: CATALOG_REVALIDATE },
 );
 
 const getCourseTreeRequestCached = cache((courseId: string) => getCourseTreeCached(courseId));
@@ -344,10 +396,16 @@ export function getCourseTree(courseId: string): Promise<CourseTree | null> {
   return getCourseTreeRequestCached(courseId.toUpperCase());
 }
 
-const getCourseTreesCached = unstable_cache(
-  getCourseTreesUncached,
+const getCourseTreesCached = durableCache(
+  async (courseIds: string[]): Promise<CourseTreeResult[]> => {
+    const bundle = await getCoursesSnapshotBundleCached();
+    if (bundle?.trees) {
+      return courseIds.map((id) => ({ id, tree: bundle.trees[id] ?? null }));
+    }
+    return getCourseTreesUncached(courseIds);
+  },
   ["course-trees"],
-  { tags: [CATALOG_TAG], revalidate: CATALOG_TTL },
+  { tags: [CATALOG_TAG], revalidate: CATALOG_REVALIDATE },
 );
 
 export function getCourseTrees(courseIds: string[]): Promise<CourseTreeResult[]> {
@@ -360,10 +418,14 @@ export function getCourseTrees(courseIds: string[]): Promise<CourseTreeResult[]>
   });
 }
 
-const getAllCourseIdsCached = unstable_cache(
-  getAllCourseIdsUncached,
+const getAllCourseIdsCached = durableCache(
+  async (): Promise<string[]> => {
+    const bundle = await getCoursesSnapshotBundleCached();
+    if (bundle?.ids) return bundle.ids;
+    return getAllCourseIdsUncached();
+  },
   ["course-ids"],
-  { tags: [CATALOG_TAG], revalidate: CATALOG_TTL },
+  { tags: [CATALOG_TAG], revalidate: CATALOG_REVALIDATE },
 );
 
 export async function getAllCourseIds(): Promise<string[]> {
@@ -375,10 +437,14 @@ export async function getAllCourseIds(): Promise<string[]> {
   }
 }
 
-const getAllCourseSummariesCached = unstable_cache(
-  getAllCourseSummariesUncached,
+const getAllCourseSummariesCached = durableCache(
+  async (): Promise<CourseSummary[]> => {
+    const bundle = await getCoursesSnapshotBundleCached();
+    if (bundle?.summaries?.length) return bundle.summaries;
+    return getAllCourseSummariesUncached();
+  },
   ["course-summaries"],
-  { tags: [CATALOG_TAG], revalidate: CATALOG_TTL },
+  { tags: [CATALOG_TAG], revalidate: CATALOG_REVALIDATE },
 );
 
 export async function getAllCourseSummaries(): Promise<CourseSummary[]> {
@@ -390,10 +456,18 @@ export async function getAllCourseSummaries(): Promise<CourseSummary[]> {
   }
 }
 
-const getCatalogLastModifiedCached = unstable_cache(
-  getCatalogLastModifiedUncached,
+const getCatalogLastModifiedCached = durableCache(
+  async (): Promise<Date | null> => {
+    const bundle = await getCoursesSnapshotBundleCached();
+    if (bundle) {
+      if (!bundle.lastModified) return null;
+      const date = new Date(bundle.lastModified);
+      return Number.isNaN(date.getTime()) ? null : date;
+    }
+    return getCatalogLastModifiedUncached();
+  },
   ["catalog-last-modified"],
-  { tags: [CATALOG_TAG], revalidate: SYNC_STATE_TTL },
+  { tags: [CATALOG_TAG], revalidate: CATALOG_REVALIDATE },
 );
 
 export async function getCatalogLastModified(): Promise<Date | null> {
@@ -414,10 +488,16 @@ export function getSitemapCatalogData(): Promise<{
   );
 }
 
-const getDependentCourseIdsCached = unstable_cache(
-  getDependentCourseIdsUncached,
+const getDependentCourseIdsCached = durableCache(
+  async (courseId: string): Promise<string[]> => {
+    const bundle = await getCoursesSnapshotBundleCached();
+    if (bundle?.dependents) {
+      return bundle.dependents[courseId] ?? [];
+    }
+    return getDependentCourseIdsUncached(courseId);
+  },
   ["course-dependents"],
-  { tags: [CATALOG_TAG], revalidate: CATALOG_TTL },
+  { tags: [CATALOG_TAG], revalidate: CATALOG_REVALIDATE },
 );
 
 const getDependentCourseIdsRequestCached = cache((courseId: string) =>
@@ -428,10 +508,16 @@ export function getDependentCourseIds(courseId: string): Promise<string[]> {
   return getDependentCourseIdsRequestCached(courseId.toUpperCase());
 }
 
-const getDirectPrerequisiteIdsCached = unstable_cache(
-  getDirectPrerequisiteIdsUncached,
+const getDirectPrerequisiteIdsCached = durableCache(
+  async (courseId: string): Promise<string[]> => {
+    const bundle = await getCoursesSnapshotBundleCached();
+    if (bundle?.directPrereqs) {
+      return bundle.directPrereqs[courseId] ?? [];
+    }
+    return getDirectPrerequisiteIdsUncached(courseId);
+  },
   ["course-direct-prereqs"],
-  { tags: [CATALOG_TAG], revalidate: CATALOG_TTL },
+  { tags: [CATALOG_TAG], revalidate: CATALOG_REVALIDATE },
 );
 
 const getDirectPrerequisiteIdsRequestCached = cache((courseId: string) =>

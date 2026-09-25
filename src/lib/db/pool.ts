@@ -3,7 +3,9 @@ import { Pool } from "pg";
 import { resolvePgConnectionConfig } from "./ssl";
 
 export const POOL_OPTIONS = {
-  max: 1,
+  // Fluid Compute can keep instances warm; allow a few concurrent queries while
+  // staying well under Neon pooled-connection limits (and below prior max:1 starvation).
+  max: 3,
   idleTimeoutMillis: 5_000,
   // Allow enough time for suspended serverless Postgres compute to resume before failing the initial connection.
   connectionTimeoutMillis: 15_000,

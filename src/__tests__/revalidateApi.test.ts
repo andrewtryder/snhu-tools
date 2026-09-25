@@ -94,9 +94,20 @@ describe("POST /api/revalidate Endpoint", () => {
     expect(response.status).toBe(200);
     expect(revalidateTag).toHaveBeenCalledTimes(1);
     expect(revalidateTag).toHaveBeenCalledWith("program-data", "max");
-    expect(revalidatePath).toHaveBeenCalledTimes(1);
+    expect(revalidatePath).toHaveBeenCalledWith("/");
+    expect(revalidatePath).toHaveBeenCalledWith("/programs");
+    expect(revalidatePath).toHaveBeenCalledWith("/programs/[slug]", "page");
+    expect(revalidatePath).toHaveBeenCalledWith("/programs/[slug]/requirements", "page");
     expect(revalidatePath).toHaveBeenCalledWith("/data-status");
-    expect(await response.json()).toMatchObject({ paths: ["/data-status"] });
+    expect(await response.json()).toMatchObject({
+      paths: expect.arrayContaining([
+        "/",
+        "/programs",
+        "/programs/[slug]",
+        "/programs/[slug]/requirements",
+        "/data-status",
+      ]),
+    });
   });
 
   it("accepts the dedicated revalidation header", async () => {
@@ -179,8 +190,8 @@ describe("POST /api/revalidate Endpoint", () => {
     expect(response.status).toBe(200);
     // 3 tags: program-data, catalog-data, transfer-data
     expect(revalidateTag).toHaveBeenCalledTimes(3);
-    // 1 programs path + 2 courses paths + 10 transfer paths = 13 total revalidatePath calls
-    expect(revalidatePath).toHaveBeenCalledTimes(13);
+    // 9 programs paths + 2 courses paths + 10 transfer paths = 21 total revalidatePath calls
+    expect(revalidatePath).toHaveBeenCalledTimes(21);
   });
 
   it("rejects unknown scopes before invalidating caches", async () => {

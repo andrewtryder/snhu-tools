@@ -36,6 +36,9 @@ yarn-error.log*
 # Vercel
 .vercel
 
+# Local durable snapshot store (tests/dev FS backend)
+.data/
+
 # TypeScript
 *.tsbuildinfo
 next-env.d.ts

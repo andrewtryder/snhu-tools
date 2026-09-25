@@ -19,6 +19,9 @@ import { normalizeDegreeLevel } from "@/lib/kualiParser";
 import { getCourseCodeKey, getCourseNodeId, normalizeCourseCode } from "@/lib/courseCode";
 import { resolvePublicCatalogUrl } from "@/lib/snhuCatalog";
 import { rankRelatedPrograms, type RelatedProgramCandidate } from "@/lib/relatedPrograms";
+import type { ProgramsSnapshotBundle } from "@/lib/snapshots/domains/programs";
+import { readThroughSnapshot } from "@/lib/snapshots/readThrough";
+import { searchProgramsFromSnapshot } from "@/lib/search/snapshotSearch";
 
 function getDbPool(): Pool | null {
   if (!process.env.POSTGRES_URL) {
@@ -40,9 +43,15 @@ function isFixturesEnabled(): boolean {
   if (process.env.NODE_ENV === "test" && process.env.ENABLE_PROGRAM_FIXTURES !== "false") {
     return true;
   }
+  // Never use fixtures as a production outage fallback.
   return process.env.NODE_ENV !== "production" && process.env.ENABLE_PROGRAM_FIXTURES === "true";
 }
 
+/**
+ * Next data-cache wrapper. On cache infrastructure failure, re-run the callback
+ * once — callbacks are snapshot-first, so a durable snapshot is served without
+ * waking Postgres when one exists. Do not wrap raw DB-only loaders here.
+ */
 async function safeCache<T>(
   cb: () => Promise<T>,
   keyParts: string[],
@@ -53,9 +62,47 @@ async function safeCache<T>(
   }
   try {
     return await unstable_cache(cb, keyParts, { ...options, revalidate: false })();
-  } catch {
+  } catch (error) {
+    console.error("[safeCache] unstable_cache failed; retrying snapshot-first callback", {
+      keyParts,
+      errorName: error instanceof Error ? error.name : "unknown",
+    });
     return await cb();
   }
+}
+
+/** Snapshot-only programs bundle; request path never runs the full publish builder. */
+async function loadProgramsSnapshotBundle(): Promise<ProgramsSnapshotBundle | null> {
+  const result = await readThroughSnapshot<ProgramsSnapshotBundle>({
+    domain: "programs",
+    cacheKey: "programs.bundle",
+    preferSnapshot: true,
+    loadFromDatabase: async () =>
+      ({ directory: [] }) as unknown as ProgramsSnapshotBundle,
+    fromBundle: (b) => b as ProgramsSnapshotBundle,
+    validate: (b) => Array.isArray(b?.directory) && b.directory.length > 0,
+  });
+  return result.value;
+}
+
+function summaryToDegreeProgram(summary: ProgramsSnapshotBundle["directory"][number]): DegreeProgram {
+  return {
+    slug: summary.slug,
+    title: summary.title,
+    degreeLevel: summary.degreeLevel,
+    credential: summary.credential,
+    catalogYear: summary.catalogYear || "2025-2026",
+    totalCredits: summary.totalCredits ?? null,
+    requiredCourseCount: summary.requiredCourseCount,
+    electiveCredits: null,
+    estimatedDuration: "Not available",
+    sourceCatalogUrl: summary.sourceCatalogUrl,
+    sourceName: "SNHU Academic Catalog",
+    description: summary.description || "",
+    groups: [],
+    nodes: [],
+    edges: [],
+  };
 }
 
 /** Rehydrate dates after `unstable_cache` JSON serialization (Dates become strings). */
@@ -84,13 +131,19 @@ export interface ProgramSummary {
 
 export const getPrograms = cache(
   async (options?: { level?: string; year?: string }): Promise<DegreeProgram[]> => {
-    const pool = getDbPool();
-    if (!pool) {
-      return isFixturesEnabled() ? filterFixtures(options) : [];
-    }
-
     return safeCache(
       async () => {
+        const bundle = await loadProgramsSnapshotBundle();
+        if (bundle) {
+          const programs = bundle.directory.map(summaryToDegreeProgram);
+          return filterFixtures(options, programs);
+        }
+
+        const pool = getDbPool();
+        if (!pool) {
+          return isFixturesEnabled() ? filterFixtures(options) : [];
+        }
+
         try {
           const client = await pool.connect();
           try {
@@ -162,7 +215,10 @@ export const getPrograms = cache(
           }
         } catch (err) {
           if (isFixturesEnabled()) return filterFixtures(options);
-          throw err;
+          // Provider outages/quota must not fail static generation or request handling.
+          // Snapshot path above already tried; production never falls back to fixtures.
+          console.error("[getPrograms] database query failed", err);
+          return [];
         }
       },
       ["get-all-programs-summaries", JSON.stringify(options || {})],
@@ -173,13 +229,18 @@ export const getPrograms = cache(
 
 export const getProgramBySlug = cache(
   async (slug: string): Promise<DegreeProgram | null> => {
-    const pool = getDbPool();
-    if (!pool) {
-      return isFixturesEnabled() ? getFixtureBySlug(slug) || null : null;
-    }
-
     return safeCache(
       async () => {
+        const bundle = await loadProgramsSnapshotBundle();
+        if (bundle) {
+          return bundle.bySlug?.[slug] ?? null;
+        }
+
+        const pool = getDbPool();
+        if (!pool) {
+          return isFixturesEnabled() ? getFixtureBySlug(slug) || null : null;
+        }
+
         try {
           const client = await pool.connect();
           try {
@@ -525,7 +586,8 @@ export const getProgramBySlug = cache(
           }
         } catch (err) {
           if (isFixturesEnabled()) return getFixtureBySlug(slug) || null;
-          throw err;
+          console.error("[getProgramBySlug] database query failed", err);
+          return null;
         }
       },
       ["get-program-by-slug", slug],
@@ -543,6 +605,9 @@ export const searchPrograms = async (
   const courseCodeKey = getCourseCodeKey(q);
 
   if (q.length < 2) return [];
+
+  const fromSnapshot = await searchProgramsFromSnapshot(q, { limit, level: options?.level });
+  if (fromSnapshot) return fromSnapshot;
 
   const pool = getDbPool();
   if (!pool) {
@@ -615,11 +680,17 @@ export const searchPrograms = async (
     }
   } catch (err) {
     if (isFixturesEnabled()) return [];
-    throw err;
+    console.error("[searchPrograms] database query failed", err);
+    return [];
   }
 };
 
 export const getCatalogYears = cache(async (): Promise<string[]> => {
+  const bundle = await loadProgramsSnapshotBundle();
+  if (bundle?.catalogYears?.length) {
+    return bundle.catalogYears;
+  }
+
   const pool = getDbPool();
   if (pool) {
     try {
@@ -679,11 +750,22 @@ export const getProgramsForCourse = cache(async (courseCode: string): Promise<De
     }
   } catch (err) {
     if (isFixturesEnabled()) return [];
-    throw err;
+    console.error("[getProgramsForCourse] database query failed", err);
+    return [];
   }
 });
 
 export const getProgramSyncState = cache(async () => {
+  const bundle = await loadProgramsSnapshotBundle();
+  if (bundle?.syncState) {
+    return {
+      status: bundle.syncState.status,
+      last_error: bundle.syncState.lastError,
+      completed_at: asDate(bundle.syncState.completedAt),
+      next_due_at: asDate(bundle.syncState.nextDueAt),
+    };
+  }
+
   const pool = getDbPool();
   if (!pool) return null;
 
@@ -718,30 +800,43 @@ export interface SitemapProgram {
  * Throws when a database pool exists but the query fails so we never cache an empty success.
  */
 export const getSitemapPrograms = cache(async (): Promise<SitemapProgram[]> => {
-  const pool = getDbPool();
-  if (!pool) {
-    if (!isFixturesEnabled()) return [];
-    return fixturePrograms.map((program) => ({ slug: program.slug, updatedAt: null }));
-  }
-
   return safeCache(
     async () => {
-      const client = await pool.connect();
+      const bundle = await loadProgramsSnapshotBundle();
+      if (bundle?.sitemap?.length) {
+        return bundle.sitemap.map((row) => ({
+          slug: row.slug,
+          updatedAt: asDate(row.updatedAt),
+        }));
+      }
+
+      const pool = getDbPool();
+      if (!pool) {
+        if (!isFixturesEnabled()) return [];
+        return fixturePrograms.map((program) => ({ slug: program.slug, updatedAt: null }));
+      }
+
       try {
-        const res = await client.query<{ slug: string; updatedAt: Date | null }>(
-          `
+        const client = await pool.connect();
+        try {
+          const res = await client.query<{ slug: string; updatedAt: Date | null }>(
+            `
             SELECT slug, synced_at AS "updatedAt"
             FROM programs
             WHERE slug IS NOT NULL
             ORDER BY slug ASC;
           `,
-        );
-        return res.rows.map((row) => ({
-          slug: row.slug,
-          updatedAt: asDate(row.updatedAt),
-        }));
-      } finally {
-        client.release();
+          );
+          return res.rows.map((row) => ({
+            slug: row.slug,
+            updatedAt: asDate(row.updatedAt),
+          }));
+        } finally {
+          client.release();
+        }
+      } catch (err) {
+        console.error("[getSitemapPrograms] database query failed", err);
+        return [];
       }
     },
     ["sitemap-programs"],
@@ -749,7 +844,6 @@ export const getSitemapPrograms = cache(async (): Promise<SitemapProgram[]> => {
   ).then((rows) =>
     rows.map((row) => ({
       slug: row.slug,
-      // Cache round-trips may stringify Date values.
       updatedAt: asDate(row.updatedAt),
     })),
   );
@@ -860,11 +954,16 @@ export const getRelatedPrograms = cache(
 
 /** The latest successful catalog refresh, used for public data freshness messaging. */
 export const getCatalogLastUpdated = cache(async (): Promise<Date | null> => {
-  const pool = getDbPool();
-  if (!pool) return null;
-
   const cached = await safeCache(
     async () => {
+      const bundle = await loadProgramsSnapshotBundle();
+      if (bundle?.lastUpdated) {
+        return asDate(bundle.lastUpdated);
+      }
+
+      const pool = getDbPool();
+      if (!pool) return null;
+
       try {
         const client = await pool.connect();
         try {
