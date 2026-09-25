@@ -18,8 +18,28 @@ function isRevalidationScope(value: string): value is RevalidationScope {
 
 function revalidatePrograms(paths: string[]) {
   revalidateTag(PROGRAMS_TAG, "max");
+  // revalidateTag clears unstable_cache; revalidatePath is required to purge
+  // Full Route Cache for indefinite ISR program pages after snapshot publish.
+  revalidatePath("/");
+  revalidatePath("/programs");
+  revalidatePath("/programs/associate");
+  revalidatePath("/programs/bachelors");
+  revalidatePath("/programs/certificates");
+  revalidatePath("/programs/graduate");
+  revalidatePath("/programs/[slug]", "page");
+  revalidatePath("/programs/[slug]/requirements", "page");
   revalidatePath("/data-status");
-  paths.push("/data-status");
+  paths.push(
+    "/",
+    "/programs",
+    "/programs/associate",
+    "/programs/bachelors",
+    "/programs/certificates",
+    "/programs/graduate",
+    "/programs/[slug]",
+    "/programs/[slug]/requirements",
+    "/data-status",
+  );
 }
 
 function revalidateCourses(paths: string[]) {

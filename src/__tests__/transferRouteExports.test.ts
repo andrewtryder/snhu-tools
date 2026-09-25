@@ -41,19 +41,18 @@ describe("Transfer detail page ISR exports", () => {
     expect(await mod.generateStaticParams()).toEqual([]);
   });
 
-  it("transfer index pages export a numeric revalidate (7-day TTL)", async () => {
+  it("transfer index pages export revalidate=false (event-driven ISR)", async () => {
     const { revalidate: transfersRevalidate } = await import("@/app/transfers/page");
     const { revalidate: subjectsRevalidate } = await import("@/app/transfers/subjects/page");
     const { revalidate: orgsRevalidate } = await import("@/app/transfers/organizations/page");
     const { revalidate: levelsRevalidate } = await import("@/app/transfers/levels/page");
     const { revalidate: coursesRevalidate } = await import("@/app/transfers/courses/page");
 
-    const sevenDaysInSeconds = 7 * 24 * 60 * 60;
-    expect(transfersRevalidate).toBe(sevenDaysInSeconds);
-    expect(subjectsRevalidate).toBe(sevenDaysInSeconds);
-    expect(orgsRevalidate).toBe(sevenDaysInSeconds);
-    expect(levelsRevalidate).toBe(sevenDaysInSeconds);
-    expect(coursesRevalidate).toBe(sevenDaysInSeconds);
+    expect(transfersRevalidate).toBe(false);
+    expect(subjectsRevalidate).toBe(false);
+    expect(orgsRevalidate).toBe(false);
+    expect(levelsRevalidate).toBe(false);
+    expect(coursesRevalidate).toBe(false);
   });
 
   it("/courses page exports revalidate=false (on-demand ISR) and has no searchParams dependency", async () => {
