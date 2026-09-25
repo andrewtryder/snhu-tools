@@ -1,6 +1,7 @@
 import dotenv from "dotenv";
 import { runProgramSync } from "@/lib/program-sync";
 import { SyncOptions } from "@/lib/program-sync/types";
+import { publishProgramsSnapshot, publishSearchSnapshot } from "@/lib/snapshots";
 
 dotenv.config();
 
@@ -32,6 +33,37 @@ export async function main(args = process.argv.slice(2)): Promise<void> {
 
   // Single compact JSON line output for CircleCI parsing
   console.log(JSON.stringify(result));
+
+  if (result.action === "promoted") {
+    try {
+      const programs = await publishProgramsSnapshot();
+      const search = await publishSearchSnapshot({ fromPublishedDomains: true });
+      console.log(
+        JSON.stringify({
+          action: "snapshot-published",
+          domain: "programs",
+          programsVersion: programs.version,
+          searchVersion: search.version,
+        }),
+      );
+    } catch (error) {
+      console.log(
+        JSON.stringify({
+          action: "error",
+          status: "error",
+          importedCount: 0,
+          skippedCount: 0,
+          failedCount: 1,
+          promoted: false,
+          error: `Snapshot publish failed after program promote: ${
+            error instanceof Error ? error.message : String(error)
+          }`,
+        }),
+      );
+      process.exitCode = 1;
+      return;
+    }
+  }
 
   if (result.action === "error") {
     process.exitCode = 1;

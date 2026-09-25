@@ -1,5 +1,6 @@
 import dotenv from "dotenv";
 import { runCatalogSyncToCompletion } from "@/features/courses/sync";
+import { publishCoursesSnapshot, publishSearchSnapshot } from "@/lib/snapshots";
 
 dotenv.config();
 
@@ -10,6 +11,33 @@ export async function main(args = process.argv.slice(2)): Promise<void> {
 
   const result = await runCatalogSyncToCompletion({ ignoreLease: args.includes("--ignore-lease") });
   console.log(JSON.stringify(result));
+
+  if (result.action === "promoted") {
+    try {
+      const courses = await publishCoursesSnapshot();
+      const search = await publishSearchSnapshot({ fromPublishedDomains: true });
+      console.log(
+        JSON.stringify({
+          action: "snapshot-published",
+          domain: "courses",
+          coursesVersion: courses.version,
+          searchVersion: search.version,
+        }),
+      );
+    } catch (error) {
+      console.log(
+        JSON.stringify({
+          action: "error",
+          error: `Snapshot publish failed after catalog promote: ${
+            error instanceof Error ? error.message : String(error)
+          }`,
+        }),
+      );
+      process.exitCode = 1;
+      return;
+    }
+  }
+
   if (result.action === "error") process.exitCode = 1;
 }
 
