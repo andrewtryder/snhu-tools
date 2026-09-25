@@ -15,17 +15,52 @@ describe("sync error reporting", () => {
   beforeEach(() => {
     process.env = { ...originalEnv };
     delete process.env.HONEYBADGER_API_KEY;
+    delete process.env.HONEYBADGER_ENABLED;
+    delete process.env.VERCEL_ENV;
+    delete process.env.NEXT_PUBLIC_VERCEL_ENV;
     honeybadger.configure.mockReset();
     honeybadger.notifyAsync.mockReset();
   });
 
   it("logs but does not notify without a server Honeybadger key", async () => {
+    process.env.HONEYBADGER_ENABLED = "true";
+    process.env.VERCEL_ENV = "production";
     await expect(reportSyncError(new Error("failed"), { component: "catalog-sync" })).resolves.toBeUndefined();
+    expect(honeybadger.notifyAsync).not.toHaveBeenCalled();
+  });
+
+  it("logs but does not notify when HONEYBADGER_ENABLED is missing", async () => {
+    process.env.HONEYBADGER_API_KEY = "test-key";
+    process.env.VERCEL_ENV = "production";
+    await expect(reportSyncError(new Error("failed"), { component: "catalog-sync" })).resolves.toBeUndefined();
+    expect(honeybadger.notifyAsync).not.toHaveBeenCalled();
+  });
+
+  it("logs but does not notify in preview even when enabled", async () => {
+    process.env.HONEYBADGER_API_KEY = "test-key";
+    process.env.HONEYBADGER_ENABLED = "true";
+    process.env.VERCEL_ENV = "preview";
+    await expect(reportSyncError(new Error("failed"), { component: "catalog-sync" })).resolves.toBeUndefined();
+    expect(honeybadger.notifyAsync).not.toHaveBeenCalled();
+  });
+
+  it("does not notify Honeybadger quota/transport noise", async () => {
+    process.env.HONEYBADGER_API_KEY = "test-key";
+    process.env.HONEYBADGER_ENABLED = "true";
+    process.env.VERCEL_ENV = "production";
+    await expect(
+      reportSyncError(
+        new Error("Your account or project has exceeded the quota. Upgrade your plan to increase limits."),
+        { component: "catalog-sync" },
+      ),
+    ).resolves.toBeUndefined();
     expect(honeybadger.notifyAsync).not.toHaveBeenCalled();
   });
 
   it("notifies with sanitized writer context and never exposes database values", async () => {
     process.env.HONEYBADGER_API_KEY = "test-key";
+    process.env.HONEYBADGER_ENABLED = "true";
+    process.env.VERCEL_ENV = "production";
     const rawError = new Error("connection failed for postgresql://user:p%40ss@example.invalid/db");
     await reportSyncError(rawError, {
       component: "transfer-sync",
@@ -51,6 +86,8 @@ describe("sync error reporting", () => {
 
   it("swallows notifier failures", async () => {
     process.env.HONEYBADGER_API_KEY = "test-key";
+    process.env.HONEYBADGER_ENABLED = "true";
+    process.env.VERCEL_ENV = "production";
     honeybadger.notifyAsync.mockRejectedValueOnce(new Error("offline"));
     await expect(reportSyncError(new Error("failed"), { component: "catalog-sync" })).resolves.toBeUndefined();
   });
