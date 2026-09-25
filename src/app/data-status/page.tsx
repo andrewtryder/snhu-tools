@@ -6,6 +6,9 @@ import { Card } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
 import { MetricCard } from "@/components/ui/MetricCard";
 import { getPrograms, getCatalogYears, getProgramSyncState } from "@/lib/serverData";
+import { getPool } from "@/lib/db/pool";
+import { getRequestManifest } from "@/lib/snapshots/readThrough";
+import { isDbAvailabilityError } from "@/lib/snapshots/availability";
 import { kualiConfig } from "@/config/kualiConfig";
 import { CheckCircle2Icon, DatabaseIcon, AlertTriangleIcon, ActivityIcon, RefreshCwIcon, XCircleIcon } from "lucide-react";
 
@@ -18,20 +21,87 @@ export const metadata = {
   description: "Live status dashboard displaying catalog synchronization health, program counts, and parser diagnostics for SNHU Degree Map.",
 };
 
+/** Soft DB probe — never throws; used only for status messaging. */
+async function probeDatabaseAvailable(): Promise<boolean> {
+  if (!process.env.POSTGRES_URL) return false;
+  try {
+    const pool = getPool();
+    const client = await pool.connect();
+    try {
+      await client.query("SELECT 1");
+      return true;
+    } finally {
+      client.release();
+    }
+  } catch (error) {
+    if (isDbAvailabilityError(error)) return false;
+    console.error("[data-status] DB probe failed", error);
+    return false;
+  }
+}
+
 export default async function DataStatusPage() {
-  const programs = await getPrograms();
-  const years = await getCatalogYears();
-  const syncState = await getProgramSyncState();
+  // Build/runtime must survive DB outages (e.g. provider quota). Other catalog
+  // pages already catch; this page previously rethrew and failed `next build`.
+  let programs: Awaited<ReturnType<typeof getPrograms>> = [];
+  let years: Awaited<ReturnType<typeof getCatalogYears>> = [];
+  let syncState: Awaited<ReturnType<typeof getProgramSyncState>> = null;
+  let manifest: Awaited<ReturnType<typeof getRequestManifest>> = null;
+  let dbAvailable = true;
+
+  try {
+    ;[programs, years, syncState, manifest, dbAvailable] = await Promise.all([
+      getPrograms(),
+      getCatalogYears(),
+      getProgramSyncState(),
+      getRequestManifest(),
+      probeDatabaseAvailable(),
+    ]);
+  } catch (err) {
+    console.error("[data-status] Failed to load status data", err);
+  }
 
   const totalPrograms = programs.length;
   const unparsedNotesCount = programs.reduce((acc, p) => acc + (p.unparsedRequirements?.length || 0), 0);
+  const servingSnapshotWhileDbDown = !dbAvailable && !!manifest?.programsVersion;
 
   const isSyncing = syncState?.status === "syncing";
   const hasError = !!syncState?.last_error;
-  const statusColor = isSyncing ? "text-blue-700 bg-blue-50 border-blue-200" : hasError ? "text-red-700 bg-red-50 border-red-200" : "text-emerald-700 bg-emerald-50 border-emerald-200";
-  const StatusIcon = isSyncing ? RefreshCwIcon : hasError ? XCircleIcon : CheckCircle2Icon;
-  const statusPulse = isSyncing ? "bg-blue-500 animate-spin" : hasError ? "bg-red-500" : "bg-emerald-500 animate-pulse";
-  const statusText = isSyncing ? "Syncing..." : hasError ? "Sync Failed" : "All Systems Operational";
+  const statusColor = servingSnapshotWhileDbDown
+    ? "text-amber-800 bg-amber-50 border-amber-200"
+    : isSyncing
+      ? "text-blue-700 bg-blue-50 border-blue-200"
+      : hasError
+        ? "text-red-700 bg-red-50 border-red-200"
+        : "text-emerald-700 bg-emerald-50 border-emerald-200";
+  const StatusIcon = servingSnapshotWhileDbDown
+    ? AlertTriangleIcon
+    : isSyncing
+      ? RefreshCwIcon
+      : hasError
+        ? XCircleIcon
+        : CheckCircle2Icon;
+  const statusPulse = servingSnapshotWhileDbDown
+    ? "bg-amber-500"
+    : isSyncing
+      ? "bg-blue-500 animate-spin"
+      : hasError
+        ? "bg-red-500"
+        : "bg-emerald-500 animate-pulse";
+  const statusText = servingSnapshotWhileDbDown
+    ? "Serving last-known-good snapshot"
+    : isSyncing
+      ? "Syncing..."
+      : hasError
+        ? "Sync Failed"
+        : "All Systems Operational";
+
+  const snapshotPublishedAt = manifest?.publishedAt
+    ? new Date(manifest.publishedAt).toLocaleString()
+    : "Never";
+  const sourceUpdatedAt = manifest?.sourceUpdatedAt?.programs
+    ? new Date(manifest.sourceUpdatedAt.programs).toLocaleString()
+    : "Unknown";
 
   return (
     <div className="flex min-h-screen flex-col bg-background">
@@ -60,6 +130,18 @@ export default async function DataStatusPage() {
             </Link>
           </div>
 
+          {servingSnapshotWhileDbDown ? (
+            <Card className="border-amber-200 bg-amber-50/60 space-y-1">
+              <p className="text-sm font-semibold text-amber-900">
+                Database temporarily unavailable — serving durable snapshot
+              </p>
+              <p className="text-xs text-amber-800">
+                Public catalog pages continue from the last successful publish.
+                Snapshot published {snapshotPublishedAt}; catalog source updated {sourceUpdatedAt}.
+              </p>
+            </Card>
+          ) : null}
+
           {/* Metric Cards Grid */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             <MetricCard
@@ -84,6 +166,21 @@ export default async function DataStatusPage() {
               label="Last Sync Run"
               value={syncState?.completed_at ? new Date(syncState.completed_at).toLocaleDateString() : "Never"}
               subtext={syncState?.next_due_at ? `Next sync: ${new Date(syncState.next_due_at).toLocaleDateString()}` : "Scheduled via CircleCI"}
+              icon={<ActivityIcon className="h-5 w-5 text-primary" />}
+            />
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <MetricCard
+              label="Snapshot Published"
+              value={snapshotPublishedAt}
+              subtext={manifest ? `Programs v${manifest.programsVersion ?? "—"}` : "No durable snapshot yet"}
+              icon={<DatabaseIcon className="h-5 w-5 text-primary" />}
+            />
+            <MetricCard
+              label="Source Updated At"
+              value={sourceUpdatedAt}
+              subtext="Programs catalog source timestamp"
               icon={<ActivityIcon className="h-5 w-5 text-primary" />}
             />
           </div>
