@@ -56,16 +56,16 @@ describe("db pool", () => {
     expect(poolConstructorMock).toHaveBeenCalledWith({
       connectionString: "postgresql://user:pass@host:5432/db",
       ssl: { rejectUnauthorized: true, ca: "test-ca" },
-      max: 1,
+      max: 3,
       idleTimeoutMillis: 5_000,
       connectionTimeoutMillis: 15_000,
     });
     expect(POOL_OPTIONS).toEqual({
-      max: 1,
+      max: 3,
       idleTimeoutMillis: 5_000,
       connectionTimeoutMillis: 15_000,
     });
-    expect(RUNTIME_POOL_MAX).toBe(1);
+    expect(RUNTIME_POOL_MAX).toBe(3);
     expect(RUNTIME_POOL_CONNECTION_TIMEOUT_MS).toBe(15_000);
   });
 

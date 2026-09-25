@@ -1,8 +1,8 @@
 import { inArray } from "drizzle-orm";
-import { unstable_cache } from "next/cache";
 import { db } from "@/features/transfers/db";
 import { transferCourses } from "@/features/transfers/db/schema";
 import { getSiteUrl } from "@/lib/siteUrl";
+import { durableCache } from "@/lib/snapshots/cache";
 import {
   TRANSFER_COVERAGE_CACHE_TAG,
   TRANSFER_COVERAGE_REVALIDATE_SECONDS,
@@ -60,7 +60,7 @@ export async function fetchTransferCoverageRows(
     .where(inArray(transferCourses.courseNumber, courseCodes));
 }
 
-const _cachedTransferCoverageRows = unstable_cache(
+const _cachedTransferCoverageRows = durableCache(
   async (sortedCodesKey: string): Promise<TransferCoverageRow[]> => {
     const codes = sortedCodesKey.length === 0 ? [] : sortedCodesKey.split(",");
     return fetchTransferCoverageRows(codes);

@@ -74,7 +74,7 @@ describe("runtime database pool", () => {
     expect(attachDatabasePoolMock).toHaveBeenCalledWith(pool);
     expect(poolConstructorMock).toHaveBeenCalledWith(
       expect.objectContaining({
-        max: 1,
+        max: 3,
         idleTimeoutMillis: 5_000,
         connectionTimeoutMillis: 15_000,
       }),
