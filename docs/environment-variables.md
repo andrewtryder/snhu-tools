@@ -25,8 +25,9 @@ Programs, Courses, and Transfers share one lazy `pg.Pool` per serverless instanc
 
 | Variable Name | Context / Location | Description |
 | :--- | :--- | :--- |
-| **`BLOB_READ_WRITE_TOKEN`** | Vercel (Production), CircleCI writers | Vercel Blob read/write token for durable last-known-good catalog snapshots. Required for production snapshot publish/read. |
+| **`BLOB_READ_WRITE_TOKEN`** | Vercel (all envs, read), CircleCI writers (read+publish) | Vercel Blob token for durable last-known-good catalog snapshots. App runtimes may read with this token; publication is separately gated. |
 | **`SNAPSHOT_STORE`** | Local / tests / optional override | `blob` (default when `BLOB_READ_WRITE_TOKEN` is set) or `fs` (local filesystem under `.data/snapshots`, used in tests). |
+| **`SNAPSHOT_PUBLISH_ENABLED`** | CircleCI writer contexts / secure bootstrap only | Must be the string `true` to publish snapshots, flip manifests, roll back, or GC. Missing/false on Vercel Preview/Development/Production app deploys so those environments can read but never mutate the canonical production snapshot. |
 
 Snapshots are published after each successful domain promote. Public reads prefer the durable snapshot; Postgres is used for bootstrap when no snapshot exists yet. See `docs/operations.md`.
 

@@ -6,6 +6,7 @@ import {
 import { SNAPSHOT_ROOT_PREFIX } from "./paths";
 import { getSnapshotStore } from "./store";
 import { readCurrentManifest, readPreviousManifest, versionForDomain } from "./manifest";
+import { assertSnapshotPublishEnabled } from "./publishGuard";
 
 const DOMAINS: SnapshotDomain[] = ["programs", "courses", "transfers", "search"];
 
@@ -52,6 +53,7 @@ export async function gcSnapshotVersions(options?: {
   retentionPriorVersions?: number;
   domains?: SnapshotDomain[];
 }): Promise<{ deleted: string[]; retained: string[] }> {
+  assertSnapshotPublishEnabled("garbage-collect snapshot versions");
   const retention = options?.retentionPriorVersions ?? SNAPSHOT_RETENTION_PRIOR_VERSIONS;
   const domains = options?.domains ?? DOMAINS;
   const store = await getSnapshotStore();

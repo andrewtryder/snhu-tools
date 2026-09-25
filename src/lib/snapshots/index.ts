@@ -50,6 +50,11 @@ export {
   type ReadThroughSnapshotOptions,
 } from "./readThrough";
 
+export {
+  isSnapshotPublishEnabled,
+  assertSnapshotPublishEnabled,
+} from "./publishGuard";
+
 export { gcSnapshotVersions } from "./gc";
 
 export {

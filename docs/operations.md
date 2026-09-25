@@ -14,13 +14,16 @@
 
 ### Bootstrap (first publish)
 
-1. Ensure `BLOB_READ_WRITE_TOKEN` is set in Vercel Production (and optionally Preview). Local/tests can use `SNAPSHOT_STORE=fs` (default without a Blob token).
-2. With Neon available and promoted data present, run:
-   - `npm run snapshot:bootstrap` (all domains + search), or
-   - `npm run snapshot:publish -- --domain=courses|programs|transfers|search`
-3. Verify with `npm run snapshot:verify`.
-4. Successful weekly writers also publish after promote (`catalog:sync` / `transfer:sync` / `program:sync`). If publish fails, the sync exits non-zero so CircleCI skips revalidation.
-5. Confirm `/data-status` shows snapshot published + source updated timestamps.
+1. Ensure `BLOB_READ_WRITE_TOKEN` is set in Vercel (read) and CircleCI writer contexts (read+publish). Local/tests can use `SNAPSHOT_STORE=fs`.
+2. Publication is **opt-in**: set `SNAPSHOT_PUBLISH_ENABLED=true` only in CircleCI writer contexts or a secure bootstrap shell. Leave it unset/false on Vercel Preview/Development/Production app deploys so they can read the canonical snapshot but cannot flip `current.json`.
+3. With Neon available and promoted data present, run:
+   - `SNAPSHOT_PUBLISH_ENABLED=true npm run snapshot:bootstrap` (all domains + search), or
+   - `SNAPSHOT_PUBLISH_ENABLED=true npm run snapshot:publish -- --domain=courses|programs|transfers|search`
+4. Verify with `npm run snapshot:verify` (reads only; does not require publish enabled).
+5. Successful weekly writers also publish after promote when CircleCI has `SNAPSHOT_PUBLISH_ENABLED=true`. If publish fails, the sync exits non-zero so CircleCI skips revalidation.
+6. Confirm `/data-status` shows snapshot published + source updated timestamps.
+
+Do **not** merge/deploy snapshot-first production until the first Blob snapshot exists (or you have confirmed the no-snapshot DB fallback still serves the current site).
 
 ### Weekly cadence
 

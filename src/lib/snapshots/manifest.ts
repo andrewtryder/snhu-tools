@@ -6,6 +6,7 @@ import {
   type SnapshotMeta,
 } from "./types";
 import { getSnapshotStore } from "./store";
+import { assertSnapshotPublishEnabled } from "./publishGuard";
 import {
   createSnapshotVersion,
   domainBundlePath,
@@ -79,6 +80,7 @@ export async function publishDomainSnapshot<T extends { meta: SnapshotMeta }>(ar
   sourceUpdatedAt?: string | null;
   counts?: Partial<SnapshotManifest["counts"]>;
 }): Promise<{ version: string; manifest: SnapshotManifest }> {
+  assertSnapshotPublishEnabled(`publish ${args.domain} snapshot`);
   const { domain, bundle, validate } = args;
   validate(bundle);
 
@@ -130,6 +132,7 @@ export async function publishDomainSnapshot<T extends { meta: SnapshotMeta }>(ar
 
 /** Repoint current manifest to the stored previous manifest (rollback). */
 export async function rollbackToPreviousManifest(): Promise<SnapshotManifest> {
+  assertSnapshotPublishEnabled("rollback snapshot manifest");
   const store = await getSnapshotStore();
   const previous = await readPreviousManifest();
   if (!previous) {

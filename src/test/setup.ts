@@ -12,6 +12,8 @@ import {
 const testSnapshotRoot = mkdtempSync(path.join(tmpdir(), "snhu-vitest-snapshots-"));
 process.env.SNAPSHOT_STORE = "fs";
 process.env.SNAPSHOT_STORE_DIR = testSnapshotRoot;
+// Tests exercise publication; production/Preview app deploys leave this unset.
+process.env.SNAPSHOT_PUBLISH_ENABLED = "true";
 setSnapshotStoreForTests(createFsSnapshotStore(testSnapshotRoot));
 
 afterEach(() => {

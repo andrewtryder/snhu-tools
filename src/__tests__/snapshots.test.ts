@@ -132,6 +132,23 @@ describe("snapshot publish / readThrough / rollback", () => {
     expect(current?.coursesVersion).toBe(version);
   });
 
+  it("refuses publication when SNAPSHOT_PUBLISH_ENABLED is not true", async () => {
+    const previous = process.env.SNAPSHOT_PUBLISH_ENABLED;
+    process.env.SNAPSHOT_PUBLISH_ENABLED = "false";
+    await expect(
+      publishDomainSnapshot({
+        domain: "courses",
+        bundle: {
+          meta: coursesMeta(createSnapshotVersion("courses")),
+          summaries: [{ catalog_course_id: "CS101", title: "Intro" }],
+        },
+        validate: () => undefined,
+        counts: { courses: 1 },
+      }),
+    ).rejects.toThrow(/SNAPSHOT_PUBLISH_ENABLED/);
+    process.env.SNAPSHOT_PUBLISH_ENABLED = previous;
+  });
+
   it("failed validate leaves previous manifest untouched", async () => {
     const version1 = createSnapshotVersion("courses");
     await publishDomainSnapshot({
