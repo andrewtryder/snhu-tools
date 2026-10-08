@@ -22,18 +22,49 @@ export async function validateStaging(
     errors.push("Staging validation failed: programs_stage table is empty.");
   }
 
-  // Check 3: Material shrink comparison with live data
+  // Check 3: Material shrink comparison and zero-drop slug inventory guard against live data
   const liveProgRes = await client.query<{ count?: string }>("SELECT COUNT(*) as count FROM programs;");
   const liveProgramCount = parseInt(liveProgRes?.rows?.[0]?.count || "0", 10);
 
-  if (liveProgramCount > 0 && !allowLargeShrink) {
-    const shrinkRatio = (liveProgramCount - programCount) / liveProgramCount;
-    if (shrinkRatio > 0.2) {
-      errors.push(
-        `Staging validation failed: Material shrink detected! Live count=${liveProgramCount}, Staging count=${programCount} (${(
-          shrinkRatio * 100
-        ).toFixed(1)}% shrink). Pass allowLargeShrink=true to override.`
-      );
+  if (liveProgramCount > 0) {
+    if (!allowLargeShrink) {
+      const shrinkRatio = (liveProgramCount - programCount) / liveProgramCount;
+      if (shrinkRatio > 0.2) {
+        errors.push(
+          `Staging validation failed: Material shrink detected! Live count=${liveProgramCount}, Staging count=${programCount} (${(
+            shrinkRatio * 100
+          ).toFixed(1)}% shrink). Pass allowLargeShrink=true to override.`
+        );
+      }
+
+      // Zero-drop inventory guard: verify every live program slug is present in staging
+      const missingProgRes = await client.query<{ slug: string; source_pid: string | null }>(`
+        SELECT p.slug, p.source_pid FROM programs p
+        LEFT JOIN programs_stage ps ON ps.slug = p.slug
+        WHERE ps.slug IS NULL;
+      `);
+      if (missingProgRes?.rows && missingProgRes.rows.length > 0) {
+        const missing = missingProgRes.rows
+          .map((r) => `${r.slug}${r.source_pid ? ` (${r.source_pid})` : ""}`)
+          .join(", ");
+        errors.push(
+          `Staging validation failed: Zero-drop inventory guard triggered! ${missingProgRes.rows.length} live program(s) missing from staging: ${missing}. Pass allowLargeShrink=true to override.`
+        );
+      }
+    } else {
+      const missingProgRes = await client.query<{ slug: string; source_pid: string | null }>(`
+        SELECT p.slug, p.source_pid FROM programs p
+        LEFT JOIN programs_stage ps ON ps.slug = p.slug
+        WHERE ps.slug IS NULL;
+      `);
+      if (missingProgRes?.rows && missingProgRes.rows.length > 0) {
+        const missing = missingProgRes.rows
+          .map((r) => `${r.slug}${r.source_pid ? ` (${r.source_pid})` : ""}`)
+          .join(", ");
+        warnings.push(
+          `Staging validation warning: ${missingProgRes.rows.length} live program(s) missing from staging (--allow-large-shrink active): ${missing}`
+        );
+      }
     }
   }
 

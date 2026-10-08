@@ -77,6 +77,55 @@ describe("Program Sync Architecture & Promotion Safeguards", () => {
     expect(result.errors).toHaveLength(0);
   });
 
+  it("blocks promotion when live program slugs are missing from staging (zero-drop inventory guard)", async () => {
+    const mockClient = {
+      query: vi.fn().mockImplementation((queryText: string) => {
+        if (queryText.includes("FROM programs_stage;")) return Promise.resolve({ rows: [{ count: "10" }] });
+        if (queryText.includes("FROM programs;")) return Promise.resolve({ rows: [{ count: "10" }] });
+        if (queryText.includes("WHERE ps.slug IS NULL")) {
+          return Promise.resolve({
+            rows: [{ slug: "accounting-bs", source_pid: "acc_pid_01" }],
+          });
+        }
+        if (queryText.includes("HAVING COUNT(*) > 1;")) return Promise.resolve({ rows: [] });
+        if (queryText.includes("FROM degree_courses_stage;")) return Promise.resolve({ rows: [{ count: "50" }] });
+        if (queryText.includes("FROM degree_course_edges_stage;")) return Promise.resolve({ rows: [{ count: "40" }] });
+        return Promise.resolve({ rows: [] });
+      }),
+    } as unknown as PoolClient;
+
+    const result = await validateStaging(mockClient, 10, 0, false);
+
+    expect(result.valid).toBe(false);
+    expect(result.errors[0]).toContain("Zero-drop inventory guard triggered");
+    expect(result.errors[0]).toContain("accounting-bs (acc_pid_01)");
+  });
+
+  it("converts missing program slugs to a warning when allowLargeShrink is true", async () => {
+    const mockClient = {
+      query: vi.fn().mockImplementation((queryText: string) => {
+        if (queryText.includes("FROM programs_stage;")) return Promise.resolve({ rows: [{ count: "10" }] });
+        if (queryText.includes("FROM programs;")) return Promise.resolve({ rows: [{ count: "10" }] });
+        if (queryText.includes("WHERE ps.slug IS NULL")) {
+          return Promise.resolve({
+            rows: [{ slug: "accounting-bs", source_pid: "acc_pid_01" }],
+          });
+        }
+        if (queryText.includes("HAVING COUNT(*) > 1;")) return Promise.resolve({ rows: [] });
+        if (queryText.includes("FROM degree_courses_stage;")) return Promise.resolve({ rows: [{ count: "50" }] });
+        if (queryText.includes("FROM degree_course_edges_stage;")) return Promise.resolve({ rows: [{ count: "40" }] });
+        return Promise.resolve({ rows: [] });
+      }),
+    } as unknown as PoolClient;
+
+    const result = await validateStaging(mockClient, 10, 0, true);
+
+    expect(result.valid).toBe(true);
+    expect(result.errors).toHaveLength(0);
+    expect(result.warnings.length).toBeGreaterThan(0);
+    expect(result.warnings[0]).toContain("live program(s) missing from staging");
+  });
+
   it("fails staging validation when duplicate program slugs exist", async () => {
     const mockClient = {
       query: vi.fn().mockImplementation((queryText: string) => {
