@@ -17,7 +17,7 @@ describe("course static exporter", () => {
     const value = transformCourses([...rows].reverse(), [...edges].reverse(), "2026-01-01T00:00:00Z");
     expect(value.ids).toEqual(["CS210", "IT140"]);
     expect(value.edges.map((edge) => edge.childId)).toEqual(["EXT100", "IT140"]);
-    expect(value.reconciliation).toEqual({ records: { sourceRows: 3, exportedRecords: 2, duplicateRows: 1, rejectedRows: 0 }, prerequisiteEdges: { sourceRows: 3, exportedEdges: 2, duplicateRows: 1, rejectedRows: 0, externalReferences: 1 } });
+    expect(value.reconciliation).toEqual({ records: { sourceRows: 3, exportedRecords: 2, duplicateRows: 1, rejectedRows: 0 }, prerequisiteEdges: { sourceRows: 3, exportedEdges: 2, duplicateRows: 1, rejectedRows: 0, externalReferences: 1, duplicateExternalRows: 0 } });
     expect(validateCourseGraph(value)[0].tree?.course_id).toBe("CS210");
     expect(transformCourses(rows, edges, "2026-01-01T00:00:00Z")).toEqual(value);
   });
@@ -150,6 +150,7 @@ describe("course static exporter", () => {
       duplicateRows: 1,
       rejectedRows: 0,
       externalReferences: 1,
+      duplicateExternalRows: 0,
     });
     expect(result.reconciliation.sourceCoverage).toEqual({
       coursesData: {
@@ -190,5 +191,56 @@ describe("course static exporter", () => {
     const cs210Tree = trees.find((t) => t.id === "CS210");
     expect(cs210Tree?.tree?.prerequisites?.map((p) => p.course_id)).toEqual(["IT140", "MAT999"]);
     expect(release).toHaveBeenCalled();
+  });
+
+  it("reconciles identical unmatched prerequisite rows into one exported edge while preserving raw source count", () => {
+    const courseRows = [
+      { catalog_course_id: "CS210", title: "Programming Languages", pid: "1", description: null, academic_level: null, credits: null, subject_code: "CS" },
+    ];
+    const edgeRows = [
+      { parent_id: "CS210", parent_title: "Programming Languages", child_id: "EXT101", child_title: "External Calculus" },
+      { parent_id: "CS210", parent_title: "Programming Languages", child_id: "EXT101", child_title: "External Calculus" },
+    ];
+    const sourceCoverage = {
+      coursesData: {
+        totalRows: 1,
+        candidateRows: 1,
+        excluded: { missingCatalogCourseId: 0 },
+      },
+      prerequisites: {
+        totalRows: 2,
+        candidateRows: 2,
+        excluded: {
+          orphanClassId: 0,
+          parentMissingCatalogCourseId: 0,
+          missingPrerequisiteCourseId: 0,
+          selfReference: 0,
+        },
+        unmatched: {
+          externalPrerequisites: 2,
+        },
+      },
+    };
+
+    const result = transformCourses(courseRows, edgeRows, "2026-01-01T00:00:00Z", sourceCoverage);
+
+    expect(result.edges).toEqual([
+      { parentId: "CS210", parentTitle: "Programming Languages", childId: "EXT101", childTitle: "External Calculus" },
+    ]);
+    expect(result.reconciliation.prerequisiteEdges).toEqual({
+      sourceRows: 2,
+      exportedEdges: 1,
+      duplicateRows: 1,
+      rejectedRows: 0,
+      externalReferences: 1,
+      duplicateExternalRows: 1,
+    });
+    // Raw unmatched prerequisite source rows are preserved from SQL
+    expect(result.reconciliation.sourceCoverage?.prerequisites.unmatched.externalPrerequisites).toBe(2);
+    // Disjoint accounting identity: raw unmatched = distinct exported external + duplicate external
+    expect(result.reconciliation.sourceCoverage?.prerequisites.unmatched.externalPrerequisites).toBe(
+      result.reconciliation.prerequisiteEdges.externalReferences +
+      result.reconciliation.prerequisiteEdges.duplicateExternalRows,
+    );
   });
 });

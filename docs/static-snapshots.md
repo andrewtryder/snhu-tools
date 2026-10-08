@@ -37,21 +37,108 @@ Each run writes the four domain JSON files, `manifest.json`, and `report.json` i
 
 ## First real-export reconciliation
 
-The first catalog export has no approved production baseline, so it must be reconciled before promotion. The staged `report.json` records the complete course source-to-export accounting at `.reconciliation.courses`: source record rows, exact duplicate rows, exported records, source prerequisite rows, exported relationships, exact duplicate relationships, and external prerequisite references. Both `rejectedRows` values must be zero. A non-identical duplicate identifier or relationship is export-blocking rather than silently selected.
+The first catalog export has no approved production baseline, so it must be reconciled before promotion. The staged `report.json` records the complete course source-to-export accounting at `.reconciliation.courses`: source record rows, exact duplicate rows, exported records, source prerequisite rows, exported relationships, exact duplicate relationships, external prerequisite references, duplicate external rows, and full database coverage breakdowns. Both `rejectedRows` values must be zero. A non-identical duplicate identifier or relationship is export-blocking rather than silently selected.
+
+Valid external prerequisite relationships (where a prerequisite is not present in `courses_data`) are preserved rather than silently dropped, matching production graph visualization behavior. To prevent silent relationship loss or duplicate accounting discrepancies, external relationships are reconciled across three separate metrics:
+1. **Raw unmatched prerequisite source rows** (`sourceCoverage.prerequisites.unmatched.externalPrerequisites`): Candidate prerequisite rows in PostgreSQL referring to an external course ID.
+2. **Distinct exported external prerequisite edges** (`reconciliation.prerequisiteEdges.externalReferences`): Unique external prerequisite edges emitted in `edges.json`.
+3. **Duplicate external prerequisite rows** (`reconciliation.prerequisiteEdges.duplicateExternalRows`): Duplicate source rows among external relationships that collapsed into a single edge.
 
 With the same approved read-only connection used only during the approved export window, record the source counts and compare them to the stage report:
 
 ```sql
-SELECT count(*) AS course_source_rows
-FROM courses_data
-WHERE catalog_course_id IS NOT NULL;
+-- 1. courses_data Source Coverage Audit
+SELECT 
+  COUNT(*)::int AS total_rows,
+  COUNT(*) FILTER (
+    WHERE catalog_course_id IS NOT NULL AND BTRIM(catalog_course_id) != ''
+  )::int AS candidate_rows,
+  COUNT(*) FILTER (
+    WHERE catalog_course_id IS NULL OR BTRIM(catalog_course_id) = ''
+  )::int AS missing_catalog_course_id
+FROM courses_data;
 
-SELECT count(*) AS prerequisite_source_rows
+-- 2. prerequisites Source Coverage Audit
+SELECT 
+  COUNT(*)::int AS total_rows,
+  COUNT(*) FILTER (
+    WHERE parent.pid IS NOT NULL 
+      AND parent.catalog_course_id IS NOT NULL 
+      AND BTRIM(parent.catalog_course_id) != ''
+      AND p.course_id IS NOT NULL 
+      AND BTRIM(p.course_id) != ''
+      AND UPPER(REGEXP_REPLACE(parent.catalog_course_id, '[\s-]+', '', 'g')) != UPPER(REGEXP_REPLACE(p.course_id, '[\s-]+', '', 'g'))
+  )::int AS candidate_rows,
+  COUNT(*) FILTER (
+    WHERE parent.pid IS NULL
+  )::int AS orphan_class_id,
+  COUNT(*) FILTER (
+    WHERE parent.pid IS NOT NULL 
+      AND (parent.catalog_course_id IS NULL OR BTRIM(parent.catalog_course_id) = '')
+  )::int AS parent_missing_catalog_course_id,
+  COUNT(*) FILTER (
+    WHERE parent.pid IS NOT NULL 
+      AND parent.catalog_course_id IS NOT NULL 
+      AND BTRIM(parent.catalog_course_id) != ''
+      AND (p.course_id IS NULL OR BTRIM(p.course_id) = '')
+  )::int AS missing_prerequisite_course_id,
+  COUNT(*) FILTER (
+    WHERE parent.pid IS NOT NULL 
+      AND parent.catalog_course_id IS NOT NULL 
+      AND BTRIM(parent.catalog_course_id) != ''
+      AND p.course_id IS NOT NULL 
+      AND BTRIM(p.course_id) != ''
+      AND UPPER(REGEXP_REPLACE(parent.catalog_course_id, '[\s-]+', '', 'g')) = UPPER(REGEXP_REPLACE(p.course_id, '[\s-]+', '', 'g'))
+  )::int AS self_reference,
+  COUNT(*) FILTER (
+    WHERE parent.pid IS NOT NULL 
+      AND parent.catalog_course_id IS NOT NULL 
+      AND BTRIM(parent.catalog_course_id) != ''
+      AND p.course_id IS NOT NULL 
+      AND BTRIM(p.course_id) != ''
+      AND UPPER(REGEXP_REPLACE(parent.catalog_course_id, '[\s-]+', '', 'g')) != UPPER(REGEXP_REPLACE(p.course_id, '[\s-]+', '', 'g'))
+      AND prerequisite.normalized_id IS NULL
+  )::int AS external_prerequisites
 FROM prerequisites p
-JOIN courses_data parent ON parent.pid = p.class_id
-JOIN courses_data prerequisite ON prerequisite.catalog_course_id = p.course_id
-WHERE parent.catalog_course_id IS NOT NULL
-  AND prerequisite.catalog_course_id IS NOT NULL;
+LEFT JOIN courses_data parent ON parent.pid = p.class_id
+LEFT JOIN (
+  SELECT DISTINCT ON (UPPER(REGEXP_REPLACE(catalog_course_id, '[\s-]+', '', 'g'))) 
+    catalog_course_id,
+    UPPER(REGEXP_REPLACE(catalog_course_id, '[\s-]+', '', 'g')) AS normalized_id
+  FROM courses_data 
+  WHERE catalog_course_id IS NOT NULL AND BTRIM(catalog_course_id) != '' 
+  ORDER BY UPPER(REGEXP_REPLACE(catalog_course_id, '[\s-]+', '', 'g')), pid
+) prerequisite ON prerequisite.normalized_id = UPPER(REGEXP_REPLACE(p.course_id, '[\s-]+', '', 'g'));
+
+-- 3. Candidate Courses Extraction
+SELECT title, pid, catalog_course_id, description, academic_level, credits, subject_code 
+FROM courses_data 
+WHERE catalog_course_id IS NOT NULL AND BTRIM(catalog_course_id) != '' 
+ORDER BY catalog_course_id, pid;
+
+-- 4. Candidate Prerequisite Edges Extraction (Preserving External References)
+SELECT 
+  parent.catalog_course_id AS parent_id, 
+  parent.title AS parent_title, 
+  COALESCE(prerequisite.catalog_course_id, p.course_id) AS child_id, 
+  COALESCE(prerequisite.title, NULLIF(BTRIM(p.course_title), ''), p.course_id) AS child_title 
+FROM prerequisites p 
+JOIN courses_data parent ON parent.pid = p.class_id 
+LEFT JOIN (
+  SELECT DISTINCT ON (UPPER(REGEXP_REPLACE(catalog_course_id, '[\s-]+', '', 'g'))) 
+    catalog_course_id, 
+    title,
+    UPPER(REGEXP_REPLACE(catalog_course_id, '[\s-]+', '', 'g')) AS normalized_id
+  FROM courses_data 
+  WHERE catalog_course_id IS NOT NULL AND BTRIM(catalog_course_id) != '' 
+  ORDER BY UPPER(REGEXP_REPLACE(catalog_course_id, '[\s-]+', '', 'g')), pid
+) prerequisite ON prerequisite.normalized_id = UPPER(REGEXP_REPLACE(p.course_id, '[\s-]+', '', 'g')) 
+WHERE parent.catalog_course_id IS NOT NULL 
+  AND BTRIM(parent.catalog_course_id) != '' 
+  AND p.course_id IS NOT NULL 
+  AND BTRIM(p.course_id) != '' 
+  AND UPPER(REGEXP_REPLACE(parent.catalog_course_id, '[\s-]+', '', 'g')) != UPPER(REGEXP_REPLACE(p.course_id, '[\s-]+', '', 'g'))
+ORDER BY parent.catalog_course_id, COALESCE(prerequisite.catalog_course_id, p.course_id), parent.pid;
 ```
 
 ```sh
@@ -60,7 +147,14 @@ jq '.reconciliation.courses' "$STAGE_DIR/report.json"
 jq '{ids: .meta.counts.ids, records: .meta.counts.records, edges: .meta.counts.edges}' "$STAGE_DIR/courses.json"
 ```
 
-The source counts must equal `sourceRows`; the accounting identity is `sourceRows = exported + duplicateRows + rejectedRows`. Review every nonzero duplicate count and every external prerequisite reference. Compare the staged public route inventory with the currently deployed/active snapshot before approving the first baseline:
+The source counts must satisfy the following exact accounting identities:
+1. `courses_data.totalRows = candidateRows + missingCatalogCourseId`
+2. `courses_data.candidateRows = records.sourceRows = exportedRecords + duplicateRows + rejectedRows` (where `rejectedRows = 0`)
+3. `prerequisites.totalRows = candidateRows + orphanClassId + parentMissingCatalogCourseId + missingPrerequisiteCourseId + selfReference`
+4. `prerequisites.candidateRows = prerequisiteEdges.sourceRows = exportedEdges + duplicateRows + rejectedRows` (where `rejectedRows = 0`)
+5. `prerequisites.unmatched.externalPrerequisites = prerequisiteEdges.externalReferences + prerequisiteEdges.duplicateExternalRows`
+
+Review every nonzero duplicate count and every external prerequisite reference. Compare the staged public route inventory with the currently deployed/active snapshot before approving the first baseline:
 
 ```sh
 jq -r '.sitemap[].slug' "$STAGE_DIR/programs.json" | sort > /tmp/staged-program-slugs

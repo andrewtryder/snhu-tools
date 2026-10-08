@@ -25,7 +25,7 @@ export type CourseSourceCoverage = {
   };
 };
 
-export type CourseReconciliation = { records: { sourceRows: number; exportedRecords: number; duplicateRows: number; rejectedRows: number }; prerequisiteEdges: { sourceRows: number; exportedEdges: number; duplicateRows: number; rejectedRows: number; externalReferences: number }; sourceCoverage?: CourseSourceCoverage };
+export type CourseReconciliation = { records: { sourceRows: number; exportedRecords: number; duplicateRows: number; rejectedRows: number }; prerequisiteEdges: { sourceRows: number; exportedEdges: number; duplicateRows: number; rejectedRows: number; externalReferences: number; duplicateExternalRows: number }; sourceCoverage?: CourseSourceCoverage };
 export type CoursesExport = { meta: { domain: "courses"; counts: { ids: number; records: number; edges: number } }; ids: string[]; summaries: CourseSummary[]; records: Record<string, CourseRecord>; edges: GraphEdge[]; lastModified: string | null; reconciliation: CourseReconciliation };
 type Row = Partial<CourseRecord>;
 type EdgeRow = { parent_id?: string; parent_title?: string; child_id?: string; child_title?: string };
@@ -33,7 +33,7 @@ type ReconciliationIssue = { kind: "record" | "edge"; reason: string; identifier
 const normalize = (value: unknown) => String(value ?? "").trim().toUpperCase().replace(/[\s-]+/g, "");
 const clean = (value: unknown) => value == null ? null : String(value).trim() || null;
 const text = (value: unknown) => String(value ?? "").trim();
-const emptyReconciliation = (recordRows: number, edgeRows: number, sourceCoverage?: CourseSourceCoverage): CourseReconciliation => ({ records: { sourceRows: recordRows, exportedRecords: 0, duplicateRows: 0, rejectedRows: 0 }, prerequisiteEdges: { sourceRows: edgeRows, exportedEdges: 0, duplicateRows: 0, rejectedRows: 0, externalReferences: 0 }, ...(sourceCoverage ? { sourceCoverage } : {}) });
+const emptyReconciliation = (recordRows: number, edgeRows: number, sourceCoverage?: CourseSourceCoverage): CourseReconciliation => ({ records: { sourceRows: recordRows, exportedRecords: 0, duplicateRows: 0, rejectedRows: 0 }, prerequisiteEdges: { sourceRows: edgeRows, exportedEdges: 0, duplicateRows: 0, rejectedRows: 0, externalReferences: 0, duplicateExternalRows: 0 }, ...(sourceCoverage ? { sourceCoverage } : {}) });
 
 /** An export-blocking source-data error with non-sensitive reconciliation evidence. */
 export class CourseExportValidationError extends Error {
@@ -78,14 +78,22 @@ export function transformCourses(rows: Row[], edgeRows: EdgeRow[], completedAt: 
     edgeGroups.set(`${parentId}\0${childId}`, [...(edgeGroups.get(`${parentId}\0${childId}`) ?? []), edge]);
   }
   const edges: GraphEdge[] = [];
+  let duplicateExternalRows = 0;
   for (const key of [...edgeGroups.keys()].sort()) {
     const candidates = edgeGroups.get(key)!.sort((left, right) => edgeKey(left).localeCompare(edgeKey(right)));
     const keys = new Set(candidates.map(edgeKey));
     if (keys.size > 1) { reconciliation.prerequisiteEdges.rejectedRows += candidates.length; issues.push({ kind: "edge", reason: "conflicting-duplicate-relationship", identifier: key.replace("\0", "->") }); continue; }
-    edges.push(candidates[0]); reconciliation.prerequisiteEdges.duplicateRows += candidates.length - 1;
-    if (!records[candidates[0].childId]) reconciliation.prerequisiteEdges.externalReferences++;
+    const edge = candidates[0];
+    edges.push(edge);
+    const duplicates = candidates.length - 1;
+    reconciliation.prerequisiteEdges.duplicateRows += duplicates;
+    if (!records[edge.childId]) {
+      reconciliation.prerequisiteEdges.externalReferences++;
+      duplicateExternalRows += duplicates;
+    }
   }
   reconciliation.prerequisiteEdges.exportedEdges = edges.length;
+  reconciliation.prerequisiteEdges.duplicateExternalRows = duplicateExternalRows;
   if (sourceCoverage) {
     if (rows.length !== sourceCoverage.coursesData.candidateRows) {
       throw new Error(`Course records row count (${rows.length}) does not match candidate row count (${sourceCoverage.coursesData.candidateRows})`);
@@ -93,15 +101,10 @@ export function transformCourses(rows: Row[], edgeRows: EdgeRow[], completedAt: 
     if (edgeRows.length !== sourceCoverage.prerequisites.candidateRows) {
       throw new Error(`Prerequisite edges row count (${edgeRows.length}) does not match candidate row count (${sourceCoverage.prerequisites.candidateRows})`);
     }
-    reconciliation.sourceCoverage = {
-      ...sourceCoverage,
-      prerequisites: {
-        ...sourceCoverage.prerequisites,
-        unmatched: {
-          externalPrerequisites: reconciliation.prerequisiteEdges.externalReferences,
-        },
-      },
-    };
+    if (sourceCoverage.prerequisites.unmatched.externalPrerequisites !== reconciliation.prerequisiteEdges.externalReferences + duplicateExternalRows) {
+      throw new Error(`Prerequisite external references count (${sourceCoverage.prerequisites.unmatched.externalPrerequisites}) does not balance with exported (${reconciliation.prerequisiteEdges.externalReferences}) and duplicate (${duplicateExternalRows}) external edges`);
+    }
+    reconciliation.sourceCoverage = sourceCoverage;
   }
   if (issues.length) throw new CourseExportValidationError(reconciliation, issues);
   const ids = Object.keys(records).sort();

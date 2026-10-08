@@ -84,7 +84,8 @@ function assertCourses(courses: CoursesExport, fixture: boolean) {
   const reconciliation = courses.reconciliation;
   if (!reconciliation) { if (!fixture) throw new Error("Non-fixture courses require source reconciliation"); return; }
   const records = reconciliation.records; const edgesReconciliation = reconciliation.prerequisiteEdges;
-  if (![records.sourceRows, records.exportedRecords, records.duplicateRows, records.rejectedRows, edgesReconciliation.sourceRows, edgesReconciliation.exportedEdges, edgesReconciliation.duplicateRows, edgesReconciliation.rejectedRows, edgesReconciliation.externalReferences].every(Number.isInteger) || records.sourceRows !== records.exportedRecords + records.duplicateRows + records.rejectedRows || edgesReconciliation.sourceRows !== edgesReconciliation.exportedEdges + edgesReconciliation.duplicateRows + edgesReconciliation.rejectedRows || records.exportedRecords !== courses.ids.length || edgesReconciliation.exportedEdges !== courses.edges.length || edgesReconciliation.rejectedRows !== 0 || records.rejectedRows !== 0 || edgesReconciliation.externalReferences < 0 || edgesReconciliation.externalReferences > courses.edges.length) throw new Error("Course source reconciliation is invalid");
+  if (![records.sourceRows, records.exportedRecords, records.duplicateRows, records.rejectedRows, edgesReconciliation.sourceRows, edgesReconciliation.exportedEdges, edgesReconciliation.duplicateRows, edgesReconciliation.rejectedRows, edgesReconciliation.externalReferences, edgesReconciliation.duplicateExternalRows].every(Number.isInteger) || records.sourceRows !== records.exportedRecords + records.duplicateRows + records.rejectedRows || edgesReconciliation.sourceRows !== edgesReconciliation.exportedEdges + edgesReconciliation.duplicateRows + edgesReconciliation.rejectedRows || records.exportedRecords !== courses.ids.length || edgesReconciliation.exportedEdges !== courses.edges.length || edgesReconciliation.rejectedRows !== 0 || records.rejectedRows !== 0 || edgesReconciliation.externalReferences < 0 || edgesReconciliation.externalReferences > courses.edges.length || edgesReconciliation.duplicateExternalRows < 0 || edgesReconciliation.duplicateExternalRows > edgesReconciliation.duplicateRows) throw new Error("Course source reconciliation is invalid");
+  if (!fixture && !reconciliation.sourceCoverage) throw new Error("Approved real-data snapshots require course source coverage reconciliation");
   if (reconciliation.sourceCoverage) {
     const { coursesData, prerequisites } = reconciliation.sourceCoverage;
     const cd = coursesData.excluded;
@@ -109,7 +110,7 @@ function assertCourses(courses: CoursesExport, fixture: boolean) {
     if (prerequisites.candidateRows !== edgesReconciliation.sourceRows) {
       throw new Error("prerequisites candidate rows do not match reconciliation source rows");
     }
-    if (un.externalPrerequisites !== edgesReconciliation.externalReferences) {
+    if (un.externalPrerequisites !== edgesReconciliation.externalReferences + edgesReconciliation.duplicateExternalRows) {
       throw new Error("prerequisites external references do not match reconciliation count");
     }
   }

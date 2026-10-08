@@ -13,7 +13,30 @@ const clone = <T,>(value: T): T => JSON.parse(JSON.stringify(value));
 async function approvedBundles(): Promise<SnapshotBundles> {
   const bundles = clone(await loadBundles(fixtureDirectory));
   bundles.courses.meta.counts.edges = bundles.courses.edges.length;
-  bundles.courses.reconciliation = { records: { sourceRows: bundles.courses.ids.length, exportedRecords: bundles.courses.ids.length, duplicateRows: 0, rejectedRows: 0 }, prerequisiteEdges: { sourceRows: bundles.courses.edges.length, exportedEdges: bundles.courses.edges.length, duplicateRows: 0, rejectedRows: 0, externalReferences: 1 } };
+  bundles.courses.reconciliation = {
+    records: { sourceRows: bundles.courses.ids.length, exportedRecords: bundles.courses.ids.length, duplicateRows: 0, rejectedRows: 0 },
+    prerequisiteEdges: { sourceRows: bundles.courses.edges.length, exportedEdges: bundles.courses.edges.length, duplicateRows: 0, rejectedRows: 0, externalReferences: 1, duplicateExternalRows: 0 },
+    sourceCoverage: {
+      coursesData: {
+        totalRows: bundles.courses.ids.length,
+        candidateRows: bundles.courses.ids.length,
+        excluded: { missingCatalogCourseId: 0 },
+      },
+      prerequisites: {
+        totalRows: bundles.courses.edges.length,
+        candidateRows: bundles.courses.edges.length,
+        excluded: {
+          orphanClassId: 0,
+          parentMissingCatalogCourseId: 0,
+          missingPrerequisiteCourseId: 0,
+          selfReference: 0,
+        },
+        unmatched: {
+          externalPrerequisites: 1,
+        },
+      },
+    },
+  };
   bundles.programs.bySlug["computer-science-bs"].description = "Synthetic approved catalog data";
   bundles.programs.directory[0].description = "Synthetic approved catalog data";
   bundles.search.programs.find((program) => program.slug === "computer-science-bs")!.description = "Synthetic approved catalog data";
@@ -96,7 +119,7 @@ describe("complete static snapshot validation and promotion", () => {
     const bundles = await approvedBundles();
     bundles.courses.reconciliation = {
       records: { sourceRows: 4, exportedRecords: 3, duplicateRows: 1, rejectedRows: 0 },
-      prerequisiteEdges: { sourceRows: 3, exportedEdges: 2, duplicateRows: 1, rejectedRows: 0, externalReferences: 1 },
+      prerequisiteEdges: { sourceRows: 3, exportedEdges: 2, duplicateRows: 1, rejectedRows: 0, externalReferences: 1, duplicateExternalRows: 0 },
       sourceCoverage: {
         coursesData: {
           totalRows: 6,
@@ -141,8 +164,26 @@ describe("complete static snapshot validation and promotion", () => {
     expect(report.sourceCoverage?.courses).toEqual(bundles.courses.reconciliation.sourceCoverage);
     expect(report.reconciliation.courses?.sourceCoverage).toEqual(bundles.courses.reconciliation.sourceCoverage);
 
+    const missingCoverage = clone(bundles);
+    delete (missingCoverage.courses.reconciliation as { sourceCoverage?: unknown }).sourceCoverage;
+    expect(() => validateSnapshot(missingCoverage, { fixture: false, provenance: approvedProvenance })).toThrow(/Approved real-data snapshots require course source coverage reconciliation/);
+
     const unbalanced = clone(bundles);
     unbalanced.courses.reconciliation!.sourceCoverage!.coursesData.totalRows = 999;
     expect(() => validateSnapshot(unbalanced, { fixture: false, provenance: approvedProvenance })).toThrow(/courses_data source coverage does not balance/);
+
+    const withDuplicateExternal = clone(bundles);
+    withDuplicateExternal.courses.reconciliation!.prerequisiteEdges = {
+      sourceRows: 4,
+      exportedEdges: 2,
+      duplicateRows: 2,
+      rejectedRows: 0,
+      externalReferences: 1,
+      duplicateExternalRows: 1,
+    };
+    withDuplicateExternal.courses.reconciliation!.sourceCoverage!.prerequisites.candidateRows = 4;
+    withDuplicateExternal.courses.reconciliation!.sourceCoverage!.prerequisites.totalRows = 8;
+    withDuplicateExternal.courses.reconciliation!.sourceCoverage!.prerequisites.unmatched.externalPrerequisites = 2;
+    expect(validateSnapshot(withDuplicateExternal, { fixture: false, provenance: approvedProvenance }).counts.courses).toBe(3);
   });
 });
