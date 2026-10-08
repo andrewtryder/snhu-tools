@@ -29,6 +29,9 @@ export function assertStaticSnapshots(): void {
   if (validated) return;
   const typedManifest = manifest as Manifest;
   const fixtureAllowed = process.env.ALLOW_FIXTURE_SNAPSHOTS === "true";
+  if (typedManifest.fixture && process.env.VERCEL_ENV === "production") {
+    throw new Error("Fixture static snapshots are forbidden in Vercel production deployments");
+  }
   if (typedManifest.fixture && (process.env.NODE_ENV === "production" || process.env.VERCEL_ENV === "preview") && !fixtureAllowed) {
     throw new Error("Fixture static snapshots are forbidden in production or preview without ALLOW_FIXTURE_SNAPSHOTS=true");
   }

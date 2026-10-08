@@ -75,6 +75,16 @@ describe("Production Readiness — Fixture Isolation Gate", () => {
     await expect(getPrograms()).rejects.toThrow(/Fixture static snapshots are forbidden/);
   });
 
+  it("never permits fixture snapshots in Vercel production, even with an opt-in", async () => {
+    vi.stubEnv("NODE_ENV", "production");
+    vi.stubEnv("VERCEL_ENV", "production");
+    process.env.ALLOW_FIXTURE_SNAPSHOTS = "true";
+    const { getPrograms } = await import("@/lib/serverData");
+    const { resetStaticSnapshotValidationForTests } = await import("@/lib/staticSnapshots");
+    resetStaticSnapshotValidationForTests();
+    await expect(getPrograms()).rejects.toThrow(/forbidden in Vercel production/);
+  });
+
   it("allows fixture access in non-production when ENABLE_PROGRAM_FIXTURES is true", async () => {
     vi.stubEnv("NODE_ENV", "development");
     process.env.ALLOW_FIXTURE_SNAPSHOTS = "true";
