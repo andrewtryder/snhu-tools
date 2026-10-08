@@ -22,7 +22,42 @@ export function hashSourcePayload(raw: unknown): string {
   return crypto.createHash("sha256").update(jsonStr).digest("hex");
 }
 
+/**
+ * Canonical live slugs established in production catalog that must be preserved
+ * to avoid URL breaks and prevent zero-drop staging validation failures.
+ */
+const HISTORICAL_PROGRAM_SLUGS: Record<string, string> = {
+  "Business Administration (MBA)": "business-administration-mba-master-of-science",
+  "Communication (MA)": "communication-ma-master-of-science",
+  "Creative Writing (MFA)": "creative-writing-mfa-master-of-science",
+  "Curriculum and Instruction (MEd)": "curriculum-and-instruction-med-master-of-science",
+  "Digital Photography (AA)": "digital-photography-aa-associate-of-science",
+  "Early Childhood and Special Education (MEd)": "early-childhood-and-special-education-med-master-of-science",
+  "Education (AA)": "education-aa-associate-of-science",
+  "Educational Leadership and Administration (MEd)": "educational-leadership-and-administration-med-master-of-science",
+  "Educational Studies (MEd)": "educational-studies-med-master-of-science",
+  "Educator Practices (MEd)": "educator-practices-med-master-of-science",
+  "Elementary and Special Education (MEd)": "elementary-and-special-education-med-master-of-science",
+  "English and Creative Writing (MA)": "english-and-creative-writing-ma-master-of-science",
+  "English (MA)": "english-ma-master-of-science",
+  "Environmental Leadership, Social Entrepreneurship, and Sustainability (MA)":
+    "environmental-leadership-social-entrepreneurship-and-sustainability-ma-master-of-science",
+  "Fiction (MFA)": "fiction-mfa-master-of-science",
+  "General Studies (AA)": "general-studies-aa-associate-of-science",
+  "Healthcare Management (AA)": "healthcare-management-aa-associate-of-science",
+  "History (MA)": "history-ma-master-of-science",
+  "Liberal Arts (AA)": "liberal-arts-aa-associate-of-science",
+  "Nonfiction (MFA)": "nonfiction-mfa-master-of-science",
+  "Secondary Education (MEd)": "secondary-education-med-master-of-science",
+  "STEM Master of Business Administration (SMBA)":
+    "stem-master-of-business-administration-smba-master-of-science",
+};
+
 export function createProgramSlug(title: string, credential?: string): string {
+  if (HISTORICAL_PROGRAM_SLUGS[title]) {
+    return HISTORICAL_PROGRAM_SLUGS[title];
+  }
+
   const slugFromTitle = title
     .toLowerCase()
     .replace(/[^a-z0-9\s-]/g, "")
@@ -75,17 +110,44 @@ export function normalizeCredential(title: string, rawTypeName?: string): string
   if (t.includes("RN TO BSN") || t.includes("RN-TO-BSN")) {
     return "Bachelor of Science in Nursing (RN to BSN)";
   }
-  if (t.includes("(BS)") || t.includes("BACHELOR OF SCIENCE") || rawTypeName?.includes("Bachelor")) {
-    return "Bachelor of Science";
-  }
   if (t.includes("(BA)") || t.includes("BACHELOR OF ARTS")) {
     return "Bachelor of Arts";
   }
-  if (t.includes("(AS)") || t.includes("ASSOCIATE OF SCIENCE") || rawTypeName?.includes("Associate")) {
+  if (t.includes("(BS)") || t.includes("BACHELOR OF SCIENCE")) {
+    return "Bachelor of Science";
+  }
+  if (t.includes("(AA)") || t.includes("ASSOCIATE OF ARTS")) {
+    return "Associate of Arts";
+  }
+  if (t.includes("(AS)") || t.includes("ASSOCIATE OF SCIENCE")) {
     return "Associate of Science";
   }
-  if (t.includes("(MS)") || t.includes("MASTER OF SCIENCE") || rawTypeName?.includes("Master")) {
+  if (t.includes("(MFA)") || t.includes("MASTER OF FINE ARTS")) {
+    return "Master of Fine Arts";
+  }
+  if (t.includes("(MED)") || t.includes("M.ED") || t.includes("MASTER OF EDUCATION")) {
+    return "Master of Education";
+  }
+  if (t.includes("(MBA)") || t.includes("(SMBA)") || t.includes("MASTER OF BUSINESS ADMINISTRATION")) {
+    return "Master of Business Administration";
+  }
+  if (t.includes("(MA)") || t.includes("MASTER OF ARTS")) {
+    return "Master of Arts";
+  }
+  if (t.includes("(MS)") || t.includes("MASTER OF SCIENCE")) {
     return "Master of Science";
+  }
+  if (rawTypeName?.includes("Bachelor")) {
+    return "Bachelor of Science";
+  }
+  if (rawTypeName?.includes("Associate")) {
+    return "Associate of Science";
+  }
+  if (rawTypeName?.includes("Master")) {
+    return "Master of Science";
+  }
+  if (t.includes("CERTIFICATE") || rawTypeName?.includes("Certificate")) {
+    return rawTypeName || "Certificate";
   }
   return rawTypeName || "Degree Program";
 }
