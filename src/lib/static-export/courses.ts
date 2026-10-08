@@ -1,5 +1,6 @@
 import type { Pool } from "pg";
-import { buildTreesFromGraph, type CourseRecord, type CourseSummary, type GraphEdge } from "@/features/courses/lib/courses";
+import type { CourseRecord, CourseSummary, GraphEdge } from "@/features/courses/lib/courses";
+import type { CourseTree } from "@/features/courses/lib/courseGraphLayout";
 
 export type CoursesExport = { meta: { domain: "courses"; counts: { ids: number; records: number; edges: number } }; ids: string[]; summaries: CourseSummary[]; records: Record<string, CourseRecord>; edges: GraphEdge[]; lastModified: string | null };
 type Row = Partial<CourseRecord>;
@@ -32,4 +33,4 @@ export async function exportCoursesFromDatabase(pool: Pick<Pool, "connect">): Pr
 }
 
 /** Compatibility assertion shared by exporter tests; preserves graph materialization behavior. */
-export function validateCourseGraph(exported: CoursesExport) { const titles = new Map(exported.summaries.map((row) => [row.catalog_course_id, row.title])); return buildTreesFromGraph(exported.ids, titles, exported.edges); }
+export function validateCourseGraph(exported: CoursesExport) { const titles=new Map(exported.summaries.map(row=>[row.catalog_course_id,row.title]));const children=new Map<string,GraphEdge[]>();for(const edge of exported.edges)children.set(edge.parentId,[...(children.get(edge.parentId)??[]),edge]);const build=(id:string,seen:Set<string>):CourseTree|null=>{const title=titles.get(id);if(!title)return null;const prerequisites=(children.get(id)??[]).filter(edge=>!seen.has(edge.childId)).map(edge=>build(edge.childId,new Set([...seen,edge.childId]))).filter((node):node is CourseTree=>node!==null);return prerequisites.length?{course_id:id,name:title,prerequisites}:{course_id:id,name:title};};return exported.ids.map(id=>({id,tree:build(id,new Set([id]))})); }

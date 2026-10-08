@@ -1,66 +1,21 @@
-/* Build-only snapshot generator. It is deliberately separate from deployment. */
-import { createHash } from "node:crypto";
-import { mkdir, readFile, writeFile } from "node:fs/promises";
+import { Pool } from "pg";
 import path from "node:path";
-import { fixturePrograms } from "../src/data/fixturePrograms";
+import { exportCoursesFromDatabase } from "../src/lib/static-export/courses";
+import { exportProgramsFromDatabase } from "../src/lib/static-export/programs";
+import { transformSearch } from "../src/lib/static-export/search";
+import { exportTransfersFromDatabase } from "../src/lib/static-export/transfers";
+import { loadBundles, loadManifest, promoteSnapshot, stageSnapshot, verifyManifest, type SnapshotBundles } from "../src/lib/static-export/snapshot";
 
-const output = path.resolve("src/data/snapshots");
-const stable = (value: unknown) => JSON.stringify(value, null, 2) + "\n";
-const sha256 = (value: unknown) => createHash("sha256").update(JSON.stringify(value)).digest("hex");
-const now = process.env.SNAPSHOT_CREATED_AT ?? new Date().toISOString();
-function assertNoSecrets(value: unknown, path = "root"): void {
-  if (!value || typeof value !== "object") return;
-  for (const [key, child] of Object.entries(value as Record<string, unknown>)) {
-    if (/(password|secret|token|postgres|connection)/i.test(key)) throw new Error(`Refusing possible secret at ${path}.${key}`);
-    assertNoSecrets(child, `${path}.${key}`);
-  }
+type Mode={kind:"fixture"}|{kind:"json";directory:string}|{kind:"postgres"};
+const active=path.resolve("src/data/snapshots");
+function parse(argv:string[]):{mode:Mode;promote:boolean}{const fixture=argv.includes("--fixture");const postgres=argv.includes("--from-postgres");const index=argv.indexOf("--from-json");const json=index>=0?argv[index+1]:undefined;if([fixture,postgres,Boolean(json)].filter(Boolean).length!==1)throw new Error("Choose exactly one: --fixture, --from-json <directory>, or --from-postgres");if(index>=0&&!json)throw new Error("--from-json requires a directory");return {mode:fixture?{kind:"fixture"}:postgres?{kind:"postgres"}:{kind:"json",directory:path.resolve(json!)},promote:argv.includes("--promote")};}
+async function markers(pool:Pool){const client=await pool.connect();try{const result=await client.query<{catalog:string|null;programs:string|null;transfers:string|null}>("SELECT (SELECT completed_at::text FROM catalog_sync_state WHERE id='catalog') AS catalog, (SELECT completed_at::text FROM program_sync_state WHERE id='program_sync') AS programs, (SELECT completed_at::text FROM transfer_sync_state WHERE id='transfer') AS transfers");return result.rows[0]??{catalog:null,programs:null,transfers:null};}finally{client.release();}}
+async function bundlesFor(mode:Mode):Promise<{bundles:SnapshotBundles;fixture:boolean;consistency?:string}>{
+ if(mode.kind==="fixture")return {bundles:await loadBundles(active),fixture:true};
+ if(mode.kind==="json"){const manifest=await loadManifest(mode.directory);if(!manifest||manifest.fixture)throw new Error("--from-json requires a complete non-fixture manifest");const bundles=await loadBundles(mode.directory);verifyManifest(bundles,manifest);return {bundles,fixture:false};}
+ if(process.env.STATIC_EXPORT_APPROVED!=="true"||!process.env.POSTGRES_URL)throw new Error("--from-postgres requires STATIC_EXPORT_APPROVED=true and POSTGRES_URL");
+ const pool=new Pool({connectionString:process.env.POSTGRES_URL,max:1,connectionTimeoutMillis:10_000,idleTimeoutMillis:5_000,statement_timeout:60_000,application_name:"snhu-static-export"});
+ try{const before=await markers(pool);const programs=await exportProgramsFromDatabase(pool);const courses=await exportCoursesFromDatabase(pool);const transfers=await exportTransfersFromDatabase(pool);const after=await markers(pool);if(JSON.stringify(before)!==JSON.stringify(after))throw new Error("Cross-domain source timestamps changed during export; retry in a synchronization-safe window");return {bundles:{programs,courses,transfers,search:transformSearch(programs,courses,transfers)},fixture:false,consistency:JSON.stringify(before)};}finally{await pool.end();}
 }
-
-async function main() {
-  const approvedSource = process.env.STATIC_SNAPSHOT_SOURCE_DIR;
-  if (approvedSource) {
-    // Approved exports are supplied as four already-serialized domain bundles. This keeps
-    // database access out of both the build and deployment environments.
-    const names = ["programs", "courses", "transfers", "search"] as const;
-    const bundles = Object.fromEntries(
-      await Promise.all(names.map(async (name) => [name, JSON.parse(await readFile(path.join(approvedSource, `${name}.json`), "utf8"))] as const)),
-    ) as Record<(typeof names)[number], { meta?: { domain?: string; counts?: Record<string, number> } }>;
-    for (const name of names) {
-      const bundle = bundles[name];
-      if (bundle.meta?.domain !== name || !bundle.meta.counts || Object.values(bundle.meta.counts).some((count) => !Number.isFinite(count) || count <= 0)) throw new Error(`Refusing incomplete approved ${name} snapshot`);
-      assertNoSecrets(bundle);
-    }
-    await mkdir(output, { recursive: true });
-    for (const name of names) await writeFile(path.join(output, `${name}.json`), stable(bundles[name]));
-    const manifest = { schemaVersion: 1, createdAt: now, fixture: false, domains: Object.fromEntries(names.map((name) => [name, { file: `${name}.json`, sha256: sha256(bundles[name]), required: true, counts: bundles[name].meta!.counts! }])) };
-    await writeFile(path.join(output, "manifest.json"), stable(manifest));
-    console.log(`Generated approved static snapshots in ${output}`);
-    return;
-  }
-  // Fixture input only: production exports are intentionally not attempted without approval.
-  const courseSamples = JSON.parse(await readFile("src/data/fixtures/course-detail.sample.json", "utf8")) as Array<Record<string, unknown>>;
-  const records = Object.fromEntries(courseSamples.map((course) => [String(course.code).replace(/\s/g, "").toUpperCase(), {
-    title: course.title, pid: course.pid, catalog_course_id: String(course.code).replace(/\s/g, "").toUpperCase(),
-    description: course.description ?? null, academic_level: "Undergraduate", credits: String(course.credits ?? ""), subject_code: String(course.code).split(" ")[0],
-  }]));
-  records.PSY321 = { title: "Research Methods in Psychology II", pid: "fixture-psy321", catalog_course_id: "PSY321", description: "Fixture catalog course.", academic_level: "Undergraduate", credits: "3", subject_code: "PSY" };
-  const ids = Object.keys(records).sort();
-  const courseEdges = [{ parentId: "PSY321", childId: "PSY222", parentTitle: "Research Methods in Psychology II", childTitle: "Research Methods in Psychology I" }];
-  const courses = { meta: { domain: "courses", counts: { ids: ids.length, records: ids.length } }, ids, summaries: ids.map((id) => ({ catalog_course_id: id, title: records[id].title })), records, edges: courseEdges, lastModified: now };
-  const transferRows = [
-    { subjectPrefix: "PSY", courseNumber: "PSY321", title: "Research Methods in Psychology II", pid: "fixture-transfer-psy321", eligibilityTimeframe: null, groupFilter2Name: "Fixture College", academicLevel: "Undergraduate", coursePID: "fixture-psy321" },
-    ...Array.from({ length: 2 }, (_, index) => ({ subjectPrefix: "CS", courseNumber: "CS210", title: "Programming Languages", pid: `fixture-transfer-cs210-${index}`, eligibilityTimeframe: null, groupFilter2Name: `Fixture Provider ${index}`, academicLevel: "Undergraduate", coursePID: "fixture-cs210" })),
-    ...Array.from({ length: 13 }, (_, index) => ({ subjectPrefix: "ACC", courseNumber: "ACC201", title: "Financial Accounting", pid: `fixture-transfer-acc201-${index}`, eligibilityTimeframe: null, groupFilter2Name: `Fixture Provider ${index}`, academicLevel: "Undergraduate", coursePID: "fixture-acc201" })),
-  ];
-  const transfers = { meta: { domain: "transfers", counts: { rows: transferRows.length } }, rows: transferRows, lastModified: now };
-  const directory = fixturePrograms.map((p) => ({ slug: p.slug, title: p.title, degreeLevel: p.degreeLevel, credential: p.credential, catalogYear: p.catalogYear, totalCredits: p.totalCredits, requiredCourseCount: p.requiredCourseCount, description: p.description, sourceCatalogUrl: p.sourceCatalogUrl ?? null }));
-  const programs = { meta: { domain: "programs", counts: { programs: fixturePrograms.length } }, directory, bySlug: Object.fromEntries(fixturePrograms.map((p) => [p.slug, p])), sitemap: fixturePrograms.map((p) => ({ slug: p.slug, updatedAt: now })), catalogYears: [...new Set(fixturePrograms.map((p) => p.catalogYear))], lastUpdated: now };
-  const search = { meta: { domain: "search", counts: { entries: directory.length + ids.length + transferRows.length } }, programs: directory, courses: courses.summaries, transfers: transferRows };
-  const bundles = { programs, courses, transfers, search };
-  await mkdir(output, { recursive: true });
-  for (const [name, value] of Object.entries(bundles)) await writeFile(path.join(output, `${name}.json`), stable(value));
-  const manifest = { schemaVersion: 1, createdAt: now, fixture: true, domains: Object.fromEntries(Object.entries(bundles).map(([name, value]) => [name, { file: `${name}.json`, sha256: sha256(value), required: true, counts: value.meta.counts }])) };
-  await writeFile(path.join(output, "manifest.json"), stable(manifest));
-  console.log(`Generated fixture static snapshots in ${output}`);
-}
-main().catch((error) => { console.error(error); process.exitCode = 1; });
+export async function runStaticExport(argv:string[]){const {mode,promote}=parse(argv);const source=await bundlesFor(mode);const baseline=await loadManifest(active);const staged=await stageSnapshot(source.bundles,source.fixture,active,baseline);if(promote){const backup=await promoteSnapshot(staged.directory,active);return {...staged,promoted:true,backup};}return {...staged,promoted:false};}
+if(process.argv[1]?.endsWith("generate-static-snapshots.ts"))runStaticExport(process.argv.slice(2)).then(result=>console.log(JSON.stringify({staged:result.directory,promoted:result.promoted,report:result.report},null,2))).catch(error=>{console.error(error instanceof Error?error.message:error);process.exitCode=1;});
