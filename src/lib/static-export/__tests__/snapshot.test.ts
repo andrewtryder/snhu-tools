@@ -91,4 +91,58 @@ describe("complete static snapshot validation and promotion", () => {
       expect(await recoverSnapshotPromotion(active)).toBe("finalized");
     } finally { await rm(root, { recursive: true, force: true }); }
   });
+
+  it("validates course source coverage balance and exposes categories in report", async () => {
+    const bundles = await approvedBundles();
+    bundles.courses.reconciliation = {
+      records: { sourceRows: 4, exportedRecords: 3, duplicateRows: 1, rejectedRows: 0 },
+      prerequisiteEdges: { sourceRows: 3, exportedEdges: 2, duplicateRows: 1, rejectedRows: 0, externalReferences: 1 },
+      sourceCoverage: {
+        coursesData: {
+          totalRows: 6,
+          candidateRows: 4,
+          excluded: { missingCatalogCourseId: 2 },
+        },
+        prerequisites: {
+          totalRows: 7,
+          candidateRows: 3,
+          excluded: {
+            orphanClassId: 1,
+            parentMissingCatalogCourseId: 1,
+            missingPrerequisiteCourseId: 1,
+            selfReference: 1,
+          },
+          unmatched: {
+            externalPrerequisites: 1,
+          },
+        },
+      },
+    };
+    bundles.courses.ids = ["CS210", "ENG120", "IT140"];
+    bundles.courses.summaries = [
+      { catalog_course_id: "CS210", title: "Programming" },
+      { catalog_course_id: "ENG120", title: "Composition" },
+      { catalog_course_id: "IT140", title: "Scripting" },
+    ];
+    bundles.courses.records = {
+      CS210: { catalog_course_id: "CS210", title: "Programming", pid: "1", description: null, academic_level: null, credits: null, subject_code: null },
+      ENG120: { catalog_course_id: "ENG120", title: "Composition", pid: "2", description: null, academic_level: null, credits: null, subject_code: null },
+      IT140: { catalog_course_id: "IT140", title: "Scripting", pid: "3", description: null, academic_level: null, credits: null, subject_code: null },
+    };
+    bundles.courses.edges = [
+      { parentId: "CS210", parentTitle: "Programming", childId: "IT140", childTitle: "Scripting" },
+      { parentId: "CS210", parentTitle: "Programming", childId: "MAT999", childTitle: "Calculus Preparation" },
+    ];
+    bundles.courses.meta.counts = { ids: 3, records: 3, edges: 2 };
+    bundles.search.courses = bundles.courses.summaries;
+    bundles.search.meta.counts.entries = bundles.search.programs.length + bundles.search.courses.length + bundles.search.transfers.length;
+
+    const report = validateSnapshot(bundles, { fixture: false, provenance: approvedProvenance });
+    expect(report.sourceCoverage?.courses).toEqual(bundles.courses.reconciliation.sourceCoverage);
+    expect(report.reconciliation.courses?.sourceCoverage).toEqual(bundles.courses.reconciliation.sourceCoverage);
+
+    const unbalanced = clone(bundles);
+    unbalanced.courses.reconciliation!.sourceCoverage!.coursesData.totalRows = 999;
+    expect(() => validateSnapshot(unbalanced, { fixture: false, provenance: approvedProvenance })).toThrow(/courses_data source coverage does not balance/);
+  });
 });
