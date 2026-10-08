@@ -35,6 +35,45 @@ npm run snapshot:generate -- --recover-promotion
 
 Each run writes the four domain JSON files, `manifest.json`, and `report.json` into a newly created sibling staging directory. It validates schemas, complete domain counts, program directory/detail/sitemap agreement, course summaries/records/graph materialization, transfer row preservation, exact search-source equality, timestamps, secret-like keys, count reductions against an approved non-fixture baseline, and SHA-256 checksums; then it reloads and validates the staged files again.
 
+## First real-export reconciliation
+
+The first catalog export has no approved production baseline, so it must be reconciled before promotion. The staged `report.json` records the complete course source-to-export accounting at `.reconciliation.courses`: source record rows, exact duplicate rows, exported records, source prerequisite rows, exported relationships, exact duplicate relationships, and external prerequisite references. Both `rejectedRows` values must be zero. A non-identical duplicate identifier or relationship is export-blocking rather than silently selected.
+
+With the same approved read-only connection used only during the approved export window, record the source counts and compare them to the stage report:
+
+```sql
+SELECT count(*) AS course_source_rows
+FROM courses_data
+WHERE catalog_course_id IS NOT NULL;
+
+SELECT count(*) AS prerequisite_source_rows
+FROM prerequisites p
+JOIN courses_data parent ON parent.pid = p.class_id
+JOIN courses_data prerequisite ON prerequisite.catalog_course_id = p.course_id
+WHERE parent.catalog_course_id IS NOT NULL
+  AND prerequisite.catalog_course_id IS NOT NULL;
+```
+
+```sh
+STAGE_DIR=/absolute/path/to/.snapshot-stage-XXXX
+jq '.reconciliation.courses' "$STAGE_DIR/report.json"
+jq '{ids: .meta.counts.ids, records: .meta.counts.records, edges: .meta.counts.edges}' "$STAGE_DIR/courses.json"
+```
+
+The source counts must equal `sourceRows`; the accounting identity is `sourceRows = exported + duplicateRows + rejectedRows`. Review every nonzero duplicate count and every external prerequisite reference. Compare the staged public route inventory with the currently deployed/active snapshot before approving the first baseline:
+
+```sh
+jq -r '.sitemap[].slug' "$STAGE_DIR/programs.json" | sort > /tmp/staged-program-slugs
+jq -r '.sitemap[].slug' src/data/snapshots/programs.json | sort > /tmp/active-program-slugs
+comm -3 /tmp/active-program-slugs /tmp/staged-program-slugs
+
+jq -r '.ids[]' "$STAGE_DIR/courses.json" | sort > /tmp/staged-course-ids
+jq -r '.ids[]' src/data/snapshots/courses.json | sort > /tmp/active-course-ids
+comm -3 /tmp/active-course-ids /tmp/staged-course-ids
+```
+
+For the current fixture-only deployment those differences are expected; they are a review checklist, not a substitute for source count reconciliation. Preserve the SQL results, `report.json`, URL diffs, and approval reference with the release record.
+
 The report and manifest contain fixture/non-fixture provenance, a source digest, and an approval reference. JSON imports require an explicit review reference. PostgreSQL exports require both `STATIC_EXPORT_APPROVED=true` and the review reference. Fixture mode builds only from the source-controlled test catalog, never the active snapshot directory; the known checked-in fixture bundle signatures also cannot be relabeled as non-fixture data. Missing or fixture-only baselines are explicitly reported and are never treated as approved production baselines.
 
 Promotion is opt-in and accepts only a sibling `.snapshot-stage-*` directory. It reloads that stage, verifies its manifest, provenance, checksums, counts, cross-domain relationships, and baseline threshold immediately before activation. Fixture or unapproved stages cannot be promoted. The current filesystem layout cannot atomically exchange two directories, so activation is deliberately **not** described as atomic: it journals the move, restores the prior directory on a handled failure, and `--recover-promotion` restores the prior active directory after an interruption between renames. Prior versions remain as rollback targets. A failed extraction or validation never writes the active directory.

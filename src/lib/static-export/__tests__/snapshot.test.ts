@@ -13,6 +13,7 @@ const clone = <T,>(value: T): T => JSON.parse(JSON.stringify(value));
 async function approvedBundles(): Promise<SnapshotBundles> {
   const bundles = clone(await loadBundles(fixtureDirectory));
   bundles.courses.meta.counts.edges = bundles.courses.edges.length;
+  bundles.courses.reconciliation = { records: { sourceRows: bundles.courses.ids.length, exportedRecords: bundles.courses.ids.length, duplicateRows: 0, rejectedRows: 0 }, prerequisiteEdges: { sourceRows: bundles.courses.edges.length, exportedEdges: bundles.courses.edges.length, duplicateRows: 0, rejectedRows: 0, externalReferences: 1 } };
   bundles.programs.bySlug["computer-science-bs"].description = "Synthetic approved catalog data";
   bundles.programs.directory[0].description = "Synthetic approved catalog data";
   bundles.search.programs.find((program) => program.slug === "computer-science-bs")!.description = "Synthetic approved catalog data";

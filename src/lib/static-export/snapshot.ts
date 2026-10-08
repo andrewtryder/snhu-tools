@@ -2,7 +2,7 @@ import { createHash } from "node:crypto";
 import { lstat, mkdtemp, readFile, rename, rm, unlink, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { isValidTransferCourseCode } from "@/features/transfers/lib/courseCode";
-import type { CoursesExport } from "./courses";
+import type { CourseReconciliation, CoursesExport } from "./courses";
 import type { ProgramsExport } from "./programs";
 import type { SearchExport } from "./search";
 import type { TransfersExport } from "./transfers";
@@ -11,7 +11,7 @@ export type DomainName = "programs" | "courses" | "transfers" | "search";
 export type SnapshotBundles = { programs: ProgramsExport; courses: CoursesExport; transfers: TransfersExport; search: SearchExport };
 export type SnapshotProvenance = { kind: "fixture" | "json-import" | "postgres"; source: string; sourceDigest: string; approvalReference: string | null; approved: boolean };
 export type SnapshotManifest = { schemaVersion: 1; createdAt: string; fixture: boolean; provenance?: SnapshotProvenance; domains: Record<DomainName, { file: string; sha256: string; required: true; counts: Record<string, number> }> };
-export type SnapshotReport = { fixture: boolean; provenance: SnapshotProvenance; baseline: "none" | "fixture" | "approved"; counts: Record<DomainName, number>; rawBytes: Record<DomainName, number>; warnings: string[] };
+export type SnapshotReport = { fixture: boolean; provenance: SnapshotProvenance; baseline: "none" | "fixture" | "approved"; counts: Record<DomainName, number>; rawBytes: Record<DomainName, number>; reconciliation: { courses: CourseReconciliation | null }; warnings: string[] };
 export type StageOptions = { fixture: boolean; provenance: SnapshotProvenance; baseline?: SnapshotManifest | null; minimumRetention?: number };
 
 const names: readonly DomainName[] = ["programs", "courses", "transfers", "search"];
@@ -81,6 +81,10 @@ function assertCourses(courses: CoursesExport, fixture: boolean) {
   for (const id of courses.ids) visit(id, new Set());
   if (courses.lastModified !== null && !validDate(courses.lastModified)) throw new Error("Course lastModified is invalid");
   if (!fixture && !validDate(courses.lastModified)) throw new Error("Non-fixture courses require lastModified");
+  const reconciliation = courses.reconciliation;
+  if (!reconciliation) { if (!fixture) throw new Error("Non-fixture courses require source reconciliation"); return; }
+  const records = reconciliation.records; const edgesReconciliation = reconciliation.prerequisiteEdges;
+  if (![records.sourceRows, records.exportedRecords, records.duplicateRows, records.rejectedRows, edgesReconciliation.sourceRows, edgesReconciliation.exportedEdges, edgesReconciliation.duplicateRows, edgesReconciliation.rejectedRows, edgesReconciliation.externalReferences].every(Number.isInteger) || records.sourceRows !== records.exportedRecords + records.duplicateRows + records.rejectedRows || edgesReconciliation.sourceRows !== edgesReconciliation.exportedEdges + edgesReconciliation.duplicateRows + edgesReconciliation.rejectedRows || records.exportedRecords !== courses.ids.length || edgesReconciliation.exportedEdges !== courses.edges.length || edgesReconciliation.rejectedRows !== 0 || records.rejectedRows !== 0 || edgesReconciliation.externalReferences < 0 || edgesReconciliation.externalReferences > courses.edges.length) throw new Error("Course source reconciliation is invalid");
 }
 
 function assertTransfers(transfers: TransfersExport, fixture: boolean) {
@@ -111,7 +115,7 @@ export function validateSnapshot(bundles: SnapshotBundles, options: Pick<StageOp
   if (baselineKind === "approved") for (const name of names) { const before = baseline!.domains[name]?.counts; const after = countsFor(name, bundles[name]) as unknown as Record<string, number>; const primary = name === "programs" ? "programs" : name === "courses" ? "ids" : name === "transfers" ? "rows" : "entries"; const beforePrimary = before?.[primary]; if (!before || !Number.isInteger(beforePrimary) || Object.keys(before).some((key) => after[key] === undefined)) throw new Error(`Approved baseline has invalid ${name} counts`); if (beforePrimary > 0 && after[primary] / beforePrimary < minimumRetention) throw new Error(`${name} count fell below ${minimumRetention * 100}% of approved baseline`); } else warnings.push("No approved production baseline was available for count comparison");
   const counts = Object.fromEntries(names.map((name) => [name, count(name, bundles[name])])) as SnapshotReport["counts"];
   const rawBytes = Object.fromEntries(names.map((name) => [name, Buffer.byteLength(stable(bundles[name]))])) as SnapshotReport["rawBytes"];
-  return { fixture, provenance, baseline: baselineKind, counts, rawBytes, warnings };
+  return { fixture, provenance, baseline: baselineKind, counts, rawBytes, reconciliation: { courses: bundles.courses.reconciliation ?? null }, warnings };
 }
 
 export function createManifest(bundles: SnapshotBundles, fixture: boolean, provenance: SnapshotProvenance, createdAt = new Date().toISOString()): SnapshotManifest { if (!validDate(createdAt)) throw new Error("Invalid manifest creation timestamp"); return { schemaVersion: 1, createdAt, fixture, provenance, domains: Object.fromEntries(names.map((name) => [name, { file: `${name}.json`, sha256: hash(bundles[name]), required: true, counts: countsFor(name, bundles[name]) }])) as unknown as SnapshotManifest["domains"] }; }
