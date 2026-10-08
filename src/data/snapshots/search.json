@@ -2,7 +2,7 @@
   "meta": {
     "domain": "search",
     "counts": {
-      "entries": 11
+      "entries": 26
     }
   },
   "programs": [
@@ -101,6 +101,156 @@
       "groupFilter2Name": "Fixture College",
       "academicLevel": "Undergraduate",
       "coursePID": "fixture-psy321"
+    },
+    {
+      "subjectPrefix": "CS",
+      "courseNumber": "CS210",
+      "title": "Programming Languages",
+      "pid": "fixture-transfer-cs210-0",
+      "eligibilityTimeframe": null,
+      "groupFilter2Name": "Fixture Provider 0",
+      "academicLevel": "Undergraduate",
+      "coursePID": "fixture-cs210"
+    },
+    {
+      "subjectPrefix": "CS",
+      "courseNumber": "CS210",
+      "title": "Programming Languages",
+      "pid": "fixture-transfer-cs210-1",
+      "eligibilityTimeframe": null,
+      "groupFilter2Name": "Fixture Provider 1",
+      "academicLevel": "Undergraduate",
+      "coursePID": "fixture-cs210"
+    },
+    {
+      "subjectPrefix": "ACC",
+      "courseNumber": "ACC201",
+      "title": "Financial Accounting",
+      "pid": "fixture-transfer-acc201-0",
+      "eligibilityTimeframe": null,
+      "groupFilter2Name": "Fixture Provider 0",
+      "academicLevel": "Undergraduate",
+      "coursePID": "fixture-acc201"
+    },
+    {
+      "subjectPrefix": "ACC",
+      "courseNumber": "ACC201",
+      "title": "Financial Accounting",
+      "pid": "fixture-transfer-acc201-1",
+      "eligibilityTimeframe": null,
+      "groupFilter2Name": "Fixture Provider 1",
+      "academicLevel": "Undergraduate",
+      "coursePID": "fixture-acc201"
+    },
+    {
+      "subjectPrefix": "ACC",
+      "courseNumber": "ACC201",
+      "title": "Financial Accounting",
+      "pid": "fixture-transfer-acc201-2",
+      "eligibilityTimeframe": null,
+      "groupFilter2Name": "Fixture Provider 2",
+      "academicLevel": "Undergraduate",
+      "coursePID": "fixture-acc201"
+    },
+    {
+      "subjectPrefix": "ACC",
+      "courseNumber": "ACC201",
+      "title": "Financial Accounting",
+      "pid": "fixture-transfer-acc201-3",
+      "eligibilityTimeframe": null,
+      "groupFilter2Name": "Fixture Provider 3",
+      "academicLevel": "Undergraduate",
+      "coursePID": "fixture-acc201"
+    },
+    {
+      "subjectPrefix": "ACC",
+      "courseNumber": "ACC201",
+      "title": "Financial Accounting",
+      "pid": "fixture-transfer-acc201-4",
+      "eligibilityTimeframe": null,
+      "groupFilter2Name": "Fixture Provider 4",
+      "academicLevel": "Undergraduate",
+      "coursePID": "fixture-acc201"
+    },
+    {
+      "subjectPrefix": "ACC",
+      "courseNumber": "ACC201",
+      "title": "Financial Accounting",
+      "pid": "fixture-transfer-acc201-5",
+      "eligibilityTimeframe": null,
+      "groupFilter2Name": "Fixture Provider 5",
+      "academicLevel": "Undergraduate",
+      "coursePID": "fixture-acc201"
+    },
+    {
+      "subjectPrefix": "ACC",
+      "courseNumber": "ACC201",
+      "title": "Financial Accounting",
+      "pid": "fixture-transfer-acc201-6",
+      "eligibilityTimeframe": null,
+      "groupFilter2Name": "Fixture Provider 6",
+      "academicLevel": "Undergraduate",
+      "coursePID": "fixture-acc201"
+    },
+    {
+      "subjectPrefix": "ACC",
+      "courseNumber": "ACC201",
+      "title": "Financial Accounting",
+      "pid": "fixture-transfer-acc201-7",
+      "eligibilityTimeframe": null,
+      "groupFilter2Name": "Fixture Provider 7",
+      "academicLevel": "Undergraduate",
+      "coursePID": "fixture-acc201"
+    },
+    {
+      "subjectPrefix": "ACC",
+      "courseNumber": "ACC201",
+      "title": "Financial Accounting",
+      "pid": "fixture-transfer-acc201-8",
+      "eligibilityTimeframe": null,
+      "groupFilter2Name": "Fixture Provider 8",
+      "academicLevel": "Undergraduate",
+      "coursePID": "fixture-acc201"
+    },
+    {
+      "subjectPrefix": "ACC",
+      "courseNumber": "ACC201",
+      "title": "Financial Accounting",
+      "pid": "fixture-transfer-acc201-9",
+      "eligibilityTimeframe": null,
+      "groupFilter2Name": "Fixture Provider 9",
+      "academicLevel": "Undergraduate",
+      "coursePID": "fixture-acc201"
+    },
+    {
+      "subjectPrefix": "ACC",
+      "courseNumber": "ACC201",
+      "title": "Financial Accounting",
+      "pid": "fixture-transfer-acc201-10",
+      "eligibilityTimeframe": null,
+      "groupFilter2Name": "Fixture Provider 10",
+      "academicLevel": "Undergraduate",
+      "coursePID": "fixture-acc201"
+    },
+    {
+      "subjectPrefix": "ACC",
+      "courseNumber": "ACC201",
+      "title": "Financial Accounting",
+      "pid": "fixture-transfer-acc201-11",
+      "eligibilityTimeframe": null,
+      "groupFilter2Name": "Fixture Provider 11",
+      "academicLevel": "Undergraduate",
+      "coursePID": "fixture-acc201"
+    },
+    {
+      "subjectPrefix": "ACC",
+      "courseNumber": "ACC201",
+      "title": "Financial Accounting",
+      "pid": "fixture-transfer-acc201-12",
+      "eligibilityTimeframe": null,
+      "groupFilter2Name": "Fixture Provider 12",
+      "academicLevel": "Undergraduate",
+      "coursePID": "fixture-acc201"
     }
   ]
 }

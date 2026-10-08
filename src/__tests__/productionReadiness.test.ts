@@ -64,24 +64,20 @@ describe("Production Readiness — Fixture Isolation Gate", () => {
     process.env = originalEnv;
   });
 
-  it("blocks fixture fallback in production mode when database is not connected", async () => {
+  it("rejects fixture snapshots in production without an explicit non-production opt-in", async () => {
     vi.stubEnv("NODE_ENV", "production");
-    process.env.ENABLE_PROGRAM_FIXTURES = "false";
-    delete process.env.POSTGRES_URL;
+    delete process.env.ALLOW_FIXTURE_SNAPSHOTS;
 
-    const { getPrograms, getProgramBySlug } = await import("@/lib/serverData");
+    const { getPrograms } = await import("@/lib/serverData");
+    const { resetStaticSnapshotValidationForTests } = await import("@/lib/staticSnapshots");
+    resetStaticSnapshotValidationForTests();
 
-    const programs = await getPrograms();
-    expect(programs).toEqual([]);
-
-    const program = await getProgramBySlug("computer-science-bs");
-    expect(program).toBeNull();
+    await expect(getPrograms()).rejects.toThrow(/Fixture static snapshots are forbidden/);
   });
 
   it("allows fixture access in non-production when ENABLE_PROGRAM_FIXTURES is true", async () => {
     vi.stubEnv("NODE_ENV", "development");
-    process.env.ENABLE_PROGRAM_FIXTURES = "true";
-    delete process.env.POSTGRES_URL;
+    process.env.ALLOW_FIXTURE_SNAPSHOTS = "true";
 
     const { getProgramBySlug } = await import("@/lib/serverData");
     const program = await getProgramBySlug("computer-science-bs");
@@ -89,20 +85,15 @@ describe("Production Readiness — Fixture Isolation Gate", () => {
     expect(program?.title).toContain("Computer Science");
   });
 
-  it("yields empty catalog and null program in Vercel Preview runtime when POSTGRES_URL is unset", async () => {
+  it("rejects fixture data in preview unless explicitly opted in", async () => {
     vi.stubEnv("NODE_ENV", "production");
     vi.stubEnv("VERCEL_ENV", "preview");
-    delete process.env.POSTGRES_URL;
+    delete process.env.ALLOW_FIXTURE_SNAPSHOTS;
 
-    const { getPrograms, getProgramBySlug, searchPrograms } = await import("@/lib/serverData");
+    const { getPrograms } = await import("@/lib/serverData");
+    const { resetStaticSnapshotValidationForTests } = await import("@/lib/staticSnapshots");
+    resetStaticSnapshotValidationForTests();
 
-    const programs = await getPrograms();
-    expect(programs).toEqual([]);
-
-    const program = await getProgramBySlug("computer-science-bs");
-    expect(program).toBeNull();
-
-    const searchResults = await searchPrograms("computer");
-    expect(searchResults).toEqual([]);
+    await expect(getPrograms()).rejects.toThrow(/Fixture static snapshots are forbidden/);
   });
 });

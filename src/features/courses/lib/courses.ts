@@ -14,7 +14,7 @@ type CoursesBundle = { ids: string[]; summaries: CourseSummary[]; records: Recor
 export function buildTreesFromGraph(rootIds: string[], rootTitles: Map<string, string>, edges: GraphEdge[]): CourseTreeResult[] {
   const children = new Map<string, GraphEdge[]>();
   for (const edge of edges) children.set(edge.parentId.toUpperCase(), [...(children.get(edge.parentId.toUpperCase()) ?? []), edge]);
-  const build = (id: string, title: string, seen: Set<string>): CourseTree => ({ course_id: id, name: title, prerequisites: (children.get(id) ?? []).filter((edge) => !seen.has(edge.childId.toUpperCase())).map((edge) => build(edge.childId.toUpperCase(), edge.childTitle, new Set([...seen, edge.childId.toUpperCase()]))) });
+  const build = (id: string, title: string, seen: Set<string>): CourseTree => { const prerequisites = (children.get(id) ?? []).filter((edge) => !seen.has(edge.childId.toUpperCase())).map((edge) => build(edge.childId.toUpperCase(), edge.childTitle, new Set([...seen, edge.childId.toUpperCase()]))); return prerequisites.length ? { course_id: id, name: title, prerequisites } : { course_id: id, name: title }; };
   return rootIds.map((raw) => { const id = raw.toUpperCase(); const title = rootTitles.get(id); return { id, tree: title === undefined ? null : build(id, title, new Set([id])) }; });
 }
 function bundle(): CoursesBundle { return getStaticSnapshot<CoursesBundle>("courses"); }

@@ -28,6 +28,10 @@ function digest(value: unknown): string {
 export function assertStaticSnapshots(): void {
   if (validated) return;
   const typedManifest = manifest as Manifest;
+  const fixtureAllowed = process.env.ALLOW_FIXTURE_SNAPSHOTS === "true";
+  if (typedManifest.fixture && (process.env.NODE_ENV === "production" || process.env.VERCEL_ENV === "preview") && !fixtureAllowed) {
+    throw new Error("Fixture static snapshots are forbidden in production or preview without ALLOW_FIXTURE_SNAPSHOTS=true");
+  }
   if (typedManifest.schemaVersion !== STATIC_SNAPSHOT_SCHEMA_VERSION) {
     throw new Error(`Unsupported static snapshot schema ${typedManifest.schemaVersion}`);
   }
@@ -55,6 +59,11 @@ export function assertStaticSnapshots(): void {
   if (transferData.rows.some((row) => !row.courseNumber?.trim())) throw new Error("Static transfer snapshot has invalid course identifiers");
   if (searchData.programs.length + searchData.courses.length + searchData.transfers.length !== bundles.search.meta.counts.entries) throw new Error("Static search snapshot is incomplete");
   validated = true;
+}
+
+/** Test-only hook for validating distinct deployment environments in one process. */
+export function resetStaticSnapshotValidationForTests(): void {
+  validated = false;
 }
 
 export function getStaticSnapshot<T extends DomainBundle>(domain: StaticSnapshotDomain): T {

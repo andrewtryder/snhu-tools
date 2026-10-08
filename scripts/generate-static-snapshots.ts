@@ -47,7 +47,11 @@ async function main() {
   const ids = Object.keys(records).sort();
   const courseEdges = [{ parentId: "PSY321", childId: "PSY222", parentTitle: "Research Methods in Psychology II", childTitle: "Research Methods in Psychology I" }];
   const courses = { meta: { domain: "courses", counts: { ids: ids.length, records: ids.length } }, ids, summaries: ids.map((id) => ({ catalog_course_id: id, title: records[id].title })), records, edges: courseEdges, lastModified: now };
-  const transferRows = [{ subjectPrefix: "PSY", courseNumber: "PSY321", title: "Research Methods in Psychology II", pid: "fixture-transfer-psy321", eligibilityTimeframe: null, groupFilter2Name: "Fixture College", academicLevel: "Undergraduate", coursePID: "fixture-psy321" }];
+  const transferRows = [
+    { subjectPrefix: "PSY", courseNumber: "PSY321", title: "Research Methods in Psychology II", pid: "fixture-transfer-psy321", eligibilityTimeframe: null, groupFilter2Name: "Fixture College", academicLevel: "Undergraduate", coursePID: "fixture-psy321" },
+    ...Array.from({ length: 2 }, (_, index) => ({ subjectPrefix: "CS", courseNumber: "CS210", title: "Programming Languages", pid: `fixture-transfer-cs210-${index}`, eligibilityTimeframe: null, groupFilter2Name: `Fixture Provider ${index}`, academicLevel: "Undergraduate", coursePID: "fixture-cs210" })),
+    ...Array.from({ length: 13 }, (_, index) => ({ subjectPrefix: "ACC", courseNumber: "ACC201", title: "Financial Accounting", pid: `fixture-transfer-acc201-${index}`, eligibilityTimeframe: null, groupFilter2Name: `Fixture Provider ${index}`, academicLevel: "Undergraduate", coursePID: "fixture-acc201" })),
+  ];
   const transfers = { meta: { domain: "transfers", counts: { rows: transferRows.length } }, rows: transferRows, lastModified: now };
   const directory = fixturePrograms.map((p) => ({ slug: p.slug, title: p.title, degreeLevel: p.degreeLevel, credential: p.credential, catalogYear: p.catalogYear, totalCredits: p.totalCredits, requiredCourseCount: p.requiredCourseCount, description: p.description, sourceCatalogUrl: p.sourceCatalogUrl ?? null }));
   const programs = { meta: { domain: "programs", counts: { programs: fixturePrograms.length } }, directory, bySlug: Object.fromEntries(fixturePrograms.map((p) => [p.slug, p])), sitemap: fixturePrograms.map((p) => ({ slug: p.slug, updatedAt: now })), catalogYears: [...new Set(fixturePrograms.map((p) => p.catalogYear))], lastUpdated: now };
