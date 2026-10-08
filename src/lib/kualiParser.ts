@@ -14,6 +14,7 @@ import {
   ParserWarning,
 } from "@/types/domainCatalog";
 import { normalizeCourseCode } from "@/lib/courseCode";
+import { isValidCourseId, normalizeCourseId } from "@/features/courses/lib/courseIds";
 import { RequirementRuleMetadata } from "@/types/program";
 
 export function hashSourcePayload(raw: unknown): string {
@@ -89,12 +90,26 @@ export function normalizeCredential(title: string, rawTypeName?: string): string
   return rawTypeName || "Degree Program";
 }
 
-function mapTitleToGroupCategory(title: string): GroupCategory {
+export function mapTitleToGroupCategory(title: string): GroupCategory {
   const lower = title.toLowerCase();
   if (lower.includes("gen") || lower.includes("general education")) return "gened";
-  if (lower.includes("core") || lower.includes("foundation")) return "core";
-  if (lower.includes("major")) return "major";
   if (lower.includes("elective") || lower.includes("concentration")) return "elective";
+  if (
+    lower.includes("core") ||
+    lower.includes("foundation") ||
+    lower.includes("equivalent") ||
+    lower.startsWith("aa.")
+  ) {
+    return "core";
+  }
+  if (
+    lower.includes("major") ||
+    lower.includes("competencies") ||
+    lower.includes("operations") ||
+    lower.includes("administration")
+  ) {
+    return "major";
+  }
   return "other";
 }
 
@@ -445,6 +460,224 @@ function parseRequirementContainer(
   }
 }
 
+export function parseDirectAssessmentTree(
+  rawHtml: string,
+  basePath = "root"
+): { groups: RequirementGroupDomain[]; totalCredits: number; warnings: ParserWarning[] } {
+  const warnings: ParserWarning[] = [];
+  const groups: RequirementGroupDomain[] = [];
+  let grandTotalCredits = 0;
+
+  if (!rawHtml || typeof rawHtml !== "string" || !rawHtml.trim()) {
+    warnings.push({
+      code: "EMPTY_DIRECT_ASSESSMENT",
+      message: "No Direct Assessment HTML content provided for program",
+    });
+    return { groups: [], totalCredits: 0, warnings };
+  }
+
+  try {
+    const $ = cheerio.load(rawHtml);
+
+    // Extract grand total credits from headings or text
+    $("h1, h2, h3, h4, h5, h6").each((_, heading) => {
+      const headingText = $(heading).text().replace(/\s+/g, " ").trim();
+      const grandMatch = headingText.match(/grand\s+total(?:\s+credits)?\s*:\s*(\d+)/i);
+      if (grandMatch) {
+        grandTotalCredits = parseInt(grandMatch[1], 10);
+      }
+    });
+
+    // Root-level elements in body
+    const rootElements = $("body").children().toArray().filter((el): el is Element => el.type === "tag");
+    const elementsToProcess =
+      rootElements.length === 1 && $(rootElements[0]).is("div") && $(rootElements[0]).children().length > 1
+        ? $(rootElements[0]).children().toArray().filter((el): el is Element => el.type === "tag")
+        : rootElements;
+
+    let currentGroup: RequirementGroupDomain | null = null;
+    let groupIndex = 0;
+
+    const finalizeCurrentGroup = () => {
+      if (!currentGroup) return;
+
+      // Section credit reconciliation
+      if (typeof currentGroup.minimumCredits === "number" && currentGroup.courseRequirements.length > 0) {
+        const compCreditSum = currentGroup.courseRequirements.reduce(
+          (acc, c) => acc + (c.credits ?? 0),
+          0
+        );
+        if (currentGroup.ruleType === "all_of" && compCreditSum !== currentGroup.minimumCredits) {
+          warnings.push({
+            code: "SECTION_CREDIT_MISMATCH",
+            message: `Section '${currentGroup.title}' states ${currentGroup.minimumCredits} credits but competencies sum to ${compCreditSum} credits`,
+            path: currentGroup.stableSourcePath,
+          });
+        }
+      }
+
+      // If the group has a minimum credit requirement (e.g. associate degree transfer block)
+      // but no parsed course or text items, add an informative text requirement so it is not blank.
+      if (currentGroup.courseRequirements.length === 0 && currentGroup.textRequirements.length === 0) {
+        if (typeof currentGroup.minimumCredits === "number" && currentGroup.minimumCredits > 0) {
+          currentGroup.textRequirements.push(
+            `${currentGroup.title}: ${currentGroup.minimumCredits} Total Credits`
+          );
+        }
+      }
+
+      groups.push(currentGroup);
+      currentGroup = null;
+    };
+
+    for (const el of elementsToProcess) {
+      const tagName = el.tagName.toLowerCase();
+
+      // Heading elements (e.g. <h4>)
+      if (/^h[1-6]$/.test(tagName)) {
+        const headingText = $(el).text().replace(/\s+/g, " ").trim();
+
+        // Skip grand total heading as a requirement section
+        if (/grand\s+total(?:\s+credits)?\s*:\s*\d+/i.test(headingText)) {
+          continue;
+        }
+
+        // Section credit header, e.g. "BA Management Competencies: 51 Total Credits"
+        const creditMatch = headingText.match(/^(.*?)(?::\s*|\s*–\s*|\s*-\s*)?(\d+)\s*Total\s+Credits/i);
+        if (creditMatch) {
+          finalizeCurrentGroup();
+
+          const rawTitle = creditMatch[1].replace(/[:–-]\s*$/, "").trim();
+          const sectionTitle = rawTitle || "Required Competencies";
+          const sectionCredits = parseInt(creditMatch[2], 10);
+          const sectionPath = `${basePath}.group[${groupIndex++}]`;
+          const isConcentration = /concentration/i.test(sectionTitle);
+
+          currentGroup = {
+            stableSourcePath: sectionPath,
+            title: sectionTitle,
+            category: mapTitleToGroupCategory(sectionTitle),
+            ruleType: isConcentration ? "concentration" : "all_of",
+            minimumCredits: sectionCredits,
+            children: [],
+            courseRequirements: [],
+            textRequirements: [],
+            rawText: headingText,
+            warnings: [],
+          };
+          continue;
+        }
+
+        // Heading without explicit "Total Credits" (e.g. introductory program title banner)
+        finalizeCurrentGroup();
+        const sectionPath = `${basePath}.group[${groupIndex++}]`;
+        currentGroup = {
+          stableSourcePath: sectionPath,
+          title: headingText,
+          category: mapTitleToGroupCategory(headingText),
+          ruleType: /concentration/i.test(headingText) ? "concentration" : "all_of",
+          children: [],
+          courseRequirements: [],
+          textRequirements: [],
+          rawText: headingText,
+          warnings: [],
+        };
+        continue;
+      }
+
+      // List elements (<ul>, <ol>)
+      if (tagName === "ul" || tagName === "ol") {
+        if (!currentGroup) {
+          const sectionPath = `${basePath}.group[${groupIndex++}]`;
+          currentGroup = {
+            stableSourcePath: sectionPath,
+            title: "Required Competencies",
+            category: "major",
+            ruleType: "all_of",
+            children: [],
+            courseRequirements: [],
+            textRequirements: [],
+            warnings: [],
+          };
+        }
+
+        $(el).children("li").each((_, li) => {
+          const liText = $(li).text().replace(/\s+/g, " ").trim();
+          if (!liText) return;
+
+          // Competency item format: CODE - Title (Credits)
+          const compMatch = liText.match(
+            /^([A-Z]{2,4}\s*\d{4,5}[A-Z]?)\s*[-–—:]\s*(.*?)(?:\s*\((\d+)\))?$/i
+          );
+
+          if (compMatch) {
+            const code = compMatch[1].trim();
+            const title = compMatch[2].trim() || code;
+            const credits = compMatch[3] ? parseInt(compMatch[3], 10) : null;
+            const compIndex = currentGroup!.courseRequirements.length;
+
+            currentGroup!.courseRequirements.push({
+              courseCode: code,
+              title,
+              credits,
+              sourcePath: `${currentGroup!.stableSourcePath}.competency[${compIndex}]`,
+            });
+          } else {
+            // Informational text requirement (e.g. "Students must select a concentration.")
+            currentGroup!.textRequirements.push(liText);
+          }
+        });
+        continue;
+      }
+
+      // Paragraph or generic text container
+      if (tagName === "p" || tagName === "div") {
+        const text = $(el).text().replace(/\s+/g, " ").trim();
+        if (text && currentGroup) {
+          currentGroup.textRequirements.push(text);
+        }
+      }
+    }
+
+    finalizeCurrentGroup();
+
+    // Filter out uncredited banner headers with no items
+    const validGroups = groups.filter(
+      (g) =>
+        g.courseRequirements.length > 0 ||
+        g.textRequirements.length > 0 ||
+        (typeof g.minimumCredits === "number" && g.minimumCredits > 0)
+    );
+
+    // Re-index stableSourcePath sequentially
+    validGroups.forEach((g, idx) => {
+      g.stableSourcePath = `${basePath}.group[${idx}]`;
+      g.courseRequirements.forEach((cr, cIdx) => {
+        cr.sourcePath = `${g.stableSourcePath}.competency[${cIdx}]`;
+      });
+    });
+
+    // Grand total reconciliation
+    if (grandTotalCredits > 0) {
+      const sectionTotalSum = validGroups.reduce((acc, g) => acc + (g.minimumCredits ?? 0), 0);
+      if (sectionTotalSum !== grandTotalCredits) {
+        warnings.push({
+          code: "GRAND_TOTAL_MISMATCH",
+          message: `Grand total credits ${grandTotalCredits} does not equal sum of section credits ${sectionTotalSum}`,
+        });
+      }
+    }
+
+    return { groups: validGroups, totalCredits: grandTotalCredits, warnings };
+  } catch (err: unknown) {
+    warnings.push({
+      code: "PARSER_HTML_ERROR",
+      message: `Failed to parse catDirectAssessmentText HTML: ${(err as Error).message}`,
+    });
+    return { groups: [], totalCredits: 0, warnings };
+  }
+}
+
 export function parseProgramDetail(
   raw: unknown,
   catalogId = "6349a3f9164d00001c6c80da"
@@ -462,12 +695,47 @@ export function parseProgramDetail(
   const catalogYearLabel = "2025-2026";
   const sourceUrl = `https://snhu.kuali.co/api/v1/catalog/program/${catalogId}/${sourcePid}`;
 
-  const { groups, totalCredits: parsedCredits, warnings: treeWarnings } = parseRequirementTree(
-    raw.rulesRequirements || "",
-    `program[${sourcePid}]`
+  let groups: RequirementGroupDomain[] = [];
+  let parsedCredits = 0;
+
+  const hasRulesRequirements = Boolean(
+    raw.rulesRequirements &&
+      raw.rulesRequirements.trim().length > 0 &&
+      /<(?:section|div|ul|ol|li)\b/i.test(raw.rulesRequirements)
   );
 
-  warnings.push(...treeWarnings);
+  const hasDirectAssessment = Boolean(
+    raw.catDirectAssessmentText &&
+      raw.catDirectAssessmentText.trim().length > 0 &&
+      /<(?:h[1-6]|ul|ol|li|div|p)\b/i.test(raw.catDirectAssessmentText)
+  );
+
+  if (hasRulesRequirements && hasDirectAssessment) {
+    warnings.push({
+      code: "MULTIPLE_REQUIREMENT_SOURCES",
+      message:
+        "Both rulesRequirements and catDirectAssessmentText contain curriculum content; prioritizing rulesRequirements per precedence rule",
+    });
+    const result = parseRequirementTree(raw.rulesRequirements || "", `program[${sourcePid}]`);
+    groups = result.groups;
+    parsedCredits = result.totalCredits;
+    warnings.push(...result.warnings);
+  } else if (hasRulesRequirements) {
+    const result = parseRequirementTree(raw.rulesRequirements || "", `program[${sourcePid}]`);
+    groups = result.groups;
+    parsedCredits = result.totalCredits;
+    warnings.push(...result.warnings);
+  } else if (hasDirectAssessment) {
+    const result = parseDirectAssessmentTree(raw.catDirectAssessmentText || "", `program[${sourcePid}]`);
+    groups = result.groups;
+    parsedCredits = result.totalCredits;
+    warnings.push(...result.warnings);
+  } else {
+    warnings.push({
+      code: "NO_REQUIREMENTS_SOURCE",
+      message: "Neither rulesRequirements nor catDirectAssessmentText contains valid curriculum requirements",
+    });
+  }
 
   const totalCredits = parsedCredits > 0 ? parsedCredits : calculateKnownCreditSummary(groups);
   const sourceHash = hashSourcePayload(raw);
@@ -495,7 +763,12 @@ export function extractCourseReferences(program: CatalogProgram): Array<{ code: 
     for (const group of groups) {
       for (const course of group.courseRequirements) {
         const code = normalizeCourseCode(course.courseCode);
-        if (code && !refs.has(code)) {
+        // Only include conventional catalog courses; exclude CBE competencies that do not exist as courses
+        if (
+          code &&
+          !refs.has(code) &&
+          (Boolean(course.sourcePid) || isValidCourseId(normalizeCourseId(code)))
+        ) {
           refs.set(code, { code, pid: course.sourcePid });
         }
       }

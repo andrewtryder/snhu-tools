@@ -80,14 +80,19 @@ export async function validateStaging(
     errors.push(`Staging validation failed: ${orphanChildGroupCount} child requirement groups have invalid parent group references.`);
   }
 
-  // Check 8: Programs without requirement groups or courses
-  const emptyProgRes = await client.query<{ slug: string }>(`
-    SELECT p.slug FROM programs_stage p
+  // Check 8: Programs without requirement groups
+  const emptyProgRes = await client.query<{ slug: string; source_pid: string | null }>(`
+    SELECT p.slug, p.source_pid FROM programs_stage p
     LEFT JOIN program_requirement_groups_stage g ON g.program_id = p.id
-    WHERE g.id IS NULL AND p.warning_count = 0;
+    WHERE g.id IS NULL;
   `);
   if (emptyProgRes?.rows && emptyProgRes.rows.length > 0) {
-    warnings.push(`Staging warning: ${emptyProgRes.rows.length} staged programs have zero requirement groups and no warning notes.`);
+    const affected = emptyProgRes.rows
+      .map((r) => `${r.slug}${r.source_pid ? ` (${r.source_pid})` : ""}`)
+      .join(", ");
+    errors.push(
+      `Staging validation failed: ${emptyProgRes.rows.length} staged programs have zero requirement groups: ${affected}`
+    );
   }
 
   // Check 9: Courses and edges count

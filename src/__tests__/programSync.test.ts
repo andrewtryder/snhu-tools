@@ -136,6 +136,55 @@ describe("Program Sync Architecture & Promotion Safeguards", () => {
     expect(result.errors.join(" ")).toContain("resolved-course rate declined more than 20%");
   });
 
+  it("blocks promotion when any program has zero requirement groups, even with warning_count > 0", async () => {
+    const mockClient = {
+      query: vi.fn().mockImplementation((queryText: string) => {
+        if (queryText.includes("FROM programs_stage;")) return Promise.resolve({ rows: [{ count: "10" }] });
+        if (queryText.includes("FROM programs;")) return Promise.resolve({ rows: [{ count: "10" }] });
+        if (queryText.includes("HAVING COUNT(*) > 1;")) return Promise.resolve({ rows: [] });
+        if (queryText.includes("FROM degree_courses_stage;")) return Promise.resolve({ rows: [{ count: "50" }] });
+        if (queryText.includes("FROM degree_course_edges_stage;")) return Promise.resolve({ rows: [{ count: "40" }] });
+        // Empty program query
+        if (queryText.includes("WHERE g.id IS NULL")) {
+          return Promise.resolve({
+            rows: [
+              { slug: "management-ba", source_pid: "H1pYI4BZQ" },
+              { slug: "business-operations-certificate-certificate", source_pid: "ryhJltQRI" },
+            ],
+          });
+        }
+        return Promise.resolve({ rows: [] });
+      }),
+    } as unknown as PoolClient;
+
+    const result = await validateStaging(mockClient, 10, 0);
+
+    expect(result.valid).toBe(false);
+    expect(result.errors.length).toBeGreaterThan(0);
+    expect(result.errors[0]).toContain("2 staged programs have zero requirement groups");
+    expect(result.errors[0]).toContain("management-ba (H1pYI4BZQ)");
+    expect(result.errors[0]).toContain("business-operations-certificate-certificate (ryhJltQRI)");
+  });
+
+  it("passes requirement-group staging validation when Direct Assessment CBE programs have groups populated", async () => {
+    const mockClient = {
+      query: vi.fn().mockImplementation((queryText: string) => {
+        if (queryText.includes("FROM programs_stage;")) return Promise.resolve({ rows: [{ count: "10" }] });
+        if (queryText.includes("FROM programs;")) return Promise.resolve({ rows: [{ count: "10" }] });
+        if (queryText.includes("HAVING COUNT(*) > 1;")) return Promise.resolve({ rows: [] });
+        if (queryText.includes("FROM degree_courses_stage;")) return Promise.resolve({ rows: [{ count: "50" }] });
+        if (queryText.includes("FROM degree_course_edges_stage;")) return Promise.resolve({ rows: [{ count: "40" }] });
+        if (queryText.includes("WHERE g.id IS NULL")) return Promise.resolve({ rows: [] });
+        return Promise.resolve({ rows: [] });
+      }),
+    } as unknown as PoolClient;
+
+    const result = await validateStaging(mockClient, 10, 0);
+
+    expect(result.valid).toBe(true);
+    expect(result.errors).toHaveLength(0);
+  });
+
   it("formats CLI result object into single-line JSON format", () => {
     const syncResult: SyncResult = {
       action: "promoted",

@@ -1,6 +1,7 @@
 import type { Pool } from "pg";
 import { CATEGORY_PALETTES } from "@/lib/graphLayout";
 import { getCourseNodeId, normalizeCourseCode } from "@/lib/courseCode";
+import { isValidCourseId, normalizeCourseId } from "@/features/courses/lib/courseIds";
 import { normalizeDegreeLevel } from "@/lib/kualiParser";
 import { resolvePublicCatalogUrl } from "@/lib/snhuCatalog";
 import type { DegreeProgram, GroupCategory, RequirementGroup, RequirementItem, RequirementRuleMetadata } from "@/types/program";
@@ -41,7 +42,10 @@ export function transformPrograms(input:ProgramExportInput):ProgramsExport {
       for(const course of input.courses.filter(c=>c.groupId===group.id).sort(byOrder)){
         const code=normalizeCourseCode(course.courseCode);
         entries.push({order:course.sortOrder,tie:`c:${course.id}`,item:{id:course.id,title:`${course.courseCode}: ${course.title}`,credits:course.credits,type:itemType(group.ruleType,course.optional),description:course.optional?"Optional Course":undefined}});
-        if(!nodes.has(code)) nodes.set(code,{id:getCourseNodeId(code),code,title:course.title,credits:course.credits,groupCode:group.id,groupName:group.title,groupCategory:group.category,prerequisites:[],corequisites:[]});
+        if(!nodes.has(code)){
+          const isCompetency=!isValidCourseId(normalizeCourseId(code));
+          nodes.set(code,{id:getCourseNodeId(code),code,title:course.title,credits:course.credits,groupCode:group.id,groupName:group.title,groupCategory:group.category,prerequisites:[],corequisites:[],...(isCompetency?{isCompetency:true}:{})});
+        }
       }
       for(const text of input.texts.filter(t=>t.groupId===group.id).sort(byOrder)){
         const textKind=text.unparsed?"unparsed":/\bpolicy\b|must meet|eligibility/i.test(text.text)?"policy":"informational";
