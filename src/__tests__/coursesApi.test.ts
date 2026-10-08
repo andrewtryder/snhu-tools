@@ -31,6 +31,7 @@ describe("Courses API Routes", () => {
       const request = new Request("https://localhost/api/courses");
       const response = await getCourses(request);
       expect(response.status).toBe(400);
+      expect(response.headers.get("Cache-Control")).toContain("no-store");
       const data = await response.json();
       expect(data.error).toBe("No ids provided");
     });
@@ -39,11 +40,12 @@ describe("Courses API Routes", () => {
       const request = new Request("https://localhost/api/courses?ids=invalid_id");
       const response = await getCourses(request);
       expect(response.status).toBe(400);
+      expect(response.headers.get("Cache-Control")).toContain("no-store");
       const data = await response.json();
       expect(data.error).toContain("Invalid course ID");
     });
 
-    it("returns course rows for valid IDs", async () => {
+    it("returns course rows for valid IDs with 24h edge cache headers", async () => {
       const client = {
         query: vi.fn().mockResolvedValueOnce({
           rows: [{ catalog_course_id: "CS110" }, { catalog_course_id: "IT140" }],
@@ -54,12 +56,18 @@ describe("Courses API Routes", () => {
       const request = new Request("https://localhost/api/courses?ids=CS110,IT140");
       const response = await getCourses(request);
       expect(response.status).toBe(200);
+      expect(response.headers.get("Cache-Control")).toBe(
+        "public, s-maxage=86400, stale-while-revalidate=86400",
+      );
+      expect(response.headers.get("CDN-Cache-Control")).toBe(
+        "public, s-maxage=86400, stale-while-revalidate=86400",
+      );
       const data = await response.json();
       expect(data).toHaveLength(2);
       expect(data[0].catalog_course_id).toBe("CS110");
     });
 
-    it("returns 404 when no courses match", async () => {
+    it("returns 404 with no-store when no courses match", async () => {
       const client = {
         query: vi.fn().mockResolvedValueOnce({ rows: [] }),
       };
@@ -68,8 +76,18 @@ describe("Courses API Routes", () => {
       const request = new Request("https://localhost/api/courses?ids=CS999");
       const response = await getCourses(request);
       expect(response.status).toBe(404);
+      expect(response.headers.get("Cache-Control")).toContain("no-store");
       const data = await response.json();
       expect(data.error).toBe("Classes not found.");
+    });
+
+    it("returns 500 with no-store when database query fails", async () => {
+      withPoolClientMock.mockRejectedValueOnce(new Error("Database connection timeout"));
+
+      const request = new Request("https://localhost/api/courses?ids=CS110");
+      const response = await getCourses(request);
+      expect(response.status).toBe(500);
+      expect(response.headers.get("Cache-Control")).toContain("no-store");
     });
   });
 
@@ -113,7 +131,7 @@ describe("Courses API Routes", () => {
   });
 
   describe("GET /api/course/[id]", () => {
-    it("returns course row for valid ID", async () => {
+    it("returns course row for valid ID with 24h edge cache headers", async () => {
       const client = {
         sql: vi.fn().mockResolvedValueOnce({
           rows: [
@@ -130,11 +148,17 @@ describe("Courses API Routes", () => {
       const request = new Request("https://localhost/api/course/CS210");
       const response = await getCourse(request, { params: Promise.resolve({ id: "cs210" }) });
       expect(response.status).toBe(200);
+      expect(response.headers.get("Cache-Control")).toBe(
+        "public, s-maxage=86400, stale-while-revalidate=86400",
+      );
+      expect(response.headers.get("CDN-Cache-Control")).toBe(
+        "public, s-maxage=86400, stale-while-revalidate=86400",
+      );
       const data = await response.json();
       expect(data.catalog_course_id).toBe("CS210");
     });
 
-    it("returns 404 when course is not found", async () => {
+    it("returns 404 with no-store when course is not found", async () => {
       const client = {
         sql: vi.fn().mockResolvedValueOnce({ rows: [] }),
       };
@@ -143,12 +167,22 @@ describe("Courses API Routes", () => {
       const request = new Request("https://localhost/api/course/CS999");
       const response = await getCourse(request, { params: Promise.resolve({ id: "cs999" }) });
       expect(response.status).toBe(404);
+      expect(response.headers.get("Cache-Control")).toContain("no-store");
       expect(await response.json()).toEqual({ error: "Class ID 'CS999' not found." });
+    });
+
+    it("returns 500 with no-store on database failure", async () => {
+      withPoolClientMock.mockRejectedValueOnce(new Error("Database offline"));
+
+      const request = new Request("https://localhost/api/course/CS210");
+      const response = await getCourse(request, { params: Promise.resolve({ id: "cs210" }) });
+      expect(response.status).toBe(500);
+      expect(response.headers.get("Cache-Control")).toContain("no-store");
     });
   });
 
   describe("GET /api/course-tree/[id]", () => {
-    it("returns tree for valid course", async () => {
+    it("returns tree for valid course with 24h edge cache headers", async () => {
       getCourseTreeMock.mockResolvedValueOnce({
         course_id: "CS210",
         name: "Intro to Software Development",
@@ -157,21 +191,37 @@ describe("Courses API Routes", () => {
       const request = new Request("https://localhost/api/course-tree/CS210");
       const response = await getCourseTreeRoute(request, { params: Promise.resolve({ id: "cs210" }) });
       expect(response.status).toBe(200);
+      expect(response.headers.get("Cache-Control")).toBe(
+        "public, s-maxage=86400, stale-while-revalidate=86400",
+      );
+      expect(response.headers.get("CDN-Cache-Control")).toBe(
+        "public, s-maxage=86400, stale-while-revalidate=86400",
+      );
       const data = await response.json();
       expect(data.course_id).toBe("CS210");
     });
 
-    it("returns 404 when tree is not found", async () => {
+    it("returns 404 with no-store when tree is not found", async () => {
       getCourseTreeMock.mockResolvedValueOnce(null);
 
       const request = new Request("https://localhost/api/course-tree/CS999");
       const response = await getCourseTreeRoute(request, { params: Promise.resolve({ id: "cs999" }) });
       expect(response.status).toBe(404);
+      expect(response.headers.get("Cache-Control")).toContain("no-store");
+    });
+
+    it("returns 500 with no-store on database failure", async () => {
+      getCourseTreeMock.mockRejectedValueOnce(new Error("CTE failure"));
+
+      const request = new Request("https://localhost/api/course-tree/CS210");
+      const response = await getCourseTreeRoute(request, { params: Promise.resolve({ id: "cs210" }) });
+      expect(response.status).toBe(500);
+      expect(response.headers.get("Cache-Control")).toContain("no-store");
     });
   });
 
   describe("GET /api/course-trees/[ids]", () => {
-    it("returns trees and partial errors when multiple IDs requested", async () => {
+    it("returns trees and partial errors when multiple IDs requested with 24h edge cache headers", async () => {
       getCourseTreesMock.mockResolvedValueOnce([
         {
           id: "CS210",
@@ -188,13 +238,19 @@ describe("Courses API Routes", () => {
         params: Promise.resolve({ ids: "CS210,CS999" }),
       });
       expect(response.status).toBe(200);
+      expect(response.headers.get("Cache-Control")).toBe(
+        "public, s-maxage=86400, stale-while-revalidate=86400",
+      );
+      expect(response.headers.get("CDN-Cache-Control")).toBe(
+        "public, s-maxage=86400, stale-while-revalidate=86400",
+      );
       const data = await response.json();
       expect(data.trees).toHaveLength(1);
       expect(data.errors).toHaveLength(1);
       expect(data.errors[0].id).toBe("CS999");
     });
 
-    it("returns 404 when all requested trees are missing", async () => {
+    it("returns 404 with no-store when all requested trees are missing", async () => {
       getCourseTreesMock.mockResolvedValueOnce([
         { id: "CS999", tree: null },
       ]);
@@ -204,8 +260,20 @@ describe("Courses API Routes", () => {
         params: Promise.resolve({ ids: "CS999" }),
       });
       expect(response.status).toBe(404);
+      expect(response.headers.get("Cache-Control")).toContain("no-store");
       const data = await response.json();
       expect(data.error).toBe("No course trees found.");
+    });
+
+    it("returns 500 with no-store on database failure", async () => {
+      getCourseTreesMock.mockRejectedValueOnce(new Error("Batch query failure"));
+
+      const request = new Request("https://localhost/api/course-trees/CS210");
+      const response = await getCourseTreesRoute(request, {
+        params: Promise.resolve({ ids: "CS210" }),
+      });
+      expect(response.status).toBe(500);
+      expect(response.headers.get("Cache-Control")).toContain("no-store");
     });
   });
 });

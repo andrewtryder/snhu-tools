@@ -2,6 +2,10 @@ import { NextResponse } from "next/server";
 import { getCourseTrees } from "@/features/courses/lib/courses";
 import { parseCourseIdList } from "@/features/courses/lib/courseIds";
 import type { CourseTree } from "@/features/courses/lib/courseGraphLayout";
+import {
+  COURSE_API_ERROR_HEADERS,
+  COURSE_API_SUCCESS_HEADERS,
+} from "@/features/courses/lib/cacheHeaders";
 
 export async function GET(
   _request: Request,
@@ -16,7 +20,7 @@ export async function GET(
         error: parsed.errors.map((e) => e.message).join(" "),
         errors: parsed.errors,
       },
-      { status: 400 },
+      { status: 400, headers: COURSE_API_ERROR_HEADERS },
     );
   }
 
@@ -40,16 +44,16 @@ export async function GET(
     if (trees.length === 0) {
       return NextResponse.json(
         { trees: [], errors, error: "No course trees found." },
-        { status: 404 },
+        { status: 404, headers: COURSE_API_ERROR_HEADERS },
       );
     }
 
-    return NextResponse.json({ trees, errors });
+    return NextResponse.json({ trees, errors }, { headers: COURSE_API_SUCCESS_HEADERS });
   } catch (e) {
     console.error("Error fetching course trees", e);
     return NextResponse.json(
       { error: "Failed to fetch course trees.", trees: [], errors: [] },
-      { status: 500 },
+      { status: 500, headers: COURSE_API_ERROR_HEADERS },
     );
   }
 }

@@ -94,9 +94,10 @@ describe("POST /api/revalidate Endpoint", () => {
     expect(response.status).toBe(200);
     expect(revalidateTag).toHaveBeenCalledTimes(1);
     expect(revalidateTag).toHaveBeenCalledWith("program-data", "max");
-    expect(revalidatePath).toHaveBeenCalledTimes(1);
+    expect(revalidatePath).toHaveBeenCalledTimes(2);
     expect(revalidatePath).toHaveBeenCalledWith("/data-status");
-    expect(await response.json()).toMatchObject({ paths: ["/data-status"] });
+    expect(revalidatePath).toHaveBeenCalledWith("/sitemap.xml");
+    expect(await response.json()).toMatchObject({ paths: ["/data-status", "/sitemap.xml"] });
   });
 
   it("accepts the dedicated revalidation header", async () => {
@@ -118,10 +119,16 @@ describe("POST /api/revalidate Endpoint", () => {
     }));
 
     expect(response.status).toBe(200);
-    expect(await response.json()).toMatchObject({ scope: "courses", tags: ["catalog-data"], paths: ["/courses", "/courses/[id]"] });
+    expect(await response.json()).toMatchObject({
+      scope: "courses",
+      tags: ["catalog-data"],
+      paths: ["/courses", "/courses/[id]", "/api/courses", "/sitemap.xml"],
+    });
     expect(revalidateTag).toHaveBeenCalledWith("catalog-data", "max");
     expect(revalidatePath).toHaveBeenCalledWith("/courses");
     expect(revalidatePath).toHaveBeenCalledWith("/courses/[id]", "page");
+    expect(revalidatePath).toHaveBeenCalledWith("/api/courses");
+    expect(revalidatePath).toHaveBeenCalledWith("/sitemap.xml");
   });
 
   it("revalidates transfer data and all transfer route paths for transfers scope", async () => {
@@ -135,7 +142,7 @@ describe("POST /api/revalidate Endpoint", () => {
     expect(json.scope).toBe("transfers");
     expect(json.tags).toEqual(["transfer-data"]);
     expect(revalidateTag).toHaveBeenCalledWith("transfer-data", "max");
-    // revalidateTransfers must flush all transfer route patterns plus the public coverage API
+    // revalidateTransfers must flush all transfer route patterns plus the public coverage API and sitemap
     expect(revalidatePath).toHaveBeenCalledWith("/transfers");
     expect(revalidatePath).toHaveBeenCalledWith("/transfers/subjects");
     expect(revalidatePath).toHaveBeenCalledWith("/transfers/subjects/[subject]", "page");
@@ -146,7 +153,9 @@ describe("POST /api/revalidate Endpoint", () => {
     expect(revalidatePath).toHaveBeenCalledWith("/transfers/courses");
     expect(revalidatePath).toHaveBeenCalledWith("/transfers/courses/[courseNumber]", "page");
     expect(revalidatePath).toHaveBeenCalledWith("/api/v1/transfer-coverage");
-    expect(json.paths).toHaveLength(10);
+    expect(revalidatePath).toHaveBeenCalledWith("/sitemap.xml");
+    expect(json.paths).toHaveLength(11);
+    expect(json.paths).toContain("/sitemap.xml");
     expect(submitIndexNow).toHaveBeenCalledWith("transfers");
   });
 
@@ -179,8 +188,8 @@ describe("POST /api/revalidate Endpoint", () => {
     expect(response.status).toBe(200);
     // 3 tags: program-data, catalog-data, transfer-data
     expect(revalidateTag).toHaveBeenCalledTimes(3);
-    // 1 programs path + 2 courses paths + 10 transfer paths = 13 total revalidatePath calls
-    expect(revalidatePath).toHaveBeenCalledTimes(13);
+    // 2 programs paths + 3 courses paths (excluding shared /sitemap.xml) + 10 transfer paths (excluding shared /sitemap.xml) = 15 total revalidatePath calls
+    expect(revalidatePath).toHaveBeenCalledTimes(15);
   });
 
   it("rejects unknown scopes before invalidating caches", async () => {

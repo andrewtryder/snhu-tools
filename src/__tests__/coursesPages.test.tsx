@@ -11,16 +11,37 @@ const {
   getDirectPrerequisiteIdsMock,
   getDependentCourseIdsMock,
   getCourseTreesMock,
+  getCourseDetailPageDataMock,
   notFoundMock,
-} = vi.hoisted(() => ({
-  getAllCourseSummariesMock: vi.fn(),
-  getCourseByIdMock: vi.fn(),
-  getCourseTreeMock: vi.fn(),
-  getDirectPrerequisiteIdsMock: vi.fn(),
-  getDependentCourseIdsMock: vi.fn(),
-  getCourseTreesMock: vi.fn(),
-  notFoundMock: vi.fn(),
-}));
+} = vi.hoisted(() => {
+  const getCourseByIdMock = vi.fn();
+  const getCourseTreeMock = vi.fn();
+  const getDirectPrerequisiteIdsMock = vi.fn();
+  const getDependentCourseIdsMock = vi.fn();
+  return {
+    getAllCourseSummariesMock: vi.fn(),
+    getCourseByIdMock,
+    getCourseTreeMock,
+    getDirectPrerequisiteIdsMock,
+    getDependentCourseIdsMock,
+    getCourseTreesMock: vi.fn(),
+    getCourseDetailPageDataMock: vi.fn(async (id: string) => {
+      const [course, tree, directPrereqs, dependents] = await Promise.all([
+        getCourseByIdMock(id),
+        getCourseTreeMock(id),
+        getDirectPrerequisiteIdsMock(id),
+        getDependentCourseIdsMock(id),
+      ]);
+      return {
+        course: course ?? null,
+        tree: tree ?? null,
+        directPrereqs: directPrereqs ?? [],
+        dependents: dependents ?? [],
+      };
+    }),
+    notFoundMock: vi.fn(),
+  };
+});
 
 vi.mock("next/navigation", () => ({
   useRouter: () => ({ push: vi.fn() }),
@@ -36,6 +57,7 @@ vi.mock("@/features/courses/lib/courses", () => ({
   getDirectPrerequisiteIds: getDirectPrerequisiteIdsMock,
   getDependentCourseIds: getDependentCourseIdsMock,
   getCourseTrees: getCourseTreesMock,
+  getCourseDetailPageData: getCourseDetailPageDataMock,
 }));
 
 vi.mock("@xyflow/react", async () => {

@@ -1,5 +1,9 @@
 import { NextResponse } from "next/server";
 import { withPoolClient } from "@/features/courses/db/pool";
+import {
+  COURSE_API_ERROR_HEADERS,
+  COURSE_API_SUCCESS_HEADERS,
+} from "@/features/courses/lib/cacheHeaders";
 
 export async function GET(
   _request: Request,
@@ -20,12 +24,18 @@ export async function GET(
     });
 
     if (!row) {
-      return NextResponse.json({ error: `Class ID '${id}' not found.` }, { status: 404 });
+      return NextResponse.json(
+        { error: `Class ID '${id}' not found.` },
+        { status: 404, headers: COURSE_API_ERROR_HEADERS },
+      );
     }
 
-    return NextResponse.json(row);
+    return NextResponse.json(row, { headers: COURSE_API_SUCCESS_HEADERS });
   } catch (e) {
     console.error("Error fetching course", e);
-    return NextResponse.json({ error: "Failed to fetch course." }, { status: 500 });
+    return NextResponse.json(
+      { error: "Failed to fetch course." },
+      { status: 500, headers: COURSE_API_ERROR_HEADERS },
+    );
   }
 }

@@ -6,6 +6,8 @@ import { getSitemapCatalogData } from "@/features/courses/lib/courses";
 import { getTransferSitemapData } from "@/features/transfers/lib/seoQueries";
 import { slugify, transferCoursePath } from "@/features/transfers/lib/slug";
 
+export const revalidate = 86400;
+
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const baseUrl = getSiteUrl();
   const catalogUpdated = await getCatalogLastUpdated().catch(() => null);
@@ -87,6 +89,9 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     routesByUrl.set(route.url, route);
   }
 
+  let dynamicRouteCount = 0;
+  const errors: Error[] = [];
+
   // 1. Dynamic Program Routes (isolated)
   try {
     const programs = await getSitemapPrograms();
@@ -106,9 +111,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         changeFrequency: "weekly",
         priority: 0.75,
       });
+      dynamicRouteCount += 2;
     }
   } catch (error) {
-    console.error("Failed to load program routes for sitemap:", (error as Error)?.message || "Unknown error");
+    const err = error instanceof Error ? error : new Error(String(error));
+    errors.push(err);
+    console.error("Failed to load program routes for sitemap:", err.message);
   }
 
   // 2. Dynamic Course Routes (isolated)
@@ -124,9 +132,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         changeFrequency: "weekly",
         priority: 0.75,
       });
+      dynamicRouteCount += 1;
     }
   } catch (error) {
-    console.error("Failed to load course routes for sitemap:", (error as Error)?.message || "Unknown error");
+    const err = error instanceof Error ? error : new Error(String(error));
+    errors.push(err);
+    console.error("Failed to load course routes for sitemap:", err.message);
   }
 
   // 3. Dynamic Transfer Routes (isolated)
@@ -144,6 +155,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         changeFrequency: "weekly",
         priority: 0.75,
       });
+      dynamicRouteCount += 1;
     }
 
     for (const subject of subjects) {
@@ -157,6 +169,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         changeFrequency: "weekly",
         priority: 0.7,
       });
+      dynamicRouteCount += 1;
     }
 
     for (const organization of organizations) {
@@ -170,6 +183,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         changeFrequency: "weekly",
         priority: 0.7,
       });
+      dynamicRouteCount += 1;
     }
 
     for (const level of levels) {
@@ -183,9 +197,25 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         changeFrequency: "weekly",
         priority: 0.7,
       });
+      dynamicRouteCount += 1;
     }
   } catch (error) {
-    console.error("Failed to load transfer routes for sitemap:", (error as Error)?.message || "Unknown error");
+    const err = error instanceof Error ? error : new Error(String(error));
+    errors.push(err);
+    console.error("Failed to load transfer routes for sitemap:", err.message);
+  }
+
+  // Prevent database errors from wiping a complete sitemap cache with a partial 14-URL version.
+  // In environments where a database is configured (and during tests), abort so ISR preserves the previous cache.
+  const hasDatabaseConfigured = Boolean(process.env.POSTGRES_URL);
+  if (
+    (hasDatabaseConfigured || process.env.NODE_ENV === "test") &&
+    dynamicRouteCount === 0 &&
+    errors.length > 0
+  ) {
+    throw new Error(
+      `Failed to load dynamic sitemap routes; aborting to preserve previous sitemap cache. (${errors.map((e) => e.message).join("; ")})`,
+    );
   }
 
   return Array.from(routesByUrl.values());

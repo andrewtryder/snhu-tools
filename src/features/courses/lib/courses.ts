@@ -35,6 +35,13 @@ export interface CourseSummary {
   title: string;
 }
 
+export interface CourseDetailPageData {
+  course: CourseRecord | null;
+  tree: CourseTree | null;
+  directPrereqs: string[];
+  dependents: string[];
+}
+
 // ─── Internal DB helpers ──────────────────────────────────────────────────────
 
 async function withDbClient<T>(fn: (client: QueryClient) => Promise<T>): Promise<T> {
@@ -318,6 +325,115 @@ async function getDirectPrerequisiteIdsUncached(courseId: string): Promise<strin
   });
 }
 
+async function getCourseDetailPageDataUncached(
+  courseId: string,
+): Promise<CourseDetailPageData> {
+  return withDbClient(async (client) => {
+    // 1. Fetch course details in initial query
+    const courseResult = await client.query<CourseRecord>(
+      `SELECT title, pid, catalog_course_id, description, academic_level, credits, subject_code
+       FROM courses_data
+       WHERE catalog_course_id = $1`,
+      [courseId],
+    );
+
+    const course = courseResult.rows[0] ?? null;
+    if (!course) {
+      return {
+        course: null,
+        tree: null,
+        directPrereqs: [],
+        dependents: [],
+      };
+    }
+
+    // 2. Fetch prerequisite graph for this course sharing client
+    // Note: Re-uses course.title and course.catalog_course_id directly, avoiding redundant root title SELECT query
+    const graphResult = await client.query<{
+      parent_id: string;
+      parent_title: string;
+      child_id: string;
+      child_title: string;
+    }>(
+      `WITH RECURSIVE prereq_graph AS (
+          -- Anchor: direct prerequisites of the requested root course.
+          SELECT
+              cd_parent.catalog_course_id AS parent_id,
+              cd_parent.title             AS parent_title,
+              cd_child.catalog_course_id  AS child_id,
+              cd_child.title              AS child_title,
+              ARRAY[cd_parent.catalog_course_id] AS path
+          FROM prerequisites p
+          JOIN courses_data cd_parent ON cd_parent.pid = p.class_id
+          JOIN courses_data cd_child  ON cd_child.catalog_course_id = p.course_id
+          WHERE cd_parent.catalog_course_id = $1
+
+          UNION ALL
+
+          -- Recursive: one level deeper, stopping on any revisited node.
+          SELECT
+              g.child_id                  AS parent_id,
+              g.child_title               AS parent_title,
+              cd_child.catalog_course_id  AS child_id,
+              cd_child.title              AS child_title,
+              g.path || g.child_id
+          FROM prereq_graph g
+          JOIN courses_data cd_parent ON cd_parent.catalog_course_id = g.child_id
+          JOIN prerequisites p         ON p.class_id = cd_parent.pid
+          JOIN courses_data cd_child   ON cd_child.catalog_course_id = p.course_id
+          WHERE NOT (g.child_id = ANY(g.path))
+      )
+      SELECT DISTINCT
+          parent_id,
+          parent_title,
+          child_id,
+          child_title
+      FROM prereq_graph`,
+      [course.catalog_course_id],
+    );
+
+    const rootTitles = new Map<string, string>([[course.catalog_course_id, course.title]]);
+    const edges: GraphEdge[] = graphResult.rows.map((r) => ({
+      parentId: r.parent_id,
+      parentTitle: r.parent_title,
+      childId: r.child_id,
+      childTitle: r.child_title,
+    }));
+    const [treeResult] = buildTreesFromGraph([course.catalog_course_id], rootTitles, edges);
+    const tree = treeResult?.tree ?? null;
+
+    // 3. Direct prerequisites using course.pid directly (eliminates redundant courses_data subquery)
+    const directPrereqsResult = await client.query<{ course_id: string }>(
+      `SELECT course_id
+       FROM prerequisites
+       WHERE class_id = $1
+         AND course_id != $2
+       ORDER BY course_id`,
+      [course.pid, course.catalog_course_id],
+    );
+    const directPrereqs = directPrereqsResult.rows.map((r) => r.course_id);
+
+    // 4. Dependent courses (courses that require this course as a prerequisite)
+    const dependentsResult = await client.query<{ catalog_course_id: string }>(
+      `SELECT DISTINCT cd.catalog_course_id
+       FROM prerequisites p
+       JOIN courses_data cd ON p.class_id = cd.pid
+       WHERE p.course_id = $1
+         AND cd.catalog_course_id != $1
+       ORDER BY cd.catalog_course_id`,
+      [course.catalog_course_id],
+    );
+    const dependents = dependentsResult.rows.map((r) => r.catalog_course_id);
+
+    return {
+      course,
+      tree,
+      directPrereqs,
+      dependents,
+    };
+  });
+}
+
 // ─── Exported cached helpers ─────────────────────────────────────────────────
 
 const getCourseByIdCached = unstable_cache(
@@ -393,7 +509,7 @@ export async function getAllCourseSummaries(): Promise<CourseSummary[]> {
 const getCatalogLastModifiedCached = unstable_cache(
   getCatalogLastModifiedUncached,
   ["catalog-last-modified"],
-  { tags: [CATALOG_TAG], revalidate: SYNC_STATE_TTL },
+  { tags: [CATALOG_TAG], revalidate: CATALOG_TTL },
 );
 
 export async function getCatalogLastModified(): Promise<Date | null> {
@@ -440,4 +556,18 @@ const getDirectPrerequisiteIdsRequestCached = cache((courseId: string) =>
 
 export function getDirectPrerequisiteIds(courseId: string): Promise<string[]> {
   return getDirectPrerequisiteIdsRequestCached(courseId.toUpperCase());
+}
+
+const getCourseDetailPageDataCached = unstable_cache(
+  getCourseDetailPageDataUncached,
+  ["course-detail-page-data"],
+  { tags: [CATALOG_TAG], revalidate: CATALOG_TTL },
+);
+
+const getCourseDetailPageDataRequestCached = cache((courseId: string) =>
+  getCourseDetailPageDataCached(courseId),
+);
+
+export function getCourseDetailPageData(courseId: string): Promise<CourseDetailPageData> {
+  return getCourseDetailPageDataRequestCached(courseId.toUpperCase());
 }

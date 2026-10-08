@@ -43,6 +43,7 @@ import {
   buildTreesFromGraph,
   getAllCourseIds,
   getCourseById,
+  getCourseDetailPageData,
   getCourseTrees,
 } from "../courses";
 import type { CourseTree } from "../courseGraphLayout";
@@ -235,5 +236,118 @@ describe("getAllCourseIds", () => {
 
     const result = await getAllCourseIds();
     expect(result).toEqual([]);
+  });
+});
+
+describe("getCourseDetailPageData", () => {
+  const sampleCourse = {
+    title: "Data Structures and Algorithms",
+    pid: "9876",
+    catalog_course_id: "CS300",
+    description: "Course on algorithms",
+    academic_level: "Undergraduate",
+    credits: "3",
+    subject_code: "CS",
+  };
+
+  it("consolidates four operations behind a single pool client checkout", async () => {
+    const queryMock = vi
+      .fn()
+      // 1. Course details
+      .mockResolvedValueOnce({ rows: [sampleCourse] })
+      // 2. Prerequisite graph CTE
+      .mockResolvedValueOnce({
+        rows: [
+          {
+            parent_id: "CS300",
+            parent_title: "Data Structures and Algorithms",
+            child_id: "CS260",
+            child_title: "Data Structures",
+          },
+        ],
+      })
+      // 3. Direct prerequisites
+      .mockResolvedValueOnce({ rows: [{ course_id: "CS260" }] })
+      // 4. Dependents
+      .mockResolvedValueOnce({ rows: [{ catalog_course_id: "CS330" }] });
+
+    const client = dbClient({ query: queryMock });
+    withPoolClientMock.mockImplementationOnce((fn: (c: unknown) => unknown) => fn(client));
+
+    const result = await getCourseDetailPageData("CS300");
+
+    // Single pool client checkout verified
+    expect(withPoolClientMock).toHaveBeenCalledTimes(1);
+
+    expect(result.course).toEqual(sampleCourse);
+    expect(result.tree).toEqual(
+      treeOf("CS300", "Data Structures and Algorithms", [treeOf("CS260", "Data Structures")]),
+    );
+    expect(result.directPrereqs).toEqual(["CS260"]);
+    expect(result.dependents).toEqual(["CS330"]);
+
+    // Verify 4 sequential queries executed on the single client
+    expect(queryMock).toHaveBeenCalledTimes(4);
+
+    // Verify direct prereqs used course.pid directly (eliminating redundant subquery)
+    expect(queryMock.mock.calls[2]?.[1]).toEqual(["9876", "CS300"]);
+  });
+
+  it("stops immediately after first query when course is not found", async () => {
+    const queryMock = vi.fn().mockResolvedValueOnce({ rows: [] });
+    const client = dbClient({ query: queryMock });
+    withPoolClientMock.mockImplementationOnce((fn: (c: unknown) => unknown) => fn(client));
+
+    const result = await getCourseDetailPageData("NONEXISTENT");
+
+    expect(withPoolClientMock).toHaveBeenCalledTimes(1);
+    expect(queryMock).toHaveBeenCalledTimes(1);
+    expect(result).toEqual({
+      course: null,
+      tree: null,
+      directPrereqs: [],
+      dependents: [],
+    });
+  });
+
+  it("propagates cold database startup timeout and query failures without corrupting cache", async () => {
+    withPoolClientMock.mockRejectedValueOnce(new Error("Connection timeout after 15000ms"));
+
+    await expect(getCourseDetailPageData("COLD_START_TEST")).rejects.toThrow(
+      "Connection timeout after 15000ms",
+    );
+
+    // After cold start recovery, a retry should succeed
+    const queryMock = vi.fn().mockResolvedValueOnce({ rows: [sampleCourse] })
+      .mockResolvedValueOnce({ rows: [] })
+      .mockResolvedValueOnce({ rows: [] })
+      .mockResolvedValueOnce({ rows: [] });
+    const client = dbClient({ query: queryMock });
+    withPoolClientMock.mockImplementationOnce((fn: (c: unknown) => unknown) => fn(client));
+
+    const result = await getCourseDetailPageData("COLD_START_TEST");
+    expect(result.course?.catalog_course_id).toBe("CS300");
+  });
+
+  it("handles simultaneous requests safely without pool exhaustion under max: 1", async () => {
+    const queryMock = vi.fn().mockResolvedValueOnce({ rows: [sampleCourse] })
+      .mockResolvedValueOnce({ rows: [] })
+      .mockResolvedValueOnce({ rows: [] })
+      .mockResolvedValueOnce({ rows: [] });
+    const client = dbClient({ query: queryMock });
+    withPoolClientMock.mockImplementationOnce((fn: (c: unknown) => unknown) => fn(client));
+
+    // Fire 3 concurrent requests for the same course ID
+    const [res1, res2, res3] = await Promise.all([
+      getCourseDetailPageData("CONCURRENT1"),
+      getCourseDetailPageData("CONCURRENT1"),
+      getCourseDetailPageData("CONCURRENT1"),
+    ]);
+
+    expect(res1.course?.catalog_course_id).toBe("CS300");
+    expect(res2.course?.catalog_course_id).toBe("CS300");
+    expect(res3.course?.catalog_course_id).toBe("CS300");
+    // Memory/unstable cache deduplicated concurrent calls to a single checkout
+    expect(withPoolClientMock).toHaveBeenCalledTimes(1);
   });
 });

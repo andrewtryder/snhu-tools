@@ -15,7 +15,7 @@ import { generateMetadata as generateOrganizationMetadata } from "@/app/transfer
 import { metadata as levelsMetadata } from "@/app/transfers/levels/page";
 import { generateMetadata as generateLevelMetadata } from "@/app/transfers/levels/[level]/page";
 import { generateMetadata as generateSearchMetadata } from "@/app/search/page";
-import sitemap from "@/app/sitemap";
+import sitemap, { revalidate as sitemapRevalidate } from "@/app/sitemap";
 import { PRODUCTION_SITE_URL } from "@/lib/siteUrl";
 
 vi.mock("next/font/google", () => ({
@@ -35,6 +35,27 @@ vi.mock("@/features/courses/lib/courses", () => ({
       });
     }
     return Promise.resolve(null);
+  }),
+  getCourseDetailPageData: vi.fn((id: string) => {
+    if (id === "CS210") {
+      return Promise.resolve({
+        course: {
+          id: "CS210",
+          title: "Programming Languages",
+          subject_prefix: "CS",
+          course_number: "210",
+        },
+        tree: { course_id: "CS210", name: "Programming Languages" },
+        directPrereqs: [],
+        dependents: [],
+      });
+    }
+    return Promise.resolve({
+      course: null,
+      tree: null,
+      directPrereqs: [],
+      dependents: [],
+    });
   }),
   getSitemapCatalogData: vi.fn(() =>
     Promise.resolve({
@@ -334,7 +355,11 @@ describe("Phase 7 SEO & Indexing Activation", () => {
       expect(urls).not.toContain(`${PRODUCTION_SITE_URL}/transfers/courses/acc201`);
     });
 
-    it("returns static hub routes when all dynamic queries fail", async () => {
+    it("configures a 24-hour ISR revalidation interval for sitemap", () => {
+      expect(sitemapRevalidate).toBe(86400);
+    });
+
+    it("throws when all dynamic queries fail to prevent replacing complete sitemap with a partial 14-URL version", async () => {
       const { getSitemapPrograms } = await import("@/lib/serverData");
       const { getSitemapCatalogData } = await import("@/features/courses/lib/courses");
       const { getTransferSitemapData } = await import("@/features/transfers/lib/seoQueries");
@@ -343,17 +368,7 @@ describe("Phase 7 SEO & Indexing Activation", () => {
       vi.mocked(getSitemapCatalogData).mockRejectedValueOnce(new Error("Courses failure"));
       vi.mocked(getTransferSitemapData).mockRejectedValueOnce(new Error("Transfers failure"));
 
-      const entries = await sitemap();
-      const urls = entries.map((e) => e.url);
-
-      expect(urls).toContain(PRODUCTION_SITE_URL);
-      expect(urls).toContain(`${PRODUCTION_SITE_URL}/programs`);
-      expect(urls).toContain(`${PRODUCTION_SITE_URL}/courses`);
-      expect(urls).toContain(`${PRODUCTION_SITE_URL}/transfers`);
-      expect(urls).toContain(`${PRODUCTION_SITE_URL}/about`);
-      expect(urls).not.toContain(`${PRODUCTION_SITE_URL}/programs/accounting-bs`);
-      expect(urls).not.toContain(`${PRODUCTION_SITE_URL}/courses/CS210`);
-      expect(urls).not.toContain(`${PRODUCTION_SITE_URL}/transfers/courses/acc201`);
+      await expect(sitemap()).rejects.toThrow(/Failed to load dynamic sitemap routes/);
     });
   });
 });

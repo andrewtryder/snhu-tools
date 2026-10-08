@@ -1,13 +1,20 @@
 import { NextResponse } from "next/server";
 import { withPoolClient } from "@/features/courses/db/pool";
 import { parseCourseIdList } from "@/features/courses/lib/courseIds";
+import {
+  COURSE_API_ERROR_HEADERS,
+  COURSE_API_SUCCESS_HEADERS,
+} from "@/features/courses/lib/cacheHeaders";
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
   const idsParam = searchParams.get("ids");
 
   if (!idsParam) {
-    return NextResponse.json({ error: "No ids provided" }, { status: 400 });
+    return NextResponse.json(
+      { error: "No ids provided" },
+      { status: 400, headers: COURSE_API_ERROR_HEADERS },
+    );
   }
 
   const parsed = parseCourseIdList(idsParam);
@@ -18,7 +25,7 @@ export async function GET(request: Request) {
         error: parsed.errors.map((e) => e.message).join(" "),
         errors: parsed.errors,
       },
-      { status: 400 },
+      { status: 400, headers: COURSE_API_ERROR_HEADERS },
     );
   }
 
@@ -36,12 +43,18 @@ export async function GET(request: Request) {
     });
 
     if (rows.length === 0) {
-      return NextResponse.json({ error: "Classes not found." }, { status: 404 });
+      return NextResponse.json(
+        { error: "Classes not found." },
+        { status: 404, headers: COURSE_API_ERROR_HEADERS },
+      );
     }
 
-    return NextResponse.json(rows);
+    return NextResponse.json(rows, { headers: COURSE_API_SUCCESS_HEADERS });
   } catch (e) {
     console.error("Error fetching courses", e);
-    return NextResponse.json({ error: "Failed to fetch courses." }, { status: 500 });
+    return NextResponse.json(
+      { error: "Failed to fetch courses." },
+      { status: 500, headers: COURSE_API_ERROR_HEADERS },
+    );
   }
 }
