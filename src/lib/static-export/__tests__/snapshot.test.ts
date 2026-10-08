@@ -1,14 +1,93 @@
-import { mkdtemp, mkdir, readFile, rm, writeFile } from "node:fs/promises";
+import { mkdtemp, mkdir, readFile, rename, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import { describe, expect, it } from "vitest";
-import { loadBundles, loadManifest, promoteSnapshot, stageSnapshot, validateSnapshot, verifyManifest } from "../snapshot";
+import { parseStaticExportArgs } from "../../../../scripts/generate-static-snapshots";
+import { createManifest, loadBundles, loadManifest, promoteReviewedStage, recoverSnapshotPromotion, stageSnapshot, validateSnapshot, verifyManifest, verifyReviewedStage, type SnapshotBundles, type SnapshotProvenance } from "../snapshot";
 
-const fixtureDirectory=path.resolve("src/data/snapshots");
-describe("complete static snapshot staging",()=>{
- it("stages, checksums, reloads, and reports a complete fixture snapshot without touching active data",async()=>{const bundles=await loadBundles(fixtureDirectory);const baseline=await loadManifest(fixtureDirectory);const stage=await stageSnapshot(bundles,true,fixtureDirectory,baseline);try{expect(stage.report.counts.transfers).toBe(16);expect(stage.manifest.fixture).toBe(true);expect(JSON.parse(await readFile(path.join(stage.directory,"manifest.json"),"utf8")).domains.search.sha256).toBe(stage.manifest.domains.search.sha256);}finally{await rm(stage.directory,{recursive:true,force:true});}});
- it("rejects relationship, search, count, and secret corruption",async()=>{const bundles=await loadBundles(fixtureDirectory);expect(()=>validateSnapshot({...bundles,programs:{...bundles.programs,directory:[{...bundles.programs.directory[0],slug:"missing"}]}},true)).toThrow(/count|unresolved/);expect(()=>validateSnapshot({...bundles,search:{...bundles.search,meta:{...bundles.search.meta,counts:{entries:1}}}},true)).toThrow(/Search index/);expect(()=>validateSnapshot({...bundles,courses:{...bundles.courses,ids:[...bundles.courses.ids,"MISSING"]}},true)).toThrow(/unresolved record/);const secretRows=[...bundles.transfers.rows];secretRows[0]={...secretRows[0],token:"nope"} as never;expect(()=>validateSnapshot({...bundles,transfers:{...bundles.transfers,rows:secretRows}},true)).toThrow(/Potential secret/);});
- it("rejects large drops only against an approved baseline",async()=>{const bundles=await loadBundles(fixtureDirectory);const baseline=await loadManifest(fixtureDirectory);if(!baseline)throw new Error("missing fixture manifest");const approved={...baseline,fixture:false,domains:{...baseline.domains,transfers:{...baseline.domains.transfers,counts:{rows:100}}}};expect(()=>validateSnapshot(bundles,true,approved,.5)).toThrow(/fell below/);expect(validateSnapshot(bundles,true,baseline,.5).baseline).toBe("fixture");});
- it("rejects manifest checksum corruption",async()=>{const bundles=await loadBundles(fixtureDirectory);const manifest=await loadManifest(fixtureDirectory);if(!manifest)throw new Error("missing fixture manifest");expect(()=>verifyManifest(bundles,{...manifest,domains:{...manifest.domains,courses:{...manifest.domains.courses,sha256:"bad"}}})).toThrow(/checksum/);});
- it("promotes by directory swap and restores the old active directory on failed swap",async()=>{const root=await mkdtemp(path.join(tmpdir(),"snapshot-test-"));const active=path.join(root,"active");const stage=path.join(root,"stage");await mkdir(active);await mkdir(stage);await writeFile(path.join(active,"old"),"old");await writeFile(path.join(stage,"new"),"new");const backup=await promoteSnapshot(stage,active);expect(await readFile(path.join(active,"new"),"utf8")).toBe("new");expect(await readFile(path.join(backup,"old"),"utf8")).toBe("old");const badStage=path.join(root,"does-not-exist");await expect(promoteSnapshot(badStage,active)).rejects.toThrow();expect(await readFile(path.join(active,"new"),"utf8")).toBe("new");});
+const fixtureDirectory = path.resolve("src/data/snapshots");
+const fixtureProvenance: SnapshotProvenance = { kind: "fixture", source: "checked-in-fixture-v1", sourceDigest: "0".repeat(64), approvalReference: null, approved: false };
+const approvedProvenance: SnapshotProvenance = { kind: "json-import", source: "synthetic-test", sourceDigest: "1".repeat(64), approvalReference: "TEST-27", approved: true };
+const clone = <T,>(value: T): T => JSON.parse(JSON.stringify(value));
+
+async function approvedBundles(): Promise<SnapshotBundles> {
+  const bundles = clone(await loadBundles(fixtureDirectory));
+  bundles.courses.meta.counts.edges = bundles.courses.edges.length;
+  bundles.programs.bySlug["computer-science-bs"].description = "Synthetic approved catalog data";
+  bundles.programs.directory[0].description = "Synthetic approved catalog data";
+  bundles.search.programs.find((program) => program.slug === "computer-science-bs")!.description = "Synthetic approved catalog data";
+  return bundles;
+}
+
+describe("complete static snapshot validation and promotion", () => {
+  it("validates every source relationship, count, graph, and lossless search representation", async () => {
+    const bundles = await loadBundles(fixtureDirectory);
+    expect(validateSnapshot(bundles, { fixture: true, provenance: fixtureProvenance }).counts).toEqual({ programs: 6, courses: 4, transfers: 16, search: 26 });
+    const badProgram = clone(bundles); badProgram.programs.sitemap[0].slug = "missing";
+    expect(() => validateSnapshot(badProgram, { fixture: true, provenance: fixtureProvenance })).toThrow(/sitemap/);
+    const badCourse = clone(bundles); badCourse.courses.summaries[0].title = "wrong";
+    expect(() => validateSnapshot(badCourse, { fixture: true, provenance: fixtureProvenance })).toThrow(/Course/);
+    const badGraph = clone(bundles); badGraph.courses.edges[0].parentId = "MISSING";
+    expect(() => validateSnapshot(badGraph, { fixture: true, provenance: fixtureProvenance })).toThrow(/graph/);
+    const cyclicGraph = clone(bundles); cyclicGraph.courses.edges.push({ parentId: "PSY321", parentTitle: "Research Methods in Psychology II", childId: "CS210", childTitle: "Programming Languages" }, { parentId: "CS210", parentTitle: "Programming Languages", childId: "PSY321", childTitle: "Research Methods in Psychology II" });
+    expect(validateSnapshot(cyclicGraph, { fixture: true, provenance: fixtureProvenance }).counts.courses).toBe(4);
+    const lostOption = clone(bundles); lostOption.search.transfers.pop(); lostOption.search.meta.counts.entries--;
+    expect(() => validateSnapshot(lostOption, { fixture: true, provenance: fixtureProvenance })).toThrow(/exactly/);
+    const secret = clone(bundles); (secret.transfers.rows[0] as Record<string, unknown>).token = "nope";
+    expect(() => validateSnapshot(secret, { fixture: true, provenance: fixtureProvenance })).toThrow(/secret/);
+  });
+
+  it("requires an approved provenance record and rejects relabeled known fixture bytes", async () => {
+    const bundles = await loadBundles(fixtureDirectory);
+    expect(() => validateSnapshot(bundles, { fixture: false, provenance: approvedProvenance })).toThrow(/Known fixture/);
+    const synthetic = await approvedBundles();
+    expect(validateSnapshot(synthetic, { fixture: false, provenance: approvedProvenance }).baseline).toBe("none");
+    expect(() => validateSnapshot(synthetic, { fixture: false, provenance: { ...approvedProvenance, approvalReference: null } })).toThrow(/provenance/);
+  });
+
+  it("requires separate, explicit stage and promotion commands", () => {
+    expect(parseStaticExportArgs(["--fixture"])).toMatchObject({ kind: "stage", source: { kind: "fixture" } });
+    expect(() => parseStaticExportArgs(["--from-json", "/tmp/export"])).toThrow(/approval-reference/);
+    expect(() => parseStaticExportArgs(["--fixture", "--promote"])).toThrow(/Review a stage/);
+    expect(() => parseStaticExportArgs(["--promote-stage", "/tmp/export"])).not.toThrow();
+  });
+
+  it("writes a reviewable stage, verifies manifest counts and rejects baseline record loss", async () => {
+    const root = await mkdtemp(path.join(tmpdir(), "snapshot-test-")); const active = path.join(root, "active"); await mkdir(active);
+    const bundles = await approvedBundles();
+    const stage = await stageSnapshot(bundles, active, { fixture: false, provenance: approvedProvenance });
+    try {
+      expect((await loadManifest(stage.directory))?.provenance?.approvalReference).toBe("TEST-27");
+      await expect(verifyReviewedStage(stage.directory, active, null, false)).rejects.toThrow(/acknowledge/);
+      await expect(verifyReviewedStage(path.join(root, "untrusted"), active, null, true)).rejects.toThrow(/controlled/);
+      const manifest = stage.manifest;
+      expect(() => verifyManifest(bundles, { ...manifest, domains: { ...manifest.domains, transfers: { ...manifest.domains.transfers, counts: { rows: 99 } } } })).toThrow(/Manifest/);
+      const baseline = createManifest(bundles, false, approvedProvenance);
+      baseline.domains.transfers.counts.rows = 100;
+      expect(() => validateSnapshot(bundles, { fixture: false, provenance: approvedProvenance, baseline })).toThrow(/fell below/);
+    } finally { await rm(root, { recursive: true, force: true }); }
+  });
+
+  it("activates the exact reviewed stage and leaves the previous active snapshot as a recoverable backup", async () => {
+    const root = await mkdtemp(path.join(tmpdir(), "snapshot-test-")); const active = path.join(root, "active"); await mkdir(active); await writeFile(path.join(active, "old"), "old");
+    const stage = await stageSnapshot(await approvedBundles(), active, { fixture: false, provenance: approvedProvenance });
+    try {
+      const reviewed = await verifyReviewedStage(stage.directory, active, null, true);
+      const expected = reviewed.manifest.domains.programs.sha256;
+      const backup = await promoteReviewedStage(stage.directory, active, null, true);
+      expect(JSON.parse(await readFile(path.join(active, "manifest.json"), "utf8")).domains.programs.sha256).toBe(expected);
+      expect(await readFile(path.join(backup, "old"), "utf8")).toBe("old");
+    } finally { await rm(root, { recursive: true, force: true }); }
+  });
+
+  it("recovers interruptions before activation and finalizes an interruption after activation", async () => {
+    const root = await mkdtemp(path.join(tmpdir(), "snapshot-test-")); const active = path.join(root, "active"); const backup = path.join(root, ".snapshots.previous-test"); const stage = path.join(root, ".snapshot-stage-test"); await mkdir(active); await writeFile(path.join(active, "old"), "old"); await mkdir(stage);
+    const journal = path.join(root, ".snapshot-promotion.json");
+    try {
+      await rename(active, backup); await writeFile(journal, JSON.stringify({ active, backup, stage, phase: "active-moved" }));
+      expect(await recoverSnapshotPromotion(active)).toBe("restored"); expect(await readFile(path.join(active, "old"), "utf8")).toBe("old");
+      await writeFile(journal, JSON.stringify({ active, backup, stage, phase: "activated" }));
+      expect(await recoverSnapshotPromotion(active)).toBe("finalized");
+    } finally { await rm(root, { recursive: true, force: true }); }
+  });
 });

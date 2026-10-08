@@ -13,28 +13,33 @@ The source is always explicit; the command never falls back to fixtures.
 npm run snapshot:generate -- --fixture
 
 # Package a reviewed, non-fixture four-file export. Does not promote it.
-npm run snapshot:generate -- --from-json /absolute/path/to/approved-export
+npm run snapshot:generate -- --from-json /absolute/path/to/approved-export \
+  --approval-reference CHANGE-123
 
 # Approved read-only database export. This must be run only after explicit approval.
 STATIC_EXPORT_APPROVED=true POSTGRES_URL='postgresql://readonly:…' \
-  npm run snapshot:generate -- --from-postgres
+  npm run snapshot:generate -- --from-postgres --approval-reference CHANGE-123
 
-# Explicitly promote a fully staged snapshot after review.
-STATIC_EXPORT_APPROVED=true POSTGRES_URL='postgresql://readonly:…' \
-  npm run snapshot:generate -- --from-postgres --promote
+# Promote the exact directory that was staged and reviewed. This never re-exports PostgreSQL.
+# The first approved catalog baseline additionally requires this explicit acknowledgement.
+npm run snapshot:generate -- --promote-stage /absolute/path/to/.snapshot-stage-XXXX \
+  --acknowledge-first-baseline
+
+# Recover safely if the host interrupted a directory activation.
+npm run snapshot:generate -- --recover-promotion
 ```
 
 `--from-postgres` requires a PostgreSQL role with `CONNECT` plus `SELECT` on the catalog, program, course, transfer, prerequisite, and sync-state tables; it performs only `REPEATABLE READ READ ONLY` transactions. The exporter uses a single connection and closes its pool on every outcome.
 
 ## Staging, review, and rollback
 
-Each run writes the four domain JSON files, `manifest.json`, and `report.json` into a newly created sibling staging directory. It validates schemas, relationships, course graph materialization, search-source consistency, meaningful counts, secret-like keys, count reductions against an approved non-fixture baseline, and SHA-256 checksums; then it reloads and validates the staged files again.
+Each run writes the four domain JSON files, `manifest.json`, and `report.json` into a newly created sibling staging directory. It validates schemas, complete domain counts, program directory/detail/sitemap agreement, course summaries/records/graph materialization, transfer row preservation, exact search-source equality, timestamps, secret-like keys, count reductions against an approved non-fixture baseline, and SHA-256 checksums; then it reloads and validates the staged files again.
 
-The report contains fixture provenance, baseline status, per-domain counts, raw sizes, and warnings. Missing or fixture-only baselines are explicitly reported and are never treated as approved production baselines.
+The report and manifest contain fixture/non-fixture provenance, a source digest, and an approval reference. JSON imports require an explicit review reference. PostgreSQL exports require both `STATIC_EXPORT_APPROVED=true` and the review reference. Fixture mode builds only from the source-controlled test catalog, never the active snapshot directory; the known checked-in fixture bundle signatures also cannot be relabeled as non-fixture data. Missing or fixture-only baselines are explicitly reported and are never treated as approved production baselines.
 
-Promotion is opt-in. It renames the active directory to a timestamped sibling backup before swapping in the fully validated staged directory. If the swap fails, it restores the active directory; prior versions remain as rollback targets. A failed extraction or validation never writes the active directory.
+Promotion is opt-in and accepts only a sibling `.snapshot-stage-*` directory. It reloads that stage, verifies its manifest, provenance, checksums, counts, cross-domain relationships, and baseline threshold immediately before activation. Fixture or unapproved stages cannot be promoted. The current filesystem layout cannot atomically exchange two directories, so activation is deliberately **not** described as atomic: it journals the move, restores the prior directory on a handled failure, and `--recover-promotion` restores the prior active directory after an interruption between renames. Prior versions remain as rollback targets. A failed extraction or validation never writes the active directory.
 
-For a weekly refresh, run an approved export during a catalog synchronization-safe window. PostgreSQL mode captures catalog/program/transfer update markers before and after the three domain exports and blocks release if any marker changes, because separate read-only transactions alone do not provide a cross-domain snapshot. Review `report.json`, inspect the staged diff, then rerun with `--promote` only after approval.
+For a weekly refresh, run an approved export during a catalog synchronization-safe window. PostgreSQL mode captures catalog/program/transfer update markers before and after the three domain exports and blocks release if any marker changes. This detects observed sync changes but cannot prove an unchanged shared database snapshot across separate domain transactions; the quiet window remains a required operational control. Review `report.json`, inspect the staged diff, then promote that exact stage only after approval.
 
 For the first real export, obtain explicit production approval, create a least-privilege read-only credential, choose a quiet synchronization window, run without `--promote`, review the non-fixture manifest/report and snapshot sizes, validate a build with `POSTGRES_URL` unset against the staged data, then promote and commit the resulting reviewed files in a separate approved change.
 
