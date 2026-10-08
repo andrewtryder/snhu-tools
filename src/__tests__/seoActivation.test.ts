@@ -318,41 +318,25 @@ describe("Phase 7 SEO & Indexing Activation", () => {
       }
     });
 
-    it("isolates dynamic Program failure and keeps Courses and Transfers", async () => {
+    it("aborts when the required Programs dataset fails", async () => {
       const { getSitemapPrograms } = await import("@/lib/serverData");
       vi.mocked(getSitemapPrograms).mockRejectedValueOnce(new Error("Programs DB timeout"));
 
-      const entries = await sitemap();
-      const urls = entries.map((e) => e.url);
-
-      expect(urls).toContain(`${PRODUCTION_SITE_URL}/courses`);
-      expect(urls).toContain(`${PRODUCTION_SITE_URL}/courses/CS210`);
-      expect(urls).toContain(`${PRODUCTION_SITE_URL}/transfers/courses/acc201`);
-      expect(urls).not.toContain(`${PRODUCTION_SITE_URL}/programs/accounting-bs`);
+      await expect(sitemap()).rejects.toThrow(/complete dynamic sitemap routes/);
     });
 
-    it("isolates dynamic Course failure and keeps Programs and Transfers", async () => {
+    it("aborts when the required Courses dataset fails", async () => {
       const { getSitemapCatalogData } = await import("@/features/courses/lib/courses");
       vi.mocked(getSitemapCatalogData).mockRejectedValueOnce(new Error("Courses DB timeout"));
 
-      const entries = await sitemap();
-      const urls = entries.map((e) => e.url);
-
-      expect(urls).toContain(`${PRODUCTION_SITE_URL}/programs/accounting-bs`);
-      expect(urls).toContain(`${PRODUCTION_SITE_URL}/transfers/courses/acc201`);
-      expect(urls).not.toContain(`${PRODUCTION_SITE_URL}/courses/CS210`);
+      await expect(sitemap()).rejects.toThrow(/complete dynamic sitemap routes/);
     });
 
-    it("isolates dynamic Transfer failure and keeps Programs and Courses", async () => {
+    it("aborts when the required Transfers dataset fails", async () => {
       const { getTransferSitemapData } = await import("@/features/transfers/lib/seoQueries");
       vi.mocked(getTransferSitemapData).mockRejectedValueOnce(new Error("Transfers DB timeout"));
 
-      const entries = await sitemap();
-      const urls = entries.map((e) => e.url);
-
-      expect(urls).toContain(`${PRODUCTION_SITE_URL}/programs/accounting-bs`);
-      expect(urls).toContain(`${PRODUCTION_SITE_URL}/courses/CS210`);
-      expect(urls).not.toContain(`${PRODUCTION_SITE_URL}/transfers/courses/acc201`);
+      await expect(sitemap()).rejects.toThrow(/complete dynamic sitemap routes/);
     });
 
     it("configures a 24-hour ISR revalidation interval for sitemap", () => {
@@ -368,7 +352,7 @@ describe("Phase 7 SEO & Indexing Activation", () => {
       vi.mocked(getSitemapCatalogData).mockRejectedValueOnce(new Error("Courses failure"));
       vi.mocked(getTransferSitemapData).mockRejectedValueOnce(new Error("Transfers failure"));
 
-      await expect(sitemap()).rejects.toThrow(/Failed to load dynamic sitemap routes/);
+      await expect(sitemap()).rejects.toThrow(/complete dynamic sitemap routes/);
     });
   });
 });

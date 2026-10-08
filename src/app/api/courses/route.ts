@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { withPoolClient } from "@/features/courses/db/pool";
+import { getAllCourseIds } from "@/features/courses/lib/courses";
 import { parseCourseIdList } from "@/features/courses/lib/courseIds";
 import {
   COURSE_API_ERROR_HEADERS,
@@ -32,15 +32,8 @@ export async function GET(request: Request) {
   const ids = parsed.ids;
 
   try {
-    const rows = await withPoolClient(async (client) => {
-      const result = await client.query(
-        `SELECT catalog_course_id
-         FROM courses_data
-         WHERE catalog_course_id = ANY($1)`,
-        [ids],
-      );
-      return result.rows;
-    });
+    const available = new Set(await getAllCourseIds());
+    const rows = ids.filter((id) => available.has(id)).map((catalog_course_id) => ({ catalog_course_id }));
 
     if (rows.length === 0) {
       return NextResponse.json(

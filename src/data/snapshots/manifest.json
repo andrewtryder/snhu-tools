@@ -1,0 +1,40 @@
+{
+  "schemaVersion": 1,
+  "createdAt": "2026-10-08T13:43:08.961Z",
+  "fixture": true,
+  "domains": {
+    "programs": {
+      "file": "programs.json",
+      "sha256": "d06b035054d8069dba69253c9f9f5d850cf4a032316e18c75826ac406e69c4da",
+      "required": true,
+      "counts": {
+        "programs": 6
+      }
+    },
+    "courses": {
+      "file": "courses.json",
+      "sha256": "cf4ed630b257bc83e301fbbfb535aba80e13601e362ee1b0e1c828c40a6b3676",
+      "required": true,
+      "counts": {
+        "ids": 4,
+        "records": 4
+      }
+    },
+    "transfers": {
+      "file": "transfers.json",
+      "sha256": "dd68569fb6025ad4059a762a7d6fcdd5d61099959f23d7769226381eade8b01a",
+      "required": true,
+      "counts": {
+        "rows": 1
+      }
+    },
+    "search": {
+      "file": "search.json",
+      "sha256": "57508ed40167d44222bc876c7ec40782f3be6ffc75e8f8348919d803002e89ef",
+      "required": true,
+      "counts": {
+        "entries": 11
+      }
+    }
+  }
+}

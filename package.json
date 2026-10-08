@@ -26,6 +26,7 @@
     "catalog:sync": "tsx scripts/catalog-sync.ts",
     "transfer:bootstrap": "tsx scripts/transfer-bootstrap.ts",
     "transfer:sync": "tsx scripts/transfer-sync.ts"
+    ,"snapshot:generate": "tsx scripts/generate-static-snapshots.ts"
   },
   "dependencies": {
     "@dagrejs/dagre": "^3.1.1",

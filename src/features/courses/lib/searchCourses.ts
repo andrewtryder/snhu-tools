@@ -1,4 +1,4 @@
-import { withPoolClient } from "@/features/courses/db/pool";
+import { getAllCourseSummaries } from "./courses";
 import { normalizeCourseId } from "./courseIds";
 
 export interface CourseSearchResult {
@@ -22,35 +22,7 @@ export async function searchCourses(
   const parsedLimit = options.limit ?? 10;
   const limit = Math.min(Math.max(Number.isFinite(parsedLimit) ? parsedLimit : 10, 1), 50);
 
-  const normalized = normalizeCourseId(trimmed);
-  const prefixPattern = `${trimmed}%`;
-  const containsPattern = `%${trimmed}%`;
-  const normalizedPrefixPattern = `${normalized}%`;
-  const normalizedContainsPattern = `%${normalized}%`;
-
-  return withPoolClient(async (client) => {
-    const result = await client.sql`
-      SELECT
-        catalog_course_id,
-        title
-      FROM courses_data
-      WHERE (
-        catalog_course_id ILIKE ${containsPattern}
-        OR catalog_course_id ILIKE ${normalizedContainsPattern}
-        OR title ILIKE ${containsPattern}
-      )
-      ORDER BY
-        CASE
-          WHEN UPPER(catalog_course_id) = ${normalized} THEN 1
-          WHEN catalog_course_id ILIKE ${prefixPattern} OR catalog_course_id ILIKE ${normalizedPrefixPattern} THEN 2
-          WHEN catalog_course_id ILIKE ${containsPattern} OR catalog_course_id ILIKE ${normalizedContainsPattern} THEN 3
-          WHEN title ILIKE ${prefixPattern} THEN 4
-          WHEN title ILIKE ${containsPattern} THEN 5
-          ELSE 6
-        END,
-        catalog_course_id ASC
-      LIMIT ${limit}
-    `;
-    return result.rows as CourseSearchResult[];
-  });
+  const normalized = normalizeCourseId(trimmed).toLowerCase();
+  const q = trimmed.toLowerCase();
+  return (await getAllCourseSummaries()).filter((course) => course.catalog_course_id.toLowerCase().includes(q) || course.catalog_course_id.toLowerCase().includes(normalized) || course.title.toLowerCase().includes(q)).sort((a, b) => a.catalog_course_id.localeCompare(b.catalog_course_id)).slice(0, limit);
 }

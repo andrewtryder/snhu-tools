@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { withPoolClient } from "@/features/courses/db/pool";
+import { getCourseById } from "@/features/courses/lib/courses";
 import {
   COURSE_API_ERROR_HEADERS,
   COURSE_API_SUCCESS_HEADERS,
@@ -13,15 +13,7 @@ export async function GET(
   const id = resolvedParams.id.toUpperCase();
 
   try {
-    const row = await withPoolClient(async (client) => {
-      const result = await client.sql`
-        SELECT title, pid, catalog_course_id, description, academic_level,
-               credits, date_start, online_offering, campus_offering, subject_code
-        FROM courses_data
-        WHERE catalog_course_id = ${id}
-      `;
-      return result.rows[0] ?? null;
-    });
+    const row = await getCourseById(id);
 
     if (!row) {
       return NextResponse.json(

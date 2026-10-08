@@ -1,0 +1,21 @@
+{
+  "meta": {
+    "domain": "transfers",
+    "counts": {
+      "rows": 1
+    }
+  },
+  "rows": [
+    {
+      "subjectPrefix": "PSY",
+      "courseNumber": "PSY321",
+      "title": "Research Methods in Psychology II",
+      "pid": "fixture-transfer-psy321",
+      "eligibilityTimeframe": null,
+      "groupFilter2Name": "Fixture College",
+      "academicLevel": "Undergraduate",
+      "coursePID": "fixture-psy321"
+    }
+  ],
+  "lastModified": "2026-10-08T13:43:08.961Z"
+}

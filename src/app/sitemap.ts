@@ -5,6 +5,7 @@ import { getSiteUrl } from "@/lib/siteUrl";
 import { getSitemapCatalogData } from "@/features/courses/lib/courses";
 import { getTransferSitemapData } from "@/features/transfers/lib/seoQueries";
 import { slugify, transferCoursePath } from "@/features/transfers/lib/slug";
+import { getStaticSnapshotManifest } from "@/lib/staticSnapshots";
 
 export const revalidate = 86400;
 
@@ -89,7 +90,8 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     routesByUrl.set(route.url, route);
   }
 
-  let dynamicRouteCount = 0;
+  const expected = getStaticSnapshotManifest().domains;
+  const dynamicCounts = { programs: 0, courses: 0, transfers: 0 };
   const errors: Error[] = [];
 
   // 1. Dynamic Program Routes (isolated)
@@ -111,7 +113,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         changeFrequency: "weekly",
         priority: 0.75,
       });
-      dynamicRouteCount += 2;
+      dynamicCounts.programs += 2;
     }
   } catch (error) {
     const err = error instanceof Error ? error : new Error(String(error));
@@ -132,7 +134,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         changeFrequency: "weekly",
         priority: 0.75,
       });
-      dynamicRouteCount += 1;
+      dynamicCounts.courses += 1;
     }
   } catch (error) {
     const err = error instanceof Error ? error : new Error(String(error));
@@ -155,7 +157,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         changeFrequency: "weekly",
         priority: 0.75,
       });
-      dynamicRouteCount += 1;
+      dynamicCounts.transfers += 1;
     }
 
     for (const subject of subjects) {
@@ -169,7 +171,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         changeFrequency: "weekly",
         priority: 0.7,
       });
-      dynamicRouteCount += 1;
+      dynamicCounts.transfers += 1;
     }
 
     for (const organization of organizations) {
@@ -183,7 +185,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         changeFrequency: "weekly",
         priority: 0.7,
       });
-      dynamicRouteCount += 1;
+      dynamicCounts.transfers += 1;
     }
 
     for (const level of levels) {
@@ -197,7 +199,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         changeFrequency: "weekly",
         priority: 0.7,
       });
-      dynamicRouteCount += 1;
+      dynamicCounts.transfers += 1;
     }
   } catch (error) {
     const err = error instanceof Error ? error : new Error(String(error));
@@ -205,16 +207,11 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     console.error("Failed to load transfer routes for sitemap:", err.message);
   }
 
-  // Prevent database errors from wiping a complete sitemap cache with a partial 14-URL version.
-  // In environments where a database is configured (and during tests), abort so ISR preserves the previous cache.
-  const hasDatabaseConfigured = Boolean(process.env.POSTGRES_URL);
-  if (
-    (hasDatabaseConfigured || process.env.NODE_ENV === "test") &&
-    dynamicRouteCount === 0 &&
-    errors.length > 0
-  ) {
+  // A required dataset may never disappear from a sitemap, regardless of DB credentials.
+  // Snapshot validation establishes expected non-empty domains before route generation.
+  if (errors.length > 0 || dynamicCounts.programs === 0 || dynamicCounts.courses === 0 || dynamicCounts.transfers === 0 || !expected.programs.required || !expected.courses.required || !expected.transfers.required) {
     throw new Error(
-      `Failed to load dynamic sitemap routes; aborting to preserve previous sitemap cache. (${errors.map((e) => e.message).join("; ")})`,
+      `Failed to load complete dynamic sitemap routes; aborting to preserve previous sitemap cache. (${errors.map((e) => e.message).join("; ")})`,
     );
   }
 
