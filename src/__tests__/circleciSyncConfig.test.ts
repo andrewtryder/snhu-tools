@@ -36,7 +36,7 @@ describe("CircleCI catalog synchronization configuration", () => {
     expect(validate({ action: "promoted", status: "idle" }).status).not.toBe(0);
   });
 
-  it("preserves logs and only revalidates after a successful promotion", () => {
+  it("preserves logs and suppresses obsolete post-sync revalidation", () => {
     const config = readFileSync(join(process.cwd(), ".circleci", "config.yml"), "utf8");
     expect(config).toContain("snhu-tools-program-sync");
     expect(config).toContain("sync-output.log");
@@ -44,8 +44,8 @@ describe("CircleCI catalog synchronization configuration", () => {
     expect(config).toContain("sync-exit-code");
     expect(config).toContain("validation-exit-code");
     expect(config).toContain("store_artifacts");
-    expect(config).toContain('"$SYNC_ACTION" = "promoted"');
-    expect(config).toContain("Authorization: Bearer ${REVALIDATE_SECRET}");
+    expect(config).not.toContain('"$SYNC_ACTION" = "promoted"');
+    expect(config).not.toContain("Authorization: Bearer ${REVALIDATE_SECRET}");
     expect(config).not.toMatch(/vercel\s+cron/i);
     expect(config).not.toMatch(/CIRCLECI_(?:API|CLI)_TOKEN/);
   });
