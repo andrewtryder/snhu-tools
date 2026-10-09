@@ -88,6 +88,10 @@ jobs:
           POSTGRES_URL: ""
           VERCEL_ENV: "production"
         run: |
+          if [ ! -f .snapshot-pr-summary.md ]; then
+            echo "No catalog changes detected; skipping build and PR checks."
+            exit 0
+          fi
           node scripts/verify-ci-build-protections.mjs --mode=accept-non-fixture
           npm run typecheck
           npm run lint
