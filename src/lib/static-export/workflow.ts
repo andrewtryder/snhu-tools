@@ -38,6 +38,9 @@ export interface SyncMarkerState {
   catalogStatus?: string | null;
   programsStatus?: string | null;
   transfersStatus?: string | null;
+  catalogNextDue?: string | null;
+  programsNextDue?: string | null;
+  transfersNextDue?: string | null;
 }
 
 export interface QuiescenceCheckResult {
@@ -118,6 +121,147 @@ export function computeSyncMarkerDigest(markers: SyncMarkerState): string {
   return createHash("sha256").update(JSON.stringify(markers)).digest("hex");
 }
 
+export interface DomainCadenceRule {
+  domain: "catalog" | "programs" | "transfers";
+  name: string;
+  table: string;
+  cadenceDescription: string;
+  nominalIntervalDays: number;
+  gracePeriodDays: number;
+  maxCompletedAgeDays: number;
+  maxFutureIntervalDays: number;
+}
+
+export const DOMAIN_CADENCE_RULES: Record<"catalog" | "programs" | "transfers", DomainCadenceRule> = {
+  catalog: {
+    domain: "catalog",
+    name: "Course catalog",
+    table: "catalog_sync_state",
+    cadenceDescription: "two-month cadence",
+    nominalIntervalDays: 62, // 2-month cadence (~60-62 days)
+    gracePeriodDays: 8, // conservative grace period for weekly CircleCI scheduled execution
+    maxCompletedAgeDays: 70, // 62 + 8 days = 70 days max age
+    maxFutureIntervalDays: 65, // at most 65 days in future from completion or now
+  },
+  programs: {
+    domain: "programs",
+    name: "Program catalog",
+    table: "program_sync_state",
+    cadenceDescription: "seven-day cadence",
+    nominalIntervalDays: 7, // 7-day cadence
+    gracePeriodDays: 8, // conservative grace period for weekly CircleCI scheduled execution
+    maxCompletedAgeDays: 15, // 7 + 8 days = 15 days max age
+    maxFutureIntervalDays: 8, // at most 8 days in future from completion or now
+  },
+  transfers: {
+    domain: "transfers",
+    name: "Transfer equivalency",
+    table: "transfer_sync_state",
+    cadenceDescription: "seven-day cadence",
+    nominalIntervalDays: 7, // 7-day cadence
+    gracePeriodDays: 8, // conservative grace period for weekly CircleCI scheduled execution
+    maxCompletedAgeDays: 15, // 7 + 8 days = 15 days max age
+    maxFutureIntervalDays: 8, // at most 8 days in future from completion or now
+  },
+};
+
+export function validateDomainSyncFreshness(
+  domain: "catalog" | "programs" | "transfers",
+  completedAt: string | null | undefined,
+  status: string | null | undefined,
+  nextDueAt: string | null | undefined,
+  nowMs: number,
+  options?: { isPreExportCheck?: boolean; maxRecencyDays?: number }
+): string[] {
+  const rule = DOMAIN_CADENCE_RULES[domain];
+  const issues: string[] = [];
+  const isPreExport = options?.isPreExportCheck ?? false;
+
+  // 1. Completion marker presence
+  if (!completedAt) {
+    issues.push(`${rule.table} has no completed_at timestamp`);
+  }
+
+  // 2. Status validation against domain sync schemas
+  if (!status) {
+    issues.push(`${rule.table} status is missing`);
+  } else if (status !== "idle") {
+    if (isPreExport) {
+      if (status === "running") {
+        issues.push(`${rule.table} is currently running`);
+      } else if (status === "in_progress") {
+        issues.push(`${rule.table} is currently in progress`);
+      } else if (status === "error") {
+        issues.push(`${rule.table} is in error state`);
+      } else if (status === "awaiting_bootstrap") {
+        issues.push(`${rule.table} is awaiting bootstrap`);
+      } else {
+        issues.push(`${rule.table} status is not idle (${status})`);
+      }
+    } else {
+      issues.push(`${rule.table} status is '${status}' (must be 'idle')`);
+    }
+  }
+
+  // 3. CompletedAt timestamp recency and future checks
+  let completedMs: number | null = null;
+  if (completedAt) {
+    completedMs = new Date(completedAt).getTime();
+    if (Number.isNaN(completedMs)) {
+      issues.push(`${rule.domain} completed_at timestamp '${completedAt}' is invalid`);
+    } else if (completedMs - nowMs > 5 * 60 * 1000) {
+      issues.push(
+        isPreExport
+          ? `${rule.table} completed_at (${completedAt}) is in the future`
+          : `${rule.domain} completed_at timestamp (${completedAt}) is in the future`
+      );
+    } else if (nowMs - completedMs > rule.maxCompletedAgeDays * 24 * 60 * 60 * 1000) {
+      issues.push(
+        isPreExport
+          ? `${rule.table} completed_at (${completedAt}) is stale (older than ${rule.maxCompletedAgeDays} days)`
+          : `${rule.domain} completed_at timestamp (${completedAt}) is stale (older than ${rule.maxCompletedAgeDays} days)`
+      );
+    }
+  }
+
+  // 4. NextDueAt schedule validation
+  if (!nextDueAt) {
+    issues.push(`${rule.table} has no next_due_at timestamp`);
+  } else {
+    const nextDueMs = new Date(nextDueAt).getTime();
+    if (Number.isNaN(nextDueMs)) {
+      issues.push(`${rule.table} next_due_at timestamp '${nextDueAt}' is invalid`);
+    } else {
+      if (completedMs !== null && !Number.isNaN(completedMs) && nextDueMs < completedMs - 5 * 60 * 1000) {
+        issues.push(`${rule.table} next_due_at (${nextDueAt}) is before completed_at (${completedAt})`);
+      } else if (
+        completedMs !== null &&
+        !Number.isNaN(completedMs) &&
+        nextDueMs - completedMs > rule.maxFutureIntervalDays * 24 * 60 * 60 * 1000
+      ) {
+        issues.push(
+          `${rule.table} next_due_at (${nextDueAt}) is implausibly distant (exceeds ${rule.maxFutureIntervalDays} days from completion)`
+        );
+      } else if (nextDueMs - nowMs > rule.maxFutureIntervalDays * 24 * 60 * 60 * 1000) {
+        issues.push(`${rule.table} next_due_at (${nextDueAt}) is implausibly distant in the future (${nextDueAt})`);
+      }
+
+      const graceDays =
+        options?.maxRecencyDays !== undefined && domain !== "catalog"
+          ? options.maxRecencyDays
+          : rule.gracePeriodDays;
+
+      if (nowMs > nextDueMs + graceDays * 24 * 60 * 60 * 1000) {
+        issues.push(
+          `${rule.table} is overdue for refresh (due: ${nextDueAt}, grace period of ${graceDays} days exceeded)`
+        );
+      }
+    }
+  }
+
+  return issues;
+}
+
 export async function checkQuiescence(
   pool: Pool,
   options?: { maxRecencyDays?: number; now?: Date | string }
@@ -132,6 +276,9 @@ export async function checkQuiescence(
       catalog_status: string | null;
       programs_status: string | null;
       transfers_status: string | null;
+      catalog_next_due: string | null;
+      programs_next_due: string | null;
+      transfers_next_due: string | null;
     }>(`
       SELECT
         (SELECT completed_at::text FROM catalog_sync_state WHERE id='catalog') AS catalog,
@@ -139,7 +286,10 @@ export async function checkQuiescence(
         (SELECT completed_at::text FROM transfer_sync_state WHERE id='transfer') AS transfers,
         (SELECT status FROM catalog_sync_state WHERE id='catalog') AS catalog_status,
         (SELECT status FROM program_sync_state WHERE id='program_sync') AS programs_status,
-        (SELECT status FROM transfer_sync_state WHERE id='transfer') AS transfers_status
+        (SELECT status FROM transfer_sync_state WHERE id='transfer') AS transfers_status,
+        (SELECT next_due_at::text FROM catalog_sync_state WHERE id='catalog') AS catalog_next_due,
+        (SELECT next_due_at::text FROM program_sync_state WHERE id='program_sync') AS programs_next_due,
+        (SELECT next_due_at::text FROM transfer_sync_state WHERE id='transfer') AS transfers_next_due
     `);
 
     const row = res.rows[0] ?? {
@@ -149,6 +299,9 @@ export async function checkQuiescence(
       catalog_status: null,
       programs_status: null,
       transfers_status: null,
+      catalog_next_due: null,
+      programs_next_due: null,
+      transfers_next_due: null,
     };
 
     const markers: SyncMarkerState = {
@@ -158,47 +311,44 @@ export async function checkQuiescence(
       catalogStatus: row.catalog_status,
       programsStatus: row.programs_status,
       transfersStatus: row.transfers_status,
+      catalogNextDue: row.catalog_next_due,
+      programsNextDue: row.programs_next_due,
+      transfersNextDue: row.transfers_next_due,
     };
 
-    if (!markers.catalog) reasons.push("catalog_sync_state has no completed_at timestamp");
-    if (!markers.programs) reasons.push("program_sync_state has no completed_at timestamp");
-    if (!markers.transfers) reasons.push("transfer_sync_state has no completed_at timestamp");
-
-    // Exact status validation against database sync state schemas
-    if (!markers.catalogStatus) reasons.push("catalog_sync_state status is missing");
-    else if (markers.catalogStatus === "running") reasons.push("catalog_sync_state is currently running");
-    else if (markers.catalogStatus === "awaiting_bootstrap") reasons.push("catalog_sync_state is awaiting bootstrap");
-    else if (markers.catalogStatus !== "idle") reasons.push(`catalog_sync_state status is not idle (${markers.catalogStatus})`);
-
-    if (!markers.programsStatus) reasons.push("program_sync_state status is missing");
-    else if (markers.programsStatus === "in_progress") reasons.push("program_sync_state is currently in progress");
-    else if (markers.programsStatus === "error") reasons.push("program_sync_state is in error state");
-    else if (markers.programsStatus !== "idle") reasons.push(`program_sync_state status is not idle (${markers.programsStatus})`);
-
-    if (!markers.transfersStatus) reasons.push("transfer_sync_state status is missing");
-    else if (markers.transfersStatus === "running") reasons.push("transfer_sync_state is currently running");
-    else if (markers.transfersStatus !== "idle") reasons.push(`transfer_sync_state status is not idle (${markers.transfersStatus})`);
-
-    // Recency check
     const nowMs = options?.now ? new Date(options.now).getTime() : Date.now();
-    const maxRecencyDays = options?.maxRecencyDays ?? 8;
-    const maxAgeMs = maxRecencyDays * 24 * 60 * 60 * 1000;
 
-    for (const [domain, ts] of [
-      ["catalog", markers.catalog],
-      ["programs", markers.programs],
-      ["transfers", markers.transfers],
-    ] as const) {
-      if (ts) {
-        const tsMs = new Date(ts).getTime();
-        if (Number.isNaN(tsMs)) {
-          reasons.push(`${domain}_sync_state completed_at timestamp '${ts}' is invalid`);
-        } else if (nowMs - tsMs > maxAgeMs) {
-          reasons.push(`${domain}_sync_state completed_at (${ts}) is stale (older than ${maxRecencyDays} days)`);
-        } else if (tsMs - nowMs > 5 * 60 * 1000) {
-          reasons.push(`${domain}_sync_state completed_at (${ts}) is in the future`);
-        }
-      }
+    const domainSpecs = [
+      {
+        domain: "catalog" as const,
+        completedAt: markers.catalog,
+        status: markers.catalogStatus,
+        nextDueAt: markers.catalogNextDue,
+      },
+      {
+        domain: "programs" as const,
+        completedAt: markers.programs,
+        status: markers.programsStatus,
+        nextDueAt: markers.programsNextDue,
+      },
+      {
+        domain: "transfers" as const,
+        completedAt: markers.transfers,
+        status: markers.transfersStatus,
+        nextDueAt: markers.transfersNextDue,
+      },
+    ];
+
+    for (const spec of domainSpecs) {
+      const domainReasons = validateDomainSyncFreshness(
+        spec.domain,
+        spec.completedAt,
+        spec.status,
+        spec.nextDueAt,
+        nowMs,
+        { isPreExportCheck: true, maxRecencyDays: options?.maxRecencyDays }
+      );
+      reasons.push(...domainReasons);
     }
 
     return {
@@ -220,51 +370,40 @@ export function validateQuiescenceAndTimestamps(
   }
 
   const errors: string[] = [];
-  const { markersBefore, markersAfter, maxRecencyDays = 8, now } = evidence;
-
-  // 1. Completion markers presence
-  if (!markersBefore.catalog) errors.push("catalog_sync_state has no completed_at timestamp");
-  if (!markersBefore.programs) errors.push("program_sync_state has no completed_at timestamp");
-  if (!markersBefore.transfers) errors.push("transfer_sync_state has no completed_at timestamp");
-
-  // 2. Status validity
-  if (!markersBefore.catalogStatus) {
-    errors.push("catalog_sync_state status is missing");
-  } else if (markersBefore.catalogStatus !== "idle") {
-    errors.push(`catalog_sync_state status is '${markersBefore.catalogStatus}' (must be 'idle')`);
-  }
-
-  if (!markersBefore.programsStatus) {
-    errors.push("program_sync_state status is missing");
-  } else if (markersBefore.programsStatus !== "idle") {
-    errors.push(`program_sync_state status is '${markersBefore.programsStatus}' (must be 'idle')`);
-  }
-
-  if (!markersBefore.transfersStatus) {
-    errors.push("transfer_sync_state status is missing");
-  } else if (markersBefore.transfersStatus !== "idle") {
-    errors.push(`transfer_sync_state status is '${markersBefore.transfersStatus}' (must be 'idle')`);
-  }
-
-  // 3. Recency validation
+  const { markersBefore, markersAfter, maxRecencyDays, now } = evidence;
   const nowMs = now ? new Date(now).getTime() : Date.now();
-  const maxAgeMs = maxRecencyDays * 24 * 60 * 60 * 1000;
 
-  for (const [domain, ts] of [
-    ["catalog", markersBefore.catalog],
-    ["programs", markersBefore.programs],
-    ["transfers", markersBefore.transfers],
-  ] as const) {
-    if (ts) {
-      const tsMs = new Date(ts).getTime();
-      if (Number.isNaN(tsMs)) {
-        errors.push(`${domain} completed_at timestamp '${ts}' is invalid`);
-      } else if (nowMs - tsMs > maxAgeMs) {
-        errors.push(`${domain} completed_at timestamp (${ts}) is stale (older than ${maxRecencyDays} days)`);
-      } else if (tsMs - nowMs > 5 * 60 * 1000) {
-        errors.push(`${domain} completed_at timestamp (${ts}) is in the future`);
-      }
-    }
+  const domainSpecs = [
+    {
+      domain: "catalog" as const,
+      completedAt: markersBefore.catalog,
+      status: markersBefore.catalogStatus,
+      nextDueAt: markersBefore.catalogNextDue,
+    },
+    {
+      domain: "programs" as const,
+      completedAt: markersBefore.programs,
+      status: markersBefore.programsStatus,
+      nextDueAt: markersBefore.programsNextDue,
+    },
+    {
+      domain: "transfers" as const,
+      completedAt: markersBefore.transfers,
+      status: markersBefore.transfersStatus,
+      nextDueAt: markersBefore.transfersNextDue,
+    },
+  ];
+
+  for (const spec of domainSpecs) {
+    const domainErrors = validateDomainSyncFreshness(
+      spec.domain,
+      spec.completedAt,
+      spec.status,
+      spec.nextDueAt,
+      nowMs,
+      { isPreExportCheck: false, maxRecencyDays }
+    );
+    errors.push(...domainErrors);
   }
 
   // 4. Marker shifting check

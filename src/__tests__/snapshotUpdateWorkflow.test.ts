@@ -86,6 +86,9 @@ describe("Weekly Snapshot Workflow Integrity Gates", () => {
       catalogStatus: "idle",
       programsStatus: "idle",
       transfersStatus: "idle",
+      catalogNextDue: "2026-12-09T03:00:00.000Z",
+      programsNextDue: "2026-10-16T05:00:00.000Z",
+      transfersNextDue: "2026-10-16T04:00:00.000Z",
     };
 
     const first = { ...defaultMarkers, ...options?.firstMarkers };
@@ -105,6 +108,9 @@ describe("Weekly Snapshot Workflow Integrity Gates", () => {
                 catalog_status: current.catalogStatus,
                 programs_status: current.programsStatus,
                 transfers_status: current.transfersStatus,
+                catalog_next_due: current.catalogNextDue,
+                programs_next_due: current.programsNextDue,
+                transfers_next_due: current.transfersNextDue,
               },
             ],
           };
@@ -148,6 +154,9 @@ describe("Weekly Snapshot Workflow Integrity Gates", () => {
       catalogStatus: "idle",
       programsStatus: "idle",
       transfersStatus: "idle",
+      catalogNextDue: "2026-12-09T03:00:00.000Z",
+      programsNextDue: "2026-10-16T05:00:00.000Z",
+      transfersNextDue: "2026-10-16T04:00:00.000Z",
     };
     const validDigest = computeSyncMarkerDigest(sampleMarkers);
     const validManifest: SnapshotManifest = {
@@ -609,6 +618,9 @@ describe("Weekly Snapshot Workflow Integrity Gates", () => {
         catalogStatus: "idle",
         programsStatus: "idle",
         transfersStatus: "idle",
+        catalogNextDue: "2026-12-09T03:00:00Z",
+        programsNextDue: "2026-10-16T05:00:00Z",
+        transfersNextDue: "2026-10-16T04:00:00Z",
       };
 
       const errors = validateQuiescenceAndTimestamps({
@@ -628,6 +640,9 @@ describe("Weekly Snapshot Workflow Integrity Gates", () => {
         catalogStatus: "running",
         programsStatus: "idle",
         transfersStatus: "idle",
+        catalogNextDue: "2026-12-09T03:00:00Z",
+        programsNextDue: "2026-10-16T05:00:00Z",
+        transfersNextDue: "2026-10-16T04:00:00Z",
       };
 
       const errorCatalog = validateQuiescenceAndTimestamps({
@@ -662,24 +677,192 @@ describe("Weekly Snapshot Workflow Integrity Gates", () => {
       expect(errorTransfersResult.some((e) => e.includes("transfer_sync_state status is 'running'"))).toBe(true);
     });
 
-    it("fails validation if weekly sync timestamps are stale (> 8 days)", () => {
+    it("fails validation if weekly program sync timestamps are stale (> 15 days) or overdue", () => {
       const staleMarkers: SyncMarkerState = {
-        catalog: "2026-09-25T03:00:00Z", // 14 days old
-        programs: "2026-10-09T05:00:00Z",
+        catalog: "2026-10-09T03:00:00Z",
+        programs: "2026-09-20T05:00:00Z", // 19 days old
         transfers: "2026-10-09T04:00:00Z",
         catalogStatus: "idle",
         programsStatus: "idle",
         transfersStatus: "idle",
+        catalogNextDue: "2026-12-09T03:00:00Z",
+        programsNextDue: "2026-09-27T05:00:00Z", // Due 12 days ago (> 8 days grace)
+        transfersNextDue: "2026-10-16T04:00:00Z",
       };
 
       const errors = validateQuiescenceAndTimestamps({
         markersBefore: staleMarkers,
         markersAfter: staleMarkers,
         now: "2026-10-09T06:00:00Z",
-        maxRecencyDays: 8,
       });
 
-      expect(errors.some((e) => e.includes("catalog completed_at timestamp") && e.includes("stale"))).toBe(true);
+      expect(errors.some((e) => e.includes("program") && (e.includes("stale") || e.includes("overdue")))).toBe(true);
+    });
+
+    it("accepts a course catalog refreshed 37 days ago when its next due date is legitimately in the future", () => {
+      // Simulates the exact state from live dry run 37948928758:
+      // Catalog completed 2026-09-02, due 2026-11-02. Current date 2026-10-09 (37 days later).
+      const liveDryRunState: SyncMarkerState = {
+        catalog: "2026-09-02 01:16:38.927114+00",
+        programs: "2026-10-04T05:00:00.000Z",
+        transfers: "2026-10-04T04:00:00.000Z",
+        catalogStatus: "idle",
+        programsStatus: "idle",
+        transfersStatus: "idle",
+        catalogNextDue: "2026-11-02 01:16:38.927114+00",
+        programsNextDue: "2026-10-11T05:00:00.000Z",
+        transfersNextDue: "2026-10-11T04:00:00.000Z",
+      };
+
+      const errors = validateQuiescenceAndTimestamps({
+        markersBefore: liveDryRunState,
+        markersAfter: liveDryRunState,
+        now: "2026-10-09T06:00:00.000Z",
+      });
+
+      expect(errors).toHaveLength(0);
+    });
+
+    it("rejects a course catalog refreshed 37 days ago when already overdue beyond the 8-day grace period", () => {
+      const overdueCatalog: SyncMarkerState = {
+        catalog: "2026-09-02 01:16:38.927114+00",
+        programs: "2026-10-04T05:00:00.000Z",
+        transfers: "2026-10-04T04:00:00.000Z",
+        catalogStatus: "idle",
+        programsStatus: "idle",
+        transfersStatus: "idle",
+        catalogNextDue: "2026-09-25 01:16:38.927114+00", // Due 14 days ago (> 8 days grace)
+        programsNextDue: "2026-10-11T05:00:00.000Z",
+        transfersNextDue: "2026-10-11T04:00:00.000Z",
+      };
+
+      const errors = validateQuiescenceAndTimestamps({
+        markersBefore: overdueCatalog,
+        markersAfter: overdueCatalog,
+        now: "2026-10-09T06:00:00.000Z",
+      });
+
+      expect(errors.some((e) => e.includes("catalog_sync_state is overdue for refresh"))).toBe(true);
+    });
+
+    it("accepts weekly program and transfer syncs within their legitimate schedule", () => {
+      const weeklySyncs: SyncMarkerState = {
+        catalog: "2026-09-02 01:16:38.927114+00",
+        programs: "2026-10-04T05:00:00.000Z", // 5 days old
+        transfers: "2026-10-04T04:00:00.000Z", // 5 days old
+        catalogStatus: "idle",
+        programsStatus: "idle",
+        transfersStatus: "idle",
+        catalogNextDue: "2026-11-02 01:16:38.927114+00",
+        programsNextDue: "2026-10-11T05:00:00.000Z", // 2 days in future
+        transfersNextDue: "2026-10-11T04:00:00.000Z", // 2 days in future
+      };
+
+      const errors = validateQuiescenceAndTimestamps({
+        markersBefore: weeklySyncs,
+        markersAfter: weeklySyncs,
+        now: "2026-10-09T06:00:00.000Z",
+      });
+
+      expect(errors).toHaveLength(0);
+    });
+
+    it("rejects missing next_due_at on any domain", () => {
+      const missingDue: SyncMarkerState = {
+        catalog: "2026-09-02 01:16:38.927114+00",
+        programs: "2026-10-04T05:00:00.000Z",
+        transfers: "2026-10-04T04:00:00.000Z",
+        catalogStatus: "idle",
+        programsStatus: "idle",
+        transfersStatus: "idle",
+        catalogNextDue: null,
+        programsNextDue: "2026-10-11T05:00:00.000Z",
+        transfersNextDue: "2026-10-11T04:00:00.000Z",
+      };
+
+      const errors = validateQuiescenceAndTimestamps({
+        markersBefore: missingDue,
+        markersAfter: missingDue,
+        now: "2026-10-09T06:00:00.000Z",
+      });
+
+      expect(errors.some((e) => e.includes("catalog_sync_state has no next_due_at timestamp"))).toBe(true);
+    });
+
+    it("rejects invalid or implausibly distant future due dates", () => {
+      const invalidDate: SyncMarkerState = {
+        catalog: "2026-09-02 01:16:38.927114+00",
+        programs: "2026-10-04T05:00:00.000Z",
+        transfers: "2026-10-04T04:00:00.000Z",
+        catalogStatus: "idle",
+        programsStatus: "idle",
+        transfersStatus: "idle",
+        catalogNextDue: "not-a-valid-date",
+        programsNextDue: "2026-10-11T05:00:00.000Z",
+        transfersNextDue: "2026-10-11T04:00:00.000Z",
+      };
+
+      const invalidErrors = validateQuiescenceAndTimestamps({
+        markersBefore: invalidDate,
+        markersAfter: invalidDate,
+        now: "2026-10-09T06:00:00.000Z",
+      });
+      expect(invalidErrors.some((e) => e.includes("catalog_sync_state next_due_at timestamp 'not-a-valid-date' is invalid"))).toBe(true);
+
+      const implausibleDate: SyncMarkerState = {
+        ...invalidDate,
+        catalogNextDue: "2028-09-02 01:16:38.927114+00", // 2 years in future
+      };
+      const implausibleErrors = validateQuiescenceAndTimestamps({
+        markersBefore: implausibleDate,
+        markersAfter: implausibleDate,
+        now: "2026-10-09T06:00:00.000Z",
+      });
+      expect(implausibleErrors.some((e) => e.includes("implausibly distant"))).toBe(true);
+
+      const backwardsDate: SyncMarkerState = {
+        ...invalidDate,
+        catalogNextDue: "2026-08-01 01:16:38.927114+00", // before completed_at
+      };
+      const backwardsErrors = validateQuiescenceAndTimestamps({
+        markersBefore: backwardsDate,
+        markersAfter: backwardsDate,
+        now: "2026-10-09T06:00:00.000Z",
+      });
+      expect(backwardsErrors.some((e) => e.includes("is before completed_at"))).toBe(true);
+    });
+
+    it("rejects bootstrap, error, and running sync states", () => {
+      const bootstrapCatalog: SyncMarkerState = {
+        catalog: "2026-09-02 01:16:38.927114+00",
+        programs: "2026-10-04T05:00:00.000Z",
+        transfers: "2026-10-04T04:00:00.000Z",
+        catalogStatus: "awaiting_bootstrap",
+        programsStatus: "idle",
+        transfersStatus: "idle",
+        catalogNextDue: "2026-11-02 01:16:38.927114+00",
+        programsNextDue: "2026-10-11T05:00:00.000Z",
+        transfersNextDue: "2026-10-11T04:00:00.000Z",
+      };
+
+      const bootstrapErrors = validateQuiescenceAndTimestamps({
+        markersBefore: bootstrapCatalog,
+        markersAfter: bootstrapCatalog,
+        now: "2026-10-09T06:00:00.000Z",
+      });
+      expect(bootstrapErrors.some((e) => e.includes("catalog_sync_state status is 'awaiting_bootstrap'"))).toBe(true);
+
+      const errorProgram: SyncMarkerState = {
+        ...bootstrapCatalog,
+        catalogStatus: "idle",
+        programsStatus: "error",
+      };
+      const progErrors = validateQuiescenceAndTimestamps({
+        markersBefore: errorProgram,
+        markersAfter: errorProgram,
+        now: "2026-10-09T06:00:00.000Z",
+      });
+      expect(progErrors.some((e) => e.includes("program_sync_state status is 'error'"))).toBe(true);
     });
 
     it("fails validation if completion timestamp is in the future", () => {
@@ -690,6 +873,9 @@ describe("Weekly Snapshot Workflow Integrity Gates", () => {
         catalogStatus: "idle",
         programsStatus: "idle",
         transfersStatus: "idle",
+        catalogNextDue: "2026-12-09T12:00:00Z",
+        programsNextDue: "2026-10-16T05:00:00Z",
+        transfersNextDue: "2026-10-16T04:00:00Z",
       };
 
       const errors = validateQuiescenceAndTimestamps({
@@ -709,6 +895,9 @@ describe("Weekly Snapshot Workflow Integrity Gates", () => {
         catalogStatus: "idle",
         programsStatus: "idle",
         transfersStatus: "idle",
+        catalogNextDue: "2026-12-09T03:00:00Z",
+        programsNextDue: "2026-10-16T05:00:00Z",
+        transfersNextDue: "2026-10-16T04:00:00Z",
       };
       const after: SyncMarkerState = {
         ...before,
@@ -722,6 +911,18 @@ describe("Weekly Snapshot Workflow Integrity Gates", () => {
       });
 
       expect(errors.some((e) => e.includes("Sync markers shifted between pre-export and post-export"))).toBe(true);
+
+      // Shifting next_due_at also triggers marker shift failure
+      const afterDueShift: SyncMarkerState = {
+        ...before,
+        catalogNextDue: "2026-12-10T03:00:00Z",
+      };
+      const dueShiftErrors = validateQuiescenceAndTimestamps({
+        markersBefore: before,
+        markersAfter: afterDueShift,
+        now: "2026-10-09T06:00:00Z",
+      });
+      expect(dueShiftErrors.some((e) => e.includes("Sync markers shifted between pre-export and post-export"))).toBe(true);
     });
 
     it("fails validation if manifest provenance sourceDigest does not match sync markers digest", async () => {
@@ -733,6 +934,9 @@ describe("Weekly Snapshot Workflow Integrity Gates", () => {
         catalogStatus: "idle",
         programsStatus: "idle",
         transfersStatus: "idle",
+        catalogNextDue: "2026-12-09T03:00:00Z",
+        programsNextDue: "2026-10-16T05:00:00Z",
+        transfersNextDue: "2026-10-16T04:00:00Z",
       };
 
       const tamperedManifest: SnapshotManifest = {
@@ -773,6 +977,38 @@ describe("Weekly Snapshot Workflow Integrity Gates", () => {
       expect(result.quiescent).toBe(true);
       expect(result.reasons).toHaveLength(0);
       expect(result.markers.catalogStatus).toBe("idle");
+    });
+
+    it("checkQuiescence rejects unexpected active lease or running states", async () => {
+      const pool = createMockSyncPool({
+        firstMarkers: {
+          catalogStatus: "running",
+        },
+      });
+
+      const result = await checkQuiescence(pool, { now: "2026-10-09T06:00:00Z" });
+      expect(result.quiescent).toBe(false);
+      expect(result.reasons.some((r) => r.includes("catalog_sync_state is currently running"))).toBe(true);
+    });
+
+    it("distinguishes safe database identity and read-only role query without credential exposure", () => {
+      // Diagnostic query for database identity and read-only verification
+      const identityQuery = `
+        SELECT
+          current_database() AS database_name,
+          current_user AS connected_user,
+          has_table_privilege(current_user, 'catalog_sync_state', 'SELECT') AS can_select_catalog,
+          has_table_privilege(current_user, 'catalog_sync_state', 'INSERT') AS can_insert_catalog,
+          has_table_privilege(current_user, 'catalog_sync_state', 'UPDATE') AS can_update_catalog,
+          has_table_privilege(current_user, 'catalog_sync_state', 'DELETE') AS can_delete_catalog;
+      `.trim();
+
+      expect(identityQuery).toContain("current_database()");
+      expect(identityQuery).toContain("current_user");
+      expect(identityQuery).toContain("has_table_privilege");
+      expect(identityQuery).not.toContain("password");
+      expect(identityQuery).not.toContain("secret");
+      expect(identityQuery).not.toContain("postgres://");
     });
   });
 
