@@ -1,5 +1,26 @@
 # Changelog
 
+## [0.4.0](https://github.com/andrewtryder/snhu-tools/compare/v0.3.0...v0.4.0) (2026-10-09)
+
+
+### Features
+
+* serve public catalog from static snapshots ([#27](https://github.com/andrewtryder/snhu-tools/issues/27)) ([62da670](https://github.com/andrewtryder/snhu-tools/commit/62da67007d2875050735b08966724e7954502236))
+* **snapshots:** implement secure weekly snapshot update PR workflow ([#33](https://github.com/andrewtryder/snhu-tools/issues/33)) ([f2e5416](https://github.com/andrewtryder/snhu-tools/commit/f2e54165e20fd7d90addaded47d68aff4948ddcc))
+
+
+### Bug Fixes
+
+* **security:** sanitize URL check in indexNow test to resolve CodeQL alert ([4a9bf68](https://github.com/andrewtryder/snhu-tools/commit/4a9bf68abead9b2ec85267aee6af42ba82c0e650))
+* **snapshots:** schedule-aware freshness and quiescence validation ([#35](https://github.com/andrewtryder/snhu-tools/issues/35)) ([ab1cf08](https://github.com/andrewtryder/snhu-tools/commit/ab1cf08272442b74174f0e23eeabc0f88d634db9))
+* **snapshots:** validate weekly sync provenance and quiescence ([#34](https://github.com/andrewtryder/snhu-tools/issues/34)) ([7185f5d](https://github.com/andrewtryder/snhu-tools/commit/7185f5d523578f4e9e25c14caf803dbd678f7900))
+* **workflow:** skip redundant build checks on no-change and isolate test env ([#36](https://github.com/andrewtryder/snhu-tools/issues/36)) ([590cfb0](https://github.com/andrewtryder/snhu-tools/commit/590cfb0e70c8b0ab8169207946b30737687afb9d))
+
+
+### Performance Improvements
+
+* reduce Neon compute wakeups ([#20](https://github.com/andrewtryder/snhu-tools/issues/20)) ([1b304ad](https://github.com/andrewtryder/snhu-tools/commit/1b304ad62e7583e033597678d634cc3beecb310e))
+
 ## [0.3.0](https://github.com/andrewtryder/snhu-tools/compare/v0.2.0...v0.3.0) (2026-09-14)
 
 
