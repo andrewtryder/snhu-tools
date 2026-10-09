@@ -51,7 +51,7 @@ describe("Production Readiness — Credential Normalization & Academic Data Safe
   });
 });
 
-describe("Production Readiness — Fixture Isolation Gate", () => {
+describe("Production Readiness — Fixture Isolation Gate", { timeout: 15000 }, () => {
   const originalEnv = process.env;
 
   beforeEach(() => {

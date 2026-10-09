@@ -1,0 +1,90 @@
+{
+  "fixture": false,
+  "provenance": {
+    "kind": "postgres",
+    "source": "postgres-readonly-export",
+    "sourceDigest": "5f9ee090cd5c9e108d486cfaaba24a2cb6889810f8a6186c94fcb69e97d8ec58",
+    "approvalReference": "PR-27",
+    "approved": true
+  },
+  "baseline": "fixture",
+  "counts": {
+    "programs": 227,
+    "courses": 2394,
+    "transfers": 1236,
+    "search": 3857
+  },
+  "rawBytes": {
+    "programs": 5730055,
+    "courses": 2357654,
+    "transfers": 387823,
+    "search": 921482
+  },
+  "reconciliation": {
+    "courses": {
+      "records": {
+        "sourceRows": 2394,
+        "exportedRecords": 2394,
+        "duplicateRows": 0,
+        "rejectedRows": 0
+      },
+      "prerequisiteEdges": {
+        "sourceRows": 1928,
+        "exportedEdges": 1928,
+        "duplicateRows": 0,
+        "rejectedRows": 0,
+        "externalReferences": 0,
+        "duplicateExternalRows": 0
+      },
+      "sourceCoverage": {
+        "coursesData": {
+          "totalRows": 2394,
+          "candidateRows": 2394,
+          "excluded": {
+            "missingCatalogCourseId": 0
+          }
+        },
+        "prerequisites": {
+          "totalRows": 1928,
+          "candidateRows": 1928,
+          "excluded": {
+            "orphanClassId": 0,
+            "parentMissingCatalogCourseId": 0,
+            "missingPrerequisiteCourseId": 0,
+            "selfReference": 0
+          },
+          "unmatched": {
+            "externalPrerequisites": 0
+          }
+        }
+      }
+    }
+  },
+  "sourceCoverage": {
+    "courses": {
+      "coursesData": {
+        "totalRows": 2394,
+        "candidateRows": 2394,
+        "excluded": {
+          "missingCatalogCourseId": 0
+        }
+      },
+      "prerequisites": {
+        "totalRows": 1928,
+        "candidateRows": 1928,
+        "excluded": {
+          "orphanClassId": 0,
+          "parentMissingCatalogCourseId": 0,
+          "missingPrerequisiteCourseId": 0,
+          "selfReference": 0
+        },
+        "unmatched": {
+          "externalPrerequisites": 0
+        }
+      }
+    }
+  },
+  "warnings": [
+    "No approved production baseline was available for count comparison"
+  ]
+}
