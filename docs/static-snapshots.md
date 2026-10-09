@@ -89,19 +89,12 @@ The automated workflow fails closed unless all ten gates pass:
 9. **Secret Scanning**: Deep recursive scanning across all staged JSON bundles, manifests, and reports for database connection strings (`postgres://`), private tokens, Neon endpoint hostnames, and private keys.
 10. **Quiescence & Marker Consistency**: Sync state tables verified quiescent before export, and pre-export markers match post-export markers exactly.
 
-## Review of CircleCI post-sync revalidation
+## CircleCI synchronization and search indexing
 
-Historically, CircleCI synchronization jobs concluded by invoking:
-- `POST ${SITE_URL}/api/revalidate?scope=programs`
-- `POST ${SITE_URL}/api/revalidate?scope=courses`
-- `POST ${SITE_URL}/api/revalidate?scope=transfers`
+CircleCI performs database migrations, upstream synchronization, result validation, and artifact retention for programs, courses, and transfers. It does **not** call `/api/revalidate` after a successful database promotion. The live website serves committed JSON snapshots, so database-only synchronization cannot refresh deployed pages or the sitemap.
 
-**Architectural Assessment**:
-Under the static JSON architecture, database ingestion updates only the PostgreSQL staging tables. Because production serves solely from committed static JSON on Vercel, revalidating Next.js cache tags/paths on the live site is a no-op with respect to new database rows.
+The GitHub Actions weekly snapshot workflow reads Neon with a SELECT-only credential, verifies all integrity gates, and proposes a human-reviewed pull request only when there are actual changes. Merging an approved snapshot PR deploys the new static JSON and sitemap through Vercel.
 
-Furthermore, `/api/revalidate` triggers `submitIndexNow()`, notifying search engines (IndexNow/Bing) to crawl pages for updates. Calling this immediately after database sync is misleading: search bots crawl the site and find unchanged static JSON, wasting crawl budget and potentially causing rate-limiting when the actual updated static snapshots are deployed days later.
+The production `/sitemap.xml` is generated from committed snapshots, never by querying Neon at request time. Google can discover the published sitemap through `robots.txt` and Google Search Console. No automatic post-deployment IndexNow submission is currently wired into the snapshot PR workflow; any such notification should be a separately reviewed post-deploy integration, not a CircleCI database-ingestion side effect.
 
-**Recommended Post-Cutover Behavior**:
-1. Remove or disable the post-sync `POST /api/revalidate` steps in CircleCI.
-2. Ingestion jobs should focus exclusively on synchronizing PostgreSQL tables and verifying data integrity in the database.
-3. Search engine notification and cache revalidation should occur automatically when Vercel deploys an approved snapshot PR.
+The legacy `/api/revalidate` endpoint remains available, but CircleCI no longer invokes it. Its removal is outside this cleanup's scope.
