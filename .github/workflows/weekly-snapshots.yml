@@ -1,0 +1,139 @@
+name: Weekly Snapshot Update
+
+on:
+  # Proposed schedule: Monday at 07:00 UTC (after Sunday 03:00, 04:00, 05:00 CircleCI syncs)
+  # Disabled by default: guarded by ENABLE_WEEKLY_SNAPSHOT_WORKFLOW repository variable
+  schedule:
+    - cron: "0 7 * * 1"
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: "Dry run (validate and generate report without opening PR or promoting)"
+        type: boolean
+        default: false
+      confirm_execution:
+        description: "Explicitly confirm execution (overrides disabled-by-default guard)"
+        type: boolean
+        default: false
+
+permissions:
+  contents: write
+  pull-requests: write
+
+concurrency:
+  group: weekly-snapshots
+  cancel-in-progress: false
+
+jobs:
+  snapshot-update:
+    name: Generate & Verify Snapshot PR
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Check automation authorization
+        id: check-auth
+        run: |
+          if [ "${{ vars.ENABLE_WEEKLY_SNAPSHOT_WORKFLOW }}" = "true" ] || [ "${{ inputs.confirm_execution }}" = "true" ]; then
+            echo "authorized=true" >> "$GITHUB_OUTPUT"
+            echo "Automation authorized."
+          else
+            echo "authorized=false" >> "$GITHUB_OUTPUT"
+            echo "::notice ::Automation disabled by default. Set repository variable ENABLE_WEEKLY_SNAPSHOT_WORKFLOW=true or confirm execution via workflow_dispatch."
+          fi
+
+      - name: Check out main branch
+        if: steps.check-auth.outputs.authorized == 'true'
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: main
+          fetch-depth: 0
+
+      - name: Set up Node.js
+        if: steps.check-auth.outputs.authorized == 'true'
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: "24"
+          cache: "npm"
+
+      - name: Install dependencies
+        if: steps.check-auth.outputs.authorized == 'true'
+        run: npm ci
+
+      - name: Run automated snapshot update runner
+        if: steps.check-auth.outputs.authorized == 'true'
+        id: run-update
+        env:
+          READONLY_POSTGRES_URL: ${{ secrets.READONLY_POSTGRES_URL }}
+          POSTGRES_URL: ${{ secrets.READONLY_POSTGRES_URL }}
+          STATIC_EXPORT_APPROVED: "true"
+          ALLOW_FIXTURE_SNAPSHOTS: "false"
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          if [ -z "$READONLY_POSTGRES_URL" ]; then
+            echo "::error ::READONLY_POSTGRES_URL secret is not configured"
+            exit 1
+          fi
+
+          FLAGS=""
+          if [ "${{ inputs.dry_run }}" = "true" ]; then
+            FLAGS="--dry-run"
+          fi
+
+          npx tsx scripts/automated-snapshot-update.ts $FLAGS
+
+      - name: Run isolated quality checks and production build
+        if: steps.check-auth.outputs.authorized == 'true' && inputs.dry_run != true
+        env:
+          ALLOW_FIXTURE_SNAPSHOTS: "false"
+          POSTGRES_URL: ""
+          VERCEL_ENV: "production"
+        run: |
+          node scripts/verify-ci-build-protections.mjs --mode=accept-non-fixture
+          npm run typecheck
+          npm run lint
+          npm run lint:actions
+          npm test
+          npm run build
+
+      - name: Create or update pull request
+        if: steps.check-auth.outputs.authorized == 'true' && inputs.dry_run != true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          if [ ! -f .snapshot-pr-summary.md ]; then
+            echo "No changes were detected or PR summary was not generated."
+            exit 0
+          fi
+
+          BRANCH="automation/snapshot-update"
+          DATE_LABEL=$(date -u +'%Y-%m-%d')
+          TITLE="chore(snapshots): weekly automated catalog update [${DATE_LABEL}]"
+
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+          git checkout -B "$BRANCH"
+          git add src/data/snapshots/ src/data/canonical-program-inventory.json
+          
+          if git diff --staged --quiet; then
+            echo "No staged changes to commit."
+            exit 0
+          fi
+
+          git commit -m "$TITLE"
+
+          EXISTING_PR=$(gh pr list --head "$BRANCH" --base main --json number --jq '.[0].number' || echo "")
+          if [ -n "$EXISTING_PR" ]; then
+            echo "Updating existing PR #$EXISTING_PR..."
+            git push --force-with-lease origin "$BRANCH"
+            gh pr edit "$EXISTING_PR" --title "$TITLE" --body-file .snapshot-pr-summary.md
+          else
+            echo "Opening new PR..."
+            git push -u origin "$BRANCH"
+            gh pr create \
+              --base main \
+              --head "$BRANCH" \
+              --title "$TITLE" \
+              --body-file .snapshot-pr-summary.md \
+              --label "snapshots,automated-pr"
+          fi

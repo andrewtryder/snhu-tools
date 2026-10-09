@@ -49,3 +49,4 @@ next-env.d.ts
 /src/data/.snapshots.previous-*
 /src/data/.snapshot-promotion.json
 /.snapshot-backup-temp-*
+/.snapshot-pr-summary.md
