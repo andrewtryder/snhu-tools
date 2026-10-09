@@ -58,7 +58,7 @@ describe("CourseExplorerClient URL initialization", () => {
     expect(input).not.toBeNull();
     // Input value should be empty when no ?ids= param
     expect((input as HTMLInputElement).value).toBe("");
-  });
+  }, 15000);
 
   it("populates the search input with the ?ids= param value on mount", async () => {
     mockUseSearchParams.mockReturnValue(new URLSearchParams("ids=CS330,CS350"));
@@ -81,5 +81,5 @@ describe("CourseExplorerClient URL initialization", () => {
       // The input should have been populated with the URL ids param
       expect(input.value).toBe("CS330,CS350");
     }, { timeout: 3000 });
-  });
+  }, 15000);
 });

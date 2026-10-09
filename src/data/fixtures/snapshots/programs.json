@@ -1,0 +1,1373 @@
+{
+  "meta": {
+    "domain": "programs",
+    "counts": {
+      "programs": 6
+    }
+  },
+  "directory": [
+    {
+      "slug": "computer-science-bs",
+      "title": "Computer Science",
+      "degreeLevel": "BS",
+      "credential": "Bachelor of Science in Computer Science",
+      "catalogYear": "2025-2026",
+      "totalCredits": 120,
+      "requiredCourseCount": 26,
+      "description": "The Bachelor of Science in Computer Science provides students with deep fundamentals in software development, algorithm design, data structures, computer architecture, and software security. (Prototype fixture data for demonstration).",
+      "sourceCatalogUrl": "https://www.snhu.edu/admission/academic-catalogs#/programs/V1S14E8tg/none"
+    },
+    {
+      "slug": "cybersecurity-bs",
+      "title": "Cybersecurity",
+      "degreeLevel": "BS",
+      "credential": "Bachelor of Science in Cybersecurity",
+      "catalogYear": "2025-2026",
+      "totalCredits": 120,
+      "requiredCourseCount": 24,
+      "description": "Prepares students to protect networks, systems, and digital assets against cyber threats through threat hunting, digital forensics, incident response, and security architecture.",
+      "sourceCatalogUrl": null
+    },
+    {
+      "slug": "information-technology-bs",
+      "title": "Information Technology",
+      "degreeLevel": "BS",
+      "credential": "Bachelor of Science in Information Technology",
+      "catalogYear": "2025-2026",
+      "totalCredits": 120,
+      "requiredCourseCount": 22,
+      "description": "Focuses on enterprise network infrastructure, cloud systems administration, database management, IT service management, and technology deployment.",
+      "sourceCatalogUrl": null
+    },
+    {
+      "slug": "business-administration-bs",
+      "title": "Business Administration",
+      "degreeLevel": "BS",
+      "credential": "Bachelor of Science in Business Administration",
+      "catalogYear": "2025-2026",
+      "totalCredits": 120,
+      "requiredCourseCount": 25,
+      "description": "Develops strategic managerial leadership, financial accounting, marketing dynamics, business law, and operational decision-making skills.",
+      "sourceCatalogUrl": null
+    },
+    {
+      "slug": "psychology-ba",
+      "title": "Psychology",
+      "degreeLevel": "BA",
+      "credential": "Bachelor of Arts in Psychology",
+      "catalogYear": "2025-2026",
+      "totalCredits": 120,
+      "requiredCourseCount": 20,
+      "description": "Explores human behavior, cognitive processes, social psychology, statistical research methods, and psychological assessment.",
+      "sourceCatalogUrl": null
+    },
+    {
+      "slug": "nursing-rn-to-bsn",
+      "title": "Nursing (RN to BSN)",
+      "degreeLevel": "RN to BSN",
+      "credential": "Bachelor of Science in Nursing (RN to BSN)",
+      "catalogYear": "2025-2026",
+      "totalCredits": 120,
+      "requiredCourseCount": 10,
+      "description": "CCNE-accredited completion pathway for registered nurses seeking advanced competencies in evidence-based practice, healthcare quality, and nursing leadership.",
+      "sourceCatalogUrl": null
+    }
+  ],
+  "bySlug": {
+    "computer-science-bs": {
+      "slug": "computer-science-bs",
+      "title": "Computer Science",
+      "degreeLevel": "BS",
+      "credential": "Bachelor of Science in Computer Science",
+      "catalogYear": "2025-2026",
+      "totalCredits": 120,
+      "requiredCourseCount": 26,
+      "electiveCredits": 42,
+      "estimatedDuration": "4 Years (8 Semesters)",
+      "sourcePid": "V1S14E8tg",
+      "sourceCatalogUrl": "https://www.snhu.edu/admission/academic-catalogs#/programs/V1S14E8tg/none",
+      "sourceName": "SNHU Academic Catalog (Prototype Fixture)",
+      "description": "The Bachelor of Science in Computer Science provides students with deep fundamentals in software development, algorithm design, data structures, computer architecture, and software security. (Prototype fixture data for demonstration).",
+      "careerPaths": [
+        "Software Engineer / Developer",
+        "Systems Architect",
+        "Full-Stack Web Developer",
+        "Data Engineer",
+        "Cybersecurity Analyst"
+      ],
+      "groups": [
+        {
+          "id": "gened",
+          "title": "General Education Core",
+          "category": "gened",
+          "colorTheme": {
+            "bg": "#dbe1ff",
+            "border": "#003087",
+            "text": "#001d59",
+            "badgeBg": "#003087",
+            "badgeText": "#ffffff"
+          },
+          "totalCredits": 42,
+          "description": "Foundational competencies in quantitative literacy, communication, inquiry, and critical thinking.",
+          "items": [
+            {
+              "id": "eng130",
+              "title": "ENG 130 - Primary Research and Writing",
+              "credits": 3,
+              "type": "single",
+              "courses": [
+                "ENG 130"
+              ]
+            },
+            {
+              "id": "mat140",
+              "title": "MAT 140 - Precalculus",
+              "credits": 3,
+              "type": "single",
+              "courses": [
+                "MAT 140"
+              ]
+            },
+            {
+              "id": "mat240",
+              "title": "MAT 240 - Applied Statistics",
+              "credits": 3,
+              "type": "single",
+              "courses": [
+                "MAT 240"
+              ]
+            },
+            {
+              "id": "gened_electives",
+              "title": "General Education Electives (Choose 8 courses)",
+              "credits": 24,
+              "type": "elective",
+              "description": "Distribution requirements across Humanities, Social Sciences, and Natural Sciences."
+            },
+            {
+              "id": "cmat",
+              "title": "Cornerstone Math (CMAT)",
+              "credits": null,
+              "type": "group",
+              "subItems": [
+                {
+                  "id": "cmat_choice",
+                  "title": "Choose 1 of the following",
+                  "credits": null,
+                  "type": "group",
+                  "subItems": [
+                    {
+                      "id": "mat241",
+                      "title": "MAT 241: Modern Statistics",
+                      "credits": 3,
+                      "type": "choice",
+                      "courses": [
+                        "MAT 241"
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "core",
+          "title": "Core STEM & Math Requirements",
+          "category": "core",
+          "colorTheme": {
+            "bg": "#e8f5e9",
+            "border": "#004112",
+            "text": "#002908",
+            "badgeBg": "#004112",
+            "badgeText": "#ffffff"
+          },
+          "totalCredits": 18,
+          "description": "Essential mathematics and computer science fundamentals for computing degrees.",
+          "items": [
+            {
+              "id": "it140",
+              "title": "IT 140 - Introduction to Scripting (Python)",
+              "credits": 3,
+              "type": "single",
+              "courses": [
+                "IT 140"
+              ]
+            },
+            {
+              "id": "it145",
+              "title": "IT 145 - Intro to Software Development (Java)",
+              "credits": 3,
+              "type": "single",
+              "courses": [
+                "IT 145"
+              ]
+            },
+            {
+              "id": "mat230",
+              "title": "MAT 230 - Discrete Mathematics",
+              "credits": 3,
+              "type": "single",
+              "courses": [
+                "MAT 230"
+              ]
+            },
+            {
+              "id": "mat350",
+              "title": "MAT 350 - Applied Linear Algebra",
+              "credits": 3,
+              "type": "single",
+              "courses": [
+                "MAT 350"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "major",
+          "title": "Computer Science Major Requirements",
+          "category": "major",
+          "colorTheme": {
+            "bg": "#f3e8ff",
+            "border": "#7e22ce",
+            "text": "#581c87",
+            "badgeBg": "#7e22ce",
+            "badgeText": "#ffffff"
+          },
+          "totalCredits": 42,
+          "description": "Advanced coursework in software engineering, systems, algorithms, and security.",
+          "items": [
+            {
+              "id": "cs210",
+              "title": "CS 210 - Programming Languages (C++)",
+              "credits": 3,
+              "type": "single",
+              "courses": [
+                "CS 210"
+              ]
+            },
+            {
+              "id": "cs230",
+              "title": "CS 230 - Operating Platforms",
+              "credits": 3,
+              "type": "single",
+              "courses": [
+                "CS 230"
+              ]
+            },
+            {
+              "id": "cs250",
+              "title": "CS 250 - Software Development Lifecycle",
+              "credits": 3,
+              "type": "single",
+              "courses": [
+                "CS 250"
+              ]
+            },
+            {
+              "id": "cs300",
+              "title": "CS 300 - Data Structures and Algorithms",
+              "credits": 3,
+              "type": "single",
+              "courses": [
+                "CS 300"
+              ]
+            },
+            {
+              "id": "cs305",
+              "title": "CS 305 - Software Security",
+              "credits": 3,
+              "type": "single",
+              "courses": [
+                "CS 305"
+              ]
+            },
+            {
+              "id": "cs320",
+              "title": "CS 320 - Software Test Automation & QA",
+              "credits": 3,
+              "type": "single",
+              "courses": [
+                "CS 320"
+              ]
+            },
+            {
+              "id": "cs330",
+              "title": "CS 330 - Computer Graphics & Visualization",
+              "credits": 3,
+              "type": "single",
+              "courses": [
+                "CS 330"
+              ]
+            },
+            {
+              "id": "cs340",
+              "title": "CS 340 - Client/Server Development",
+              "credits": 3,
+              "type": "single",
+              "courses": [
+                "CS 340"
+              ]
+            },
+            {
+              "id": "cs465",
+              "title": "CS 465 - Full Stack I",
+              "credits": 3,
+              "type": "single",
+              "courses": [
+                "CS 465"
+              ]
+            },
+            {
+              "id": "cs499",
+              "title": "CS 499 - Computer Science Capstone",
+              "credits": 3,
+              "type": "single",
+              "courses": [
+                "CS 499"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "elective",
+          "title": "Free Electives & Concentrated Electives",
+          "category": "elective",
+          "colorTheme": {
+            "bg": "#fef3c7",
+            "border": "#d97706",
+            "text": "#78350f",
+            "badgeBg": "#d97706",
+            "badgeText": "#ffffff"
+          },
+          "totalCredits": 18,
+          "description": "Student-selected courses, minor options, or specialized domain tracks.",
+          "items": [
+            {
+              "id": "cs_elective_1",
+              "title": "CS Upper-Level Elective I (300/400)",
+              "credits": 3,
+              "type": "choice"
+            },
+            {
+              "id": "cs_elective_2",
+              "title": "CS Upper-Level Elective II (300/400)",
+              "credits": 3,
+              "type": "choice"
+            },
+            {
+              "id": "free_electives",
+              "title": "Free Electives (12 Credits)",
+              "credits": 12,
+              "type": "elective"
+            }
+          ]
+        }
+      ],
+      "nodes": [
+        {
+          "id": "IT140",
+          "code": "IT 140",
+          "title": "Introduction to Scripting",
+          "credits": 3,
+          "groupCode": "core",
+          "groupName": "Core Requirements",
+          "groupCategory": "core",
+          "description": "Foundational scripting in Python covering control flow, functions, and file handling."
+        },
+        {
+          "id": "MAT140",
+          "code": "MAT 140",
+          "title": "Precalculus",
+          "credits": 3,
+          "groupCode": "gened",
+          "groupName": "General Education",
+          "groupCategory": "gened",
+          "description": "Functions, trigonometry, vectors, and algebraic foundations for calculus."
+        },
+        {
+          "id": "ENG130",
+          "code": "ENG 130",
+          "title": "Primary Research & Writing",
+          "credits": 3,
+          "groupCode": "gened",
+          "groupName": "General Education",
+          "groupCategory": "gened",
+          "description": "Academic research methods, rhetoric, argumentation, and technical writing."
+        },
+        {
+          "id": "IT145",
+          "code": "IT 145",
+          "title": "Intro to Software Development",
+          "credits": 3,
+          "groupCode": "core",
+          "groupName": "Core Requirements",
+          "groupCategory": "core",
+          "prerequisites": [
+            "IT140"
+          ],
+          "description": "Object-oriented software development using Java, including classes and inheritance."
+        },
+        {
+          "id": "MAT230",
+          "code": "MAT 230",
+          "title": "Discrete Mathematics",
+          "credits": 3,
+          "groupCode": "core",
+          "groupName": "Core Requirements",
+          "groupCategory": "core",
+          "prerequisites": [
+            "MAT140"
+          ],
+          "description": "Logic, set theory, graph theory, combinatorics, and mathematical proofs for computer science."
+        },
+        {
+          "id": "MAT240",
+          "code": "MAT 240",
+          "title": "Applied Statistics",
+          "credits": 3,
+          "groupCode": "gened",
+          "groupName": "General Education",
+          "groupCategory": "gened",
+          "prerequisites": [
+            "MAT140"
+          ],
+          "description": "Descriptive statistics, probability distributions, hypothesis testing, and regression analysis."
+        },
+        {
+          "id": "CS210",
+          "code": "CS 210",
+          "title": "Programming Languages",
+          "credits": 3,
+          "groupCode": "major",
+          "groupName": "Major Requirements",
+          "groupCategory": "major",
+          "prerequisites": [
+            "IT145"
+          ],
+          "description": "Low-level and systems programming using C++, memory management, and pointers."
+        },
+        {
+          "id": "CS230",
+          "code": "CS 230",
+          "title": "Operating Platforms",
+          "credits": 3,
+          "groupCode": "major",
+          "groupName": "Major Requirements",
+          "groupCategory": "major",
+          "prerequisites": [
+            "IT145"
+          ],
+          "description": "Operating system principles, processes, concurrency, threads, and file systems."
+        },
+        {
+          "id": "CS250",
+          "code": "CS 250",
+          "title": "Software Dev Lifecycle",
+          "credits": 3,
+          "groupCode": "major",
+          "groupName": "Major Requirements",
+          "groupCategory": "major",
+          "prerequisites": [
+            "IT145"
+          ],
+          "description": "Agile methodologies, requirements gathering, system design, and software documentation."
+        },
+        {
+          "id": "MAT350",
+          "code": "MAT 350",
+          "title": "Applied Linear Algebra",
+          "credits": 3,
+          "groupCode": "core",
+          "groupName": "Core Requirements",
+          "groupCategory": "core",
+          "prerequisites": [
+            "MAT230"
+          ],
+          "description": "Vectors, matrices, eigenvalues, transformations, and linear systems applications."
+        },
+        {
+          "id": "CS300",
+          "code": "CS 300",
+          "title": "Data Structures & Algorithms",
+          "credits": 3,
+          "groupCode": "major",
+          "groupName": "Major Requirements",
+          "groupCategory": "major",
+          "prerequisites": [
+            "CS210",
+            "MAT230"
+          ],
+          "description": "Trees, graphs, hash tables, sorting algorithms, and Big-O computational complexity."
+        },
+        {
+          "id": "CS305",
+          "code": "CS 305",
+          "title": "Software Security",
+          "credits": 3,
+          "groupCode": "major",
+          "groupName": "Major Requirements",
+          "groupCategory": "major",
+          "prerequisites": [
+            "CS210",
+            "CS230"
+          ],
+          "description": "Secure coding practices, vulnerability assessments, input validation, and defensive design."
+        },
+        {
+          "id": "CS320",
+          "code": "CS 320",
+          "title": "Software Test Automation",
+          "credits": 3,
+          "groupCode": "major",
+          "groupName": "Major Requirements",
+          "groupCategory": "major",
+          "prerequisites": [
+            "CS210",
+            "CS250"
+          ],
+          "description": "Unit testing frameworks, test-driven development (TDD), integration testing, and CI/CD pipelines."
+        },
+        {
+          "id": "CS330",
+          "code": "CS 330",
+          "title": "Computer Graphics & Viz",
+          "credits": 3,
+          "groupCode": "major",
+          "groupName": "Major Requirements",
+          "groupCategory": "major",
+          "prerequisites": [
+            "CS300",
+            "MAT350"
+          ],
+          "description": "3D rendering pipelines, OpenGL, shaders, geometric transformations, and lighting models."
+        },
+        {
+          "id": "CS340",
+          "code": "CS 340",
+          "title": "Client/Server Development",
+          "credits": 3,
+          "groupCode": "major",
+          "groupName": "Major Requirements",
+          "groupCategory": "major",
+          "prerequisites": [
+            "CS300"
+          ],
+          "description": "Database integration, REST APIs, MongoDB, Express, and full-stack web applications."
+        },
+        {
+          "id": "CS465",
+          "code": "CS 465",
+          "title": "Full Stack Development I",
+          "credits": 3,
+          "groupCode": "major",
+          "groupName": "Major Requirements",
+          "groupCategory": "major",
+          "prerequisites": [
+            "CS340"
+          ],
+          "description": "Modern single-page front-end architectures (React), state management, and API integration."
+        },
+        {
+          "id": "CS_ELEC1",
+          "code": "CS ELEC",
+          "title": "CS 300/400 Elective Placeholder",
+          "credits": 3,
+          "groupCode": "elective",
+          "groupName": "Electives",
+          "groupCategory": "elective",
+          "isPlaceholder": true,
+          "placeholderType": "CS Upper Elective",
+          "prerequisites": [
+            "CS300"
+          ],
+          "description": "Select any 300 or 400-level Computer Science elective course."
+        },
+        {
+          "id": "CS499",
+          "code": "CS 499",
+          "title": "Computer Science Capstone",
+          "credits": 3,
+          "groupCode": "major",
+          "groupName": "Major Requirements",
+          "groupCategory": "major",
+          "prerequisites": [
+            "CS300",
+            "CS305",
+            "CS320",
+            "CS330"
+          ],
+          "description": "Senior synthesis capstone portfolio demonstrating software engineering, security, and algorithms."
+        }
+      ],
+      "edges": [
+        {
+          "id": "e-it140-it145",
+          "source": "IT140",
+          "target": "IT145",
+          "type": "prerequisite"
+        },
+        {
+          "id": "e-mat140-mat230",
+          "source": "MAT140",
+          "target": "MAT230",
+          "type": "prerequisite"
+        },
+        {
+          "id": "e-mat140-mat240",
+          "source": "MAT140",
+          "target": "MAT240",
+          "type": "prerequisite"
+        },
+        {
+          "id": "e-it145-cs210",
+          "source": "IT145",
+          "target": "CS210",
+          "type": "prerequisite"
+        },
+        {
+          "id": "e-it145-cs230",
+          "source": "IT145",
+          "target": "CS230",
+          "type": "prerequisite"
+        },
+        {
+          "id": "e-it145-cs250",
+          "source": "IT145",
+          "target": "CS250",
+          "type": "prerequisite"
+        },
+        {
+          "id": "e-mat230-mat350",
+          "source": "MAT230",
+          "target": "MAT350",
+          "type": "prerequisite"
+        },
+        {
+          "id": "e-cs210-cs300",
+          "source": "CS210",
+          "target": "CS300",
+          "type": "prerequisite"
+        },
+        {
+          "id": "e-mat230-cs300",
+          "source": "MAT230",
+          "target": "CS300",
+          "type": "prerequisite"
+        },
+        {
+          "id": "e-cs210-cs305",
+          "source": "CS210",
+          "target": "CS305",
+          "type": "prerequisite"
+        },
+        {
+          "id": "e-cs230-cs305",
+          "source": "CS230",
+          "target": "CS305",
+          "type": "prerequisite"
+        },
+        {
+          "id": "e-cs210-cs320",
+          "source": "CS210",
+          "target": "CS320",
+          "type": "prerequisite"
+        },
+        {
+          "id": "e-cs250-cs320",
+          "source": "CS250",
+          "target": "CS320",
+          "type": "prerequisite"
+        },
+        {
+          "id": "e-cs300-cs330",
+          "source": "CS300",
+          "target": "CS330",
+          "type": "prerequisite"
+        },
+        {
+          "id": "e-mat350-cs330",
+          "source": "MAT350",
+          "target": "CS330",
+          "type": "prerequisite"
+        },
+        {
+          "id": "e-cs300-cs340",
+          "source": "CS300",
+          "target": "CS340",
+          "type": "prerequisite"
+        },
+        {
+          "id": "e-cs340-cs465",
+          "source": "CS340",
+          "target": "CS465",
+          "type": "prerequisite"
+        },
+        {
+          "id": "e-cs300-cselec",
+          "source": "CS300",
+          "target": "CS_ELEC1",
+          "type": "prerequisite"
+        },
+        {
+          "id": "e-cs300-cs499",
+          "source": "CS300",
+          "target": "CS499",
+          "type": "prerequisite"
+        },
+        {
+          "id": "e-cs305-cs499",
+          "source": "CS305",
+          "target": "CS499",
+          "type": "prerequisite"
+        },
+        {
+          "id": "e-cs320-cs499",
+          "source": "CS320",
+          "target": "CS499",
+          "type": "prerequisite"
+        },
+        {
+          "id": "e-cs330-cs499",
+          "source": "CS330",
+          "target": "CS499",
+          "type": "prerequisite"
+        }
+      ],
+      "unparsedRequirements": [
+        "Special Topic CS 490/491 offerings require department permission.",
+        "Accelerated master's pathway option (CS 500-level transfer credit)."
+      ]
+    },
+    "cybersecurity-bs": {
+      "slug": "cybersecurity-bs",
+      "title": "Cybersecurity",
+      "degreeLevel": "BS",
+      "credential": "Bachelor of Science in Cybersecurity",
+      "catalogYear": "2025-2026",
+      "totalCredits": 120,
+      "requiredCourseCount": 24,
+      "electiveCredits": 39,
+      "estimatedDuration": "4 Years (8 Semesters)",
+      "sourceCatalogUrl": null,
+      "sourceName": "SNHU Academic Catalog (Prototype Fixture)",
+      "description": "Prepares students to protect networks, systems, and digital assets against cyber threats through threat hunting, digital forensics, incident response, and security architecture.",
+      "careerPaths": [
+        "Cybersecurity Analyst",
+        "Information Security Specialist",
+        "Digital Forensics Examiner",
+        "Penetration Tester",
+        "SOC Analyst"
+      ],
+      "groups": [
+        {
+          "id": "gened",
+          "title": "General Education Core",
+          "category": "gened",
+          "colorTheme": {
+            "bg": "#dbe1ff",
+            "border": "#003087",
+            "text": "#001d59",
+            "badgeBg": "#003087",
+            "badgeText": "#ffffff"
+          },
+          "totalCredits": 42,
+          "items": []
+        },
+        {
+          "id": "core",
+          "title": "Information Technology & Computing Core",
+          "category": "core",
+          "colorTheme": {
+            "bg": "#e8f5e9",
+            "border": "#004112",
+            "text": "#002908",
+            "badgeBg": "#004112",
+            "badgeText": "#ffffff"
+          },
+          "totalCredits": 18,
+          "items": []
+        },
+        {
+          "id": "major",
+          "title": "Cybersecurity Major Requirements",
+          "category": "major",
+          "colorTheme": {
+            "bg": "#f3e8ff",
+            "border": "#7e22ce",
+            "text": "#581c87",
+            "badgeBg": "#7e22ce",
+            "badgeText": "#ffffff"
+          },
+          "totalCredits": 42,
+          "items": []
+        },
+        {
+          "id": "elective",
+          "title": "Free Electives",
+          "category": "elective",
+          "colorTheme": {
+            "bg": "#fef3c7",
+            "border": "#d97706",
+            "text": "#78350f",
+            "badgeBg": "#d97706",
+            "badgeText": "#ffffff"
+          },
+          "totalCredits": 18,
+          "items": []
+        }
+      ],
+      "nodes": [
+        {
+          "id": "CYB100",
+          "code": "CYB 100",
+          "title": "Foundations of Cybersecurity",
+          "credits": 3,
+          "groupCode": "major",
+          "groupName": "Major Requirements",
+          "groupCategory": "major"
+        },
+        {
+          "id": "CYB200",
+          "code": "CYB 200",
+          "title": "Cyber Defense & Countermeasures",
+          "credits": 3,
+          "groupCode": "major",
+          "groupName": "Major Requirements",
+          "groupCategory": "major",
+          "prerequisites": [
+            "CYB100"
+          ]
+        },
+        {
+          "id": "CYB300",
+          "code": "CYB 300",
+          "title": "Network Security & Incident Response",
+          "credits": 3,
+          "groupCode": "major",
+          "groupName": "Major Requirements",
+          "groupCategory": "major",
+          "prerequisites": [
+            "CYB200"
+          ]
+        },
+        {
+          "id": "CYB499",
+          "code": "CYB 499",
+          "title": "Cybersecurity Capstone",
+          "credits": 3,
+          "groupCode": "major",
+          "groupName": "Major Requirements",
+          "groupCategory": "major",
+          "prerequisites": [
+            "CYB300"
+          ]
+        }
+      ],
+      "edges": [
+        {
+          "id": "e-cyb100-200",
+          "source": "CYB100",
+          "target": "CYB200",
+          "type": "prerequisite"
+        },
+        {
+          "id": "e-cyb200-300",
+          "source": "CYB200",
+          "target": "CYB300",
+          "type": "prerequisite"
+        },
+        {
+          "id": "e-cyb300-499",
+          "source": "CYB300",
+          "target": "CYB499",
+          "type": "prerequisite"
+        }
+      ]
+    },
+    "information-technology-bs": {
+      "slug": "information-technology-bs",
+      "title": "Information Technology",
+      "degreeLevel": "BS",
+      "credential": "Bachelor of Science in Information Technology",
+      "catalogYear": "2025-2026",
+      "totalCredits": 120,
+      "requiredCourseCount": 22,
+      "electiveCredits": 45,
+      "estimatedDuration": "4 Years (8 Semesters)",
+      "sourceCatalogUrl": null,
+      "sourceName": "SNHU Academic Catalog (Prototype Fixture)",
+      "description": "Focuses on enterprise network infrastructure, cloud systems administration, database management, IT service management, and technology deployment.",
+      "careerPaths": [
+        "IT Systems Administrator",
+        "Network Engineer",
+        "Cloud Operations Specialist",
+        "Database Administrator"
+      ],
+      "groups": [
+        {
+          "id": "gened",
+          "title": "General Education Core",
+          "category": "gened",
+          "colorTheme": {
+            "bg": "#dbe1ff",
+            "border": "#003087",
+            "text": "#001d59",
+            "badgeBg": "#003087",
+            "badgeText": "#ffffff"
+          },
+          "totalCredits": 42,
+          "items": []
+        },
+        {
+          "id": "major",
+          "title": "IT Major Requirements",
+          "category": "major",
+          "colorTheme": {
+            "bg": "#f3e8ff",
+            "border": "#7e22ce",
+            "text": "#581c87",
+            "badgeBg": "#7e22ce",
+            "badgeText": "#ffffff"
+          },
+          "totalCredits": 39,
+          "items": []
+        }
+      ],
+      "nodes": [
+        {
+          "id": "IT100",
+          "code": "IT 100",
+          "title": "Introduction to Information Technology",
+          "credits": 3,
+          "groupCode": "major",
+          "groupName": "Major Requirements",
+          "groupCategory": "major"
+        },
+        {
+          "id": "IT210",
+          "code": "IT 210",
+          "title": "Business Systems Analysis",
+          "credits": 3,
+          "groupCode": "major",
+          "groupName": "Major Requirements",
+          "groupCategory": "major",
+          "prerequisites": [
+            "IT100"
+          ]
+        },
+        {
+          "id": "IT310",
+          "code": "IT 310",
+          "title": "Advanced Network Architecture",
+          "credits": 3,
+          "groupCode": "major",
+          "groupName": "Major Requirements",
+          "groupCategory": "major",
+          "prerequisites": [
+            "IT210"
+          ]
+        },
+        {
+          "id": "IT499",
+          "code": "IT 499",
+          "title": "Information Technology Capstone",
+          "credits": 3,
+          "groupCode": "major",
+          "groupName": "Major Requirements",
+          "groupCategory": "major",
+          "prerequisites": [
+            "IT310"
+          ]
+        }
+      ],
+      "edges": [
+        {
+          "id": "e-it100-210",
+          "source": "IT100",
+          "target": "IT210",
+          "type": "prerequisite"
+        },
+        {
+          "id": "e-it210-310",
+          "source": "IT210",
+          "target": "IT310",
+          "type": "prerequisite"
+        },
+        {
+          "id": "e-it310-499",
+          "source": "IT310",
+          "target": "IT499",
+          "type": "prerequisite"
+        }
+      ]
+    },
+    "business-administration-bs": {
+      "slug": "business-administration-bs",
+      "title": "Business Administration",
+      "degreeLevel": "BS",
+      "credential": "Bachelor of Science in Business Administration",
+      "catalogYear": "2025-2026",
+      "totalCredits": 120,
+      "requiredCourseCount": 25,
+      "electiveCredits": 36,
+      "estimatedDuration": "4 Years (8 Semesters)",
+      "sourceCatalogUrl": null,
+      "sourceName": "SNHU Academic Catalog (Prototype Fixture)",
+      "description": "Develops strategic managerial leadership, financial accounting, marketing dynamics, business law, and operational decision-making skills.",
+      "careerPaths": [
+        "Business Analyst",
+        "Operations Manager",
+        "Project Manager",
+        "Marketing Coordinator"
+      ],
+      "groups": [
+        {
+          "id": "gened",
+          "title": "General Education Core",
+          "category": "gened",
+          "colorTheme": {
+            "bg": "#dbe1ff",
+            "border": "#003087",
+            "text": "#001d59",
+            "badgeBg": "#003087",
+            "badgeText": "#ffffff"
+          },
+          "totalCredits": 42,
+          "items": []
+        },
+        {
+          "id": "core",
+          "title": "Business Core Requirements",
+          "category": "core",
+          "colorTheme": {
+            "bg": "#e8f5e9",
+            "border": "#004112",
+            "text": "#002908",
+            "badgeBg": "#004112",
+            "badgeText": "#ffffff"
+          },
+          "totalCredits": 36,
+          "items": []
+        }
+      ],
+      "nodes": [
+        {
+          "id": "BUS101",
+          "code": "BUS 101",
+          "title": "Introduction to Business",
+          "credits": 3,
+          "groupCode": "core",
+          "groupName": "Business Core",
+          "groupCategory": "core"
+        },
+        {
+          "id": "ACC201",
+          "code": "ACC 201",
+          "title": "Financial Accounting",
+          "credits": 3,
+          "groupCode": "core",
+          "groupName": "Business Core",
+          "groupCategory": "core",
+          "prerequisites": [
+            "BUS101"
+          ]
+        },
+        {
+          "id": "FIN320",
+          "code": "FIN 320",
+          "title": "Principles of Finance",
+          "credits": 3,
+          "groupCode": "core",
+          "groupName": "Business Core",
+          "groupCategory": "core",
+          "prerequisites": [
+            "ACC201"
+          ]
+        },
+        {
+          "id": "BUS400",
+          "code": "BUS 400",
+          "title": "Business Strategy Capstone",
+          "credits": 3,
+          "groupCode": "core",
+          "groupName": "Business Core",
+          "groupCategory": "core",
+          "prerequisites": [
+            "FIN320"
+          ]
+        }
+      ],
+      "edges": [
+        {
+          "id": "e-bus101-acc201",
+          "source": "BUS101",
+          "target": "ACC201",
+          "type": "prerequisite"
+        },
+        {
+          "id": "e-acc201-fin320",
+          "source": "ACC201",
+          "target": "FIN320",
+          "type": "prerequisite"
+        },
+        {
+          "id": "e-fin320-bus400",
+          "source": "FIN320",
+          "target": "BUS400",
+          "type": "prerequisite"
+        }
+      ]
+    },
+    "psychology-ba": {
+      "slug": "psychology-ba",
+      "title": "Psychology",
+      "degreeLevel": "BA",
+      "credential": "Bachelor of Arts in Psychology",
+      "catalogYear": "2025-2026",
+      "totalCredits": 120,
+      "requiredCourseCount": 20,
+      "electiveCredits": 51,
+      "estimatedDuration": "4 Years (8 Semesters)",
+      "sourceCatalogUrl": null,
+      "sourceName": "SNHU Academic Catalog (Prototype Fixture)",
+      "description": "Explores human behavior, cognitive processes, social psychology, statistical research methods, and psychological assessment.",
+      "careerPaths": [
+        "Case Manager",
+        "Human Resources Specialist",
+        "Research Assistant",
+        "Behavioral Technician"
+      ],
+      "groups": [
+        {
+          "id": "gened",
+          "title": "General Education Core",
+          "category": "gened",
+          "colorTheme": {
+            "bg": "#dbe1ff",
+            "border": "#003087",
+            "text": "#001d59",
+            "badgeBg": "#003087",
+            "badgeText": "#ffffff"
+          },
+          "totalCredits": 42,
+          "items": []
+        },
+        {
+          "id": "major",
+          "title": "Psychology Major Core",
+          "category": "major",
+          "colorTheme": {
+            "bg": "#f3e8ff",
+            "border": "#7e22ce",
+            "text": "#581c87",
+            "badgeBg": "#7e22ce",
+            "badgeText": "#ffffff"
+          },
+          "totalCredits": 27,
+          "items": []
+        }
+      ],
+      "nodes": [
+        {
+          "id": "PSY108",
+          "code": "PSY 108",
+          "title": "Introduction to Psychology",
+          "credits": 3,
+          "groupCode": "major",
+          "groupName": "Major Requirements",
+          "groupCategory": "major"
+        },
+        {
+          "id": "PSY211",
+          "code": "PSY 211",
+          "title": "Lifespan Development",
+          "credits": 3,
+          "groupCode": "major",
+          "groupName": "Major Requirements",
+          "groupCategory": "major",
+          "prerequisites": [
+            "PSY108"
+          ]
+        },
+        {
+          "id": "PSY310",
+          "code": "PSY 310",
+          "title": "Research Methods in Psychology",
+          "credits": 3,
+          "groupCode": "major",
+          "groupName": "Major Requirements",
+          "groupCategory": "major",
+          "prerequisites": [
+            "PSY211"
+          ]
+        },
+        {
+          "id": "PSY491",
+          "code": "PSY 491",
+          "title": "Psychology Senior Seminar",
+          "credits": 3,
+          "groupCode": "major",
+          "groupName": "Major Requirements",
+          "groupCategory": "major",
+          "prerequisites": [
+            "PSY310"
+          ]
+        }
+      ],
+      "edges": [
+        {
+          "id": "e-psy108-211",
+          "source": "PSY108",
+          "target": "PSY211",
+          "type": "prerequisite"
+        },
+        {
+          "id": "e-psy211-310",
+          "source": "PSY211",
+          "target": "PSY310",
+          "type": "prerequisite"
+        },
+        {
+          "id": "e-psy310-491",
+          "source": "PSY310",
+          "target": "PSY491",
+          "type": "prerequisite"
+        }
+      ]
+    },
+    "nursing-rn-to-bsn": {
+      "slug": "nursing-rn-to-bsn",
+      "title": "Nursing (RN to BSN)",
+      "degreeLevel": "RN to BSN",
+      "credential": "Bachelor of Science in Nursing (RN to BSN)",
+      "catalogYear": "2025-2026",
+      "totalCredits": 120,
+      "requiredCourseCount": 10,
+      "electiveCredits": 30,
+      "estimatedDuration": "1-2 Years (Post-RN)",
+      "sourceCatalogUrl": null,
+      "sourceName": "SNHU Academic Catalog (Prototype Fixture)",
+      "description": "CCNE-accredited completion pathway for registered nurses seeking advanced competencies in evidence-based practice, healthcare quality, and nursing leadership.",
+      "careerPaths": [
+        "Nurse Leader / Charge Nurse",
+        "Clinical Nurse Specialist",
+        "Public Health Nurse",
+        "Nurse Educator"
+      ],
+      "groups": [
+        {
+          "id": "major",
+          "title": "BSN Professional Nursing Core",
+          "category": "major",
+          "colorTheme": {
+            "bg": "#f3e8ff",
+            "border": "#7e22ce",
+            "text": "#581c87",
+            "badgeBg": "#7e22ce",
+            "badgeText": "#ffffff"
+          },
+          "totalCredits": 30,
+          "items": []
+        }
+      ],
+      "nodes": [
+        {
+          "id": "NUR300",
+          "code": "NUR 300",
+          "title": "Scholarly Inquiry in Nursing",
+          "credits": 3,
+          "groupCode": "major",
+          "groupName": "Major Core",
+          "groupCategory": "major"
+        },
+        {
+          "id": "NUR325",
+          "code": "NUR 325",
+          "title": "Health Assessment & Promotion",
+          "credits": 3,
+          "groupCode": "major",
+          "groupName": "Major Core",
+          "groupCategory": "major",
+          "prerequisites": [
+            "NUR300"
+          ]
+        },
+        {
+          "id": "NUR425",
+          "code": "NUR 425",
+          "title": "Nursing Leadership & Management",
+          "credits": 3,
+          "groupCode": "major",
+          "groupName": "Major Core",
+          "groupCategory": "major",
+          "prerequisites": [
+            "NUR325"
+          ]
+        },
+        {
+          "id": "NUR490",
+          "code": "NUR 490",
+          "title": "Nursing Capstone Experience",
+          "credits": 3,
+          "groupCode": "major",
+          "groupName": "Major Core",
+          "groupCategory": "major",
+          "prerequisites": [
+            "NUR425"
+          ]
+        }
+      ],
+      "edges": [
+        {
+          "id": "e-nur300-325",
+          "source": "NUR300",
+          "target": "NUR325",
+          "type": "prerequisite"
+        },
+        {
+          "id": "e-nur325-425",
+          "source": "NUR325",
+          "target": "NUR425",
+          "type": "prerequisite"
+        },
+        {
+          "id": "e-nur425-490",
+          "source": "NUR425",
+          "target": "NUR490",
+          "type": "prerequisite"
+        }
+      ]
+    }
+  },
+  "sitemap": [
+    {
+      "slug": "computer-science-bs",
+      "updatedAt": "2026-10-08T14:33:29.755Z"
+    },
+    {
+      "slug": "cybersecurity-bs",
+      "updatedAt": "2026-10-08T14:33:29.755Z"
+    },
+    {
+      "slug": "information-technology-bs",
+      "updatedAt": "2026-10-08T14:33:29.755Z"
+    },
+    {
+      "slug": "business-administration-bs",
+      "updatedAt": "2026-10-08T14:33:29.755Z"
+    },
+    {
+      "slug": "psychology-ba",
+      "updatedAt": "2026-10-08T14:33:29.755Z"
+    },
+    {
+      "slug": "nursing-rn-to-bsn",
+      "updatedAt": "2026-10-08T14:33:29.755Z"
+    }
+  ],
+  "catalogYears": [
+    "2025-2026"
+  ],
+  "lastUpdated": "2026-10-08T14:33:29.755Z"
+}

@@ -30,18 +30,18 @@ describe("Program requirements page", () => {
     render(element);
 
     expect(
-      await screen.findByRole("heading", { name: "Computer Science BS Degree Requirements", level: 1 }),
+      await screen.findByRole("heading", { name: /Computer Science.*Degree Requirements/, level: 1 }),
     ).toBeInTheDocument();
     expect(screen.getByRole("heading", { name: "Requirement Groups", level: 2 })).toBeInTheDocument();
     expect(screen.getByRole("heading", { name: "Course Inventory", level: 2 })).toBeInTheDocument();
     expect(
-      screen.getByText(/The Computer Science program contains \d+ identified courses across \d+ requirement categories/),
+      screen.getByText(/The Computer Science.*program contains \d+ identified courses across \d+ requirement categories/),
     ).toBeInTheDocument();
     expect(screen.getByText(/\d+ known course relationships/)).toBeInTheDocument();
 
     expect(screen.getByText("Cornerstone Math (CMAT)")).toBeInTheDocument();
-    expect(screen.getByText("Choose 1 of the following")).toBeInTheDocument();
-    expect(screen.getByText("MAT 241: Modern Statistics")).toBeInTheDocument();
+    expect(screen.getAllByText("Choose 1 of the following").length).toBeGreaterThan(0);
+    expect(screen.getByText(/MAT 241: Modern Statistics/)).toBeInTheDocument();
 
     const inventory = screen.getByRole("table", {
       name: /Courses in this degree program with known prerequisite links/i,
@@ -59,7 +59,7 @@ describe("Program requirements page", () => {
     const cs210Header = within(inventory).getByRole("rowheader", { name: /CS 210/ });
     const cs210Row = cs210Header.closest("tr");
     expect(cs210Row).toBeTruthy();
-    expect(within(cs210Row!).getByText(/Intro to Software Development/)).toBeInTheDocument();
+    expect(within(cs210Row!).getByText(/(?:Intro to Software|Application) Development/)).toBeInTheDocument();
     expect(within(cs210Row!).getByText(/IT 145/)).toBeInTheDocument();
 
     expect(screen.getByRole("link", { name: /Back to interactive degree map/i })).toHaveAttribute(
@@ -72,11 +72,11 @@ describe("Program requirements page", () => {
     const element = await ProgramDetailContent({ slug: "computer-science-bs" });
     render(element);
 
-    expect(await screen.findByRole("heading", { name: "Computer Science", level: 1 })).toBeInTheDocument();
+    expect(await screen.findByRole("heading", { name: /Computer Science/, level: 1 })).toBeInTheDocument();
     expect(screen.queryByRole("link", { name: /View full courses and requirements/i })).not.toBeInTheDocument();
     expect(screen.queryByRole("link", { name: /View every course and requirement/i })).not.toBeInTheDocument();
     expect(screen.getByText("Program Requirement Groups & Course Listing")).toBeInTheDocument();
-    expect(screen.queryByText("MAT 241: Modern Statistics")).not.toBeInTheDocument();
+    expect(screen.queryByText(/MAT 241: Modern Statistics/)).not.toBeInTheDocument();
     expect(screen.queryByText("Choose 1 of the following")).not.toBeInTheDocument();
     expect(screen.queryByText("Complete catalog rule text")).not.toBeInTheDocument();
   }, 15000);

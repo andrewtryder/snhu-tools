@@ -5,7 +5,8 @@ import { AppFooter } from "@/components/AppFooter";
 import { Card } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
 import { MetricCard } from "@/components/ui/MetricCard";
-import { getPrograms, getCatalogYears, getProgramSyncState } from "@/lib/serverData";
+import { getPrograms, getCatalogYears } from "@/lib/serverData";
+import { getStaticSnapshotManifest } from "@/lib/staticSnapshots";
 import { kualiConfig } from "@/config/kualiConfig";
 import { CheckCircle2Icon, DatabaseIcon, AlertTriangleIcon, ActivityIcon, RefreshCwIcon, XCircleIcon } from "lucide-react";
 
@@ -21,13 +22,13 @@ export const metadata = {
 export default async function DataStatusPage() {
   const programs = await getPrograms();
   const years = await getCatalogYears();
-  const syncState = await getProgramSyncState();
+  const snapshot = getStaticSnapshotManifest();
 
   const totalPrograms = programs.length;
   const unparsedNotesCount = programs.reduce((acc, p) => acc + (p.unparsedRequirements?.length || 0), 0);
 
-  const isSyncing = syncState?.status === "syncing";
-  const hasError = !!syncState?.last_error;
+  const isSyncing = false;
+  const hasError = false;
   const statusColor = isSyncing ? "text-blue-700 bg-blue-50 border-blue-200" : hasError ? "text-red-700 bg-red-50 border-red-200" : "text-emerald-700 bg-emerald-50 border-emerald-200";
   const StatusIcon = isSyncing ? RefreshCwIcon : hasError ? XCircleIcon : CheckCircle2Icon;
   const statusPulse = isSyncing ? "bg-blue-500 animate-spin" : hasError ? "bg-red-500" : "bg-emerald-500 animate-pulse";
@@ -81,9 +82,9 @@ export default async function DataStatusPage() {
               icon={<AlertTriangleIcon className="h-5 w-5 text-amber-600" />}
             />
             <MetricCard
-              label="Last Sync Run"
-              value={syncState?.completed_at ? new Date(syncState.completed_at).toLocaleDateString() : "Never"}
-              subtext={syncState?.next_due_at ? `Next sync: ${new Date(syncState.next_due_at).toLocaleDateString()}` : "Scheduled via CircleCI"}
+              label="Snapshot Created"
+              value={new Date(snapshot.createdAt).toLocaleDateString()}
+              subtext={`${snapshot.fixture ? "Fixture" : "Validated catalog"} snapshot · schema ${snapshot.schemaVersion}`}
               icon={<ActivityIcon className="h-5 w-5 text-primary" />}
             />
           </div>

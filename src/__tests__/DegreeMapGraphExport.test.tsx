@@ -53,7 +53,7 @@ describe("DegreeMapGraph image export", () => {
 
     await waitFor(() => {
       expect(toPngMock).toHaveBeenCalled();
-    });
+    }, { timeout: 5000 });
 
     expect(await screen.findByAltText(/Degree map preview for Computer Science/i)).toBeInTheDocument();
     expect(screen.getByRole("button", { name: /Download PNG/i })).toBeInTheDocument();

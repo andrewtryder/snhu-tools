@@ -1,0 +1,80 @@
+{
+  "meta": {
+    "domain": "courses",
+    "counts": {
+      "ids": 4,
+      "records": 4
+    }
+  },
+  "ids": [
+    "CS210",
+    "IT140",
+    "IT145",
+    "PSY321"
+  ],
+  "summaries": [
+    {
+      "catalog_course_id": "CS210",
+      "title": "Programming Languages"
+    },
+    {
+      "catalog_course_id": "IT140",
+      "title": "Introduction to Scripting"
+    },
+    {
+      "catalog_course_id": "IT145",
+      "title": "Intro to Software Development"
+    },
+    {
+      "catalog_course_id": "PSY321",
+      "title": "Research Methods in Psychology II"
+    }
+  ],
+  "records": {
+    "IT140": {
+      "title": "Introduction to Scripting",
+      "pid": "61ed75d237ce9b227c9086b5",
+      "catalog_course_id": "IT140",
+      "description": "Fundamental programming concepts using Python.",
+      "academic_level": "Undergraduate",
+      "credits": "3",
+      "subject_code": "IT"
+    },
+    "IT145": {
+      "title": "Intro to Software Development",
+      "pid": "62b738f9f8827f964f6bffe5",
+      "catalog_course_id": "IT145",
+      "description": "Object-oriented principles using Java.",
+      "academic_level": "Undergraduate",
+      "credits": "3",
+      "subject_code": "IT"
+    },
+    "CS210": {
+      "title": "Programming Languages",
+      "pid": "62b739362ee949105a2dc80c",
+      "catalog_course_id": "CS210",
+      "description": "C++ systems programming and memory management.",
+      "academic_level": "Undergraduate",
+      "credits": "3",
+      "subject_code": "CS"
+    },
+    "PSY321": {
+      "title": "Research Methods in Psychology II",
+      "pid": "fixture-psy321",
+      "catalog_course_id": "PSY321",
+      "description": "Fixture catalog course.",
+      "academic_level": "Undergraduate",
+      "credits": "3",
+      "subject_code": "PSY"
+    }
+  },
+  "edges": [
+    {
+      "parentId": "PSY321",
+      "childId": "PSY222",
+      "parentTitle": "Research Methods in Psychology II",
+      "childTitle": "Research Methods in Psychology I"
+    }
+  ],
+  "lastModified": "2026-10-08T14:33:29.755Z"
+}

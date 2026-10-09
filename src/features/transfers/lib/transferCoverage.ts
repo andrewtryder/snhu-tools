@@ -1,14 +1,6 @@
-import { inArray } from "drizzle-orm";
-import { unstable_cache } from "next/cache";
-import { db } from "@/features/transfers/db";
-import { transferCourses } from "@/features/transfers/db/schema";
 import { getSiteUrl } from "@/lib/siteUrl";
-import {
-  TRANSFER_COVERAGE_CACHE_TAG,
-  TRANSFER_COVERAGE_REVALIDATE_SECONDS,
-} from "./constants";
 import { formatTransferCourseCode } from "./courseCode";
-import { getTransferLastModified } from "./seoQueries";
+import { getAllTransferRows, getTransferLastModified } from "./seoQueries";
 import { canonicalPath, transferCoursePath } from "./slug";
 
 export type TransferCoverageCourse = {
@@ -50,27 +42,9 @@ export async function fetchTransferCoverageRows(
 ): Promise<TransferCoverageRow[]> {
   if (courseCodes.length === 0) return [];
 
-  return db
-    .select({
-      courseNumber: transferCourses.courseNumber,
-      pid: transferCourses.pid,
-      groupFilter2Name: transferCourses.groupFilter2Name,
-    })
-    .from(transferCourses)
-    .where(inArray(transferCourses.courseNumber, courseCodes));
+  const wanted = new Set(courseCodes.map((code) => code.toUpperCase()));
+  return (await getAllTransferRows()).filter((row) => wanted.has((row.courseNumber ?? "").trim().toUpperCase())).map((row) => ({ courseNumber: row.courseNumber, pid: row.pid, groupFilter2Name: row.groupFilter2Name }));
 }
-
-const _cachedTransferCoverageRows = unstable_cache(
-  async (sortedCodesKey: string): Promise<TransferCoverageRow[]> => {
-    const codes = sortedCodesKey.length === 0 ? [] : sortedCodesKey.split(",");
-    return fetchTransferCoverageRows(codes);
-  },
-  ["transfer-coverage-rows"],
-  {
-    tags: [TRANSFER_COVERAGE_CACHE_TAG],
-    revalidate: TRANSFER_COVERAGE_REVALIDATE_SECONDS,
-  }
-);
 
 function buildAggregates(rows: TransferCoverageRow[]): Map<string, CourseAggregate> {
   const byCourse = new Map<string, CourseAggregate>();
@@ -164,10 +138,8 @@ export function aggregateTransferCoverage(
 export async function getTransferCoverageResponse(
   courseCodes: string[]
 ): Promise<TransferCoverageResponse> {
-  const sortedCodesKey = [...courseCodes].sort((a, b) => a.localeCompare(b)).join(",");
-
   const [rows, lastModified] = await Promise.all([
-    _cachedTransferCoverageRows(sortedCodesKey),
+    fetchTransferCoverageRows(courseCodes),
     getTransferLastModified(),
   ]);
 

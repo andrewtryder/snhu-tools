@@ -11,6 +11,7 @@ import {
 
 import sampleList from "@/data/fixtures/program-list.sample.json";
 import sampleCsProgram from "@/data/fixtures/computer-science-program.sample.json";
+import canonicalProgramInventory from "@/data/fixtures/canonical-program-inventory.json";
 
 describe("kualiParser utility", () => {
   it("generates deterministic kebab-case program slugs", () => {
@@ -19,10 +20,89 @@ describe("kualiParser utility", () => {
     expect(createProgramSlug("Business Administration", "BS")).toBe("business-administration-bs");
   });
 
-  it("normalizes credentials accurately from titles", () => {
-    expect(normalizeCredential("Computer Science (BS)")).toBe("Bachelor of Science");
-    expect(normalizeCredential("Psychology (BA)")).toBe("Bachelor of Arts");
-    expect(normalizeCredential("Nursing (RN to BSN)")).toBe("Bachelor of Science in Nursing (RN to BSN)");
+  it("normalizes credentials accurately from titles and respects precedence over rawTypeName", () => {
+    // BA credentials with generic rawTypeName "Bachelor's Degree"
+    expect(normalizeCredential("Management (BA)", "Bachelor's Degree")).toBe("Bachelor of Arts");
+    expect(normalizeCredential("Communications (BA)", "Bachelor's Degree")).toBe("Bachelor of Arts");
+    expect(normalizeCredential("Healthcare Management (BA)", "Bachelor's Degree")).toBe("Bachelor of Arts");
+    expect(normalizeCredential("Psychology (BA)", "Bachelor's Degree")).toBe("Bachelor of Arts");
+    expect(normalizeCredential("English (BA)")).toBe("Bachelor of Arts");
+    expect(normalizeCredential("Bachelor of Arts in History")).toBe("Bachelor of Arts");
+
+    // BS credentials
+    expect(normalizeCredential("Computer Science (BS)", "Bachelor's Degree")).toBe("Bachelor of Science");
+    expect(normalizeCredential("Accounting (BS)")).toBe("Bachelor of Science");
+    expect(normalizeCredential("Bachelor of Science in Information Technology")).toBe("Bachelor of Science");
+    // Generic fallback when title lacks explicit BA/BS
+    expect(normalizeCredential("Interdisciplinary Studies", "Bachelor's Degree")).toBe("Bachelor of Science");
+
+    // RN to BSN credentials
+    expect(normalizeCredential("Nursing (RN to BSN)", "Bachelor's Degree")).toBe(
+      "Bachelor of Science in Nursing (RN to BSN)"
+    );
+    expect(normalizeCredential("Nursing (RN-TO-BSN)")).toBe(
+      "Bachelor of Science in Nursing (RN to BSN)"
+    );
+
+    // Associate degree credentials
+    expect(normalizeCredential("General Studies (AA)", "Associate's Degree")).toBe("Associate of Arts");
+    expect(normalizeCredential("Digital Photography (AA)")).toBe("Associate of Arts");
+    expect(normalizeCredential("Business Administration (AS)", "Associate's Degree")).toBe("Associate of Science");
+    expect(normalizeCredential("Marketing (AS)")).toBe("Associate of Science");
+    expect(normalizeCredential("General Associate", "Associate Degree")).toBe("Associate of Science");
+
+    // Master and Professional credentials
+    expect(normalizeCredential("Communication (MA)", "Master's Degree")).toBe("Master of Arts");
+    expect(normalizeCredential("Creative Writing (MFA)", "Master's Degree")).toBe("Master of Fine Arts");
+    expect(normalizeCredential("Curriculum and Instruction (MEd)", "Master's Degree")).toBe("Master of Education");
+    expect(normalizeCredential("Business Administration (MBA)", "Master's Degree")).toBe("Master of Business Administration");
+    expect(normalizeCredential("STEM Master of Business Administration (SMBA)", "Master's Degree")).toBe("Master of Business Administration");
+    expect(normalizeCredential("Computer Science (MS)", "Master's Degree")).toBe("Master of Science");
+
+    // Certificate credentials
+    expect(normalizeCredential("Business Operations (Certificate)", "Certificate")).toBe("Certificate");
+    expect(normalizeCredential("Medical Office Administration (Certificate)")).toBe("Certificate");
+    expect(normalizeCredential("Undergraduate Certificate in Accounting", "Undergraduate Certificate")).toBe(
+      "Undergraduate Certificate"
+    );
+
+    // Verify slug stability across credential normalization
+    expect(createProgramSlug("Management (BA)", "Bachelor of Arts")).toBe("management-ba");
+    expect(createProgramSlug("Communications (BA)", "Bachelor of Arts")).toBe("communications-ba");
+    expect(createProgramSlug("Healthcare Management (BA)", "Bachelor of Arts")).toBe("healthcare-management-ba");
+    expect(createProgramSlug("Computer Science (BS)", "Bachelor of Science")).toBe("computer-science-bs");
+    expect(createProgramSlug("General Studies (AA)", "Associate of Arts")).toBe("general-studies-aa-associate-of-science");
+    expect(createProgramSlug("Business Administration (MBA)", "Master of Business Administration")).toBe("business-administration-mba-master-of-science");
+  });
+
+  it("preserves 100% of the 227-program live slug inventory under corrected credentials", () => {
+    expect(canonicalProgramInventory).toHaveLength(227);
+
+    const seenPids = new Set<string>();
+    const seenSlugs = new Set<string>();
+    let credentialCorrectionsCount = 0;
+
+    for (const prog of canonicalProgramInventory) {
+      expect(prog.sourcePid).toBeTruthy();
+      expect(prog.slug).toBeTruthy();
+      expect(seenPids.has(prog.sourcePid)).toBe(false);
+      expect(seenSlugs.has(prog.slug)).toBe(false);
+      seenPids.add(prog.sourcePid);
+      seenSlugs.add(prog.slug);
+
+      const normalizedCred = normalizeCredential(prog.title, prog.historicalCredential);
+      expect(normalizedCred).toBe(prog.expectedCredential);
+      if (normalizedCred !== prog.historicalCredential) {
+        credentialCorrectionsCount++;
+      }
+
+      const generatedSlug = createProgramSlug(prog.title, normalizedCred);
+      expect(generatedSlug).toBe(prog.slug);
+    }
+
+    expect(credentialCorrectionsCount).toBe(45);
+    expect(seenPids.size).toBe(227);
+    expect(seenSlugs.size).toBe(227);
   });
 
   it("calculates stable SHA-256 hash of raw payloads", () => {

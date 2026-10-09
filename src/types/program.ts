@@ -32,6 +32,7 @@ export interface CourseNodeData {
   description?: string;
   isPlaceholder?: boolean; // for elective placeholders
   isExternal?: boolean; // prerequisite not included in this degree's requirements
+  isCompetency?: boolean; // for CBE direct assessment competencies
   placeholderType?: string; // e.g. "Free Elective" or "STEM Elective"
   prerequisites?: string[]; // IDs of prerequisite courses
   corequisites?: string[]; // IDs of corequisite courses

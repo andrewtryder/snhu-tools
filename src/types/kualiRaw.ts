@@ -42,6 +42,7 @@ export interface RawKualiSpecialization {
 export interface RawKualiProgramDetail extends RawKualiProgramListItem {
   description?: string;
   rulesRequirements?: string;
+  catDirectAssessmentText?: string;
   outcomes?: Array<{ id?: string; code?: string; value?: string }>;
   specializations?: RawKualiSpecialization[];
   additionalInfoCampus?: string;
@@ -79,7 +80,11 @@ export function isRawProgramListItem(val: unknown): val is RawKualiProgramListIt
 
 export function isRawProgramDetail(val: unknown): val is RawKualiProgramDetail {
   if (!isRawProgramListItem(val)) return false;
-  return typeof val.rulesRequirements === "string" || typeof val.description === "string";
+  return (
+    typeof val.rulesRequirements === "string" ||
+    typeof val.catDirectAssessmentText === "string" ||
+    typeof val.description === "string"
+  );
 }
 
 export function isRawCourseItem(val: unknown): val is RawKualiCourseItem {

@@ -5,10 +5,7 @@ import { Info } from "lucide-react";
 import { AppHeader } from "@/components/AppHeader";
 import { AppFooter } from "@/components/AppFooter";
 import {
-  getCourseById,
-  getCourseTree,
-  getDependentCourseIds,
-  getDirectPrerequisiteIds,
+  getCourseDetailPageData,
 } from "@/features/courses/lib/courses";
 import { buildCourseSummary } from "@/features/courses/lib/courseSummary";
 import { CoursePrerequisiteGraph } from "@/features/courses/components/CoursePrerequisiteGraph";
@@ -45,7 +42,7 @@ function formatCredits(credits: string | number | null | undefined): string | nu
 export async function generateMetadata({ params }: CoursePageProps): Promise<Metadata> {
   const { id } = await params;
   const courseId = id.toUpperCase();
-  const course = await getCourseById(courseId);
+  const { course } = await getCourseDetailPageData(courseId);
 
   if (!course) {
     return {
@@ -141,12 +138,7 @@ export default async function CourseDetailPage({ params }: CoursePageProps) {
   const { id } = await params;
   const courseId = id.toUpperCase();
 
-  const [course, tree, directPrereqs, dependents] = await Promise.all([
-    getCourseById(courseId),
-    getCourseTree(courseId),
-    getDirectPrerequisiteIds(courseId),
-    getDependentCourseIds(courseId),
-  ]);
+  const { course, tree, directPrereqs, dependents } = await getCourseDetailPageData(courseId);
 
   if (!course || !tree) {
     notFound();

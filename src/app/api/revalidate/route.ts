@@ -16,17 +16,29 @@ function isRevalidationScope(value: string): value is RevalidationScope {
   return REVALIDATION_SCOPES.includes(value as RevalidationScope);
 }
 
+function addPath(paths: string[], path: string, type?: "page" | "layout") {
+  if (!paths.includes(path)) {
+    if (type) {
+      revalidatePath(path, type);
+    } else {
+      revalidatePath(path);
+    }
+    paths.push(path);
+  }
+}
+
 function revalidatePrograms(paths: string[]) {
   revalidateTag(PROGRAMS_TAG, "max");
-  revalidatePath("/data-status");
-  paths.push("/data-status");
+  addPath(paths, "/data-status");
+  addPath(paths, "/sitemap.xml");
 }
 
 function revalidateCourses(paths: string[]) {
   revalidateTag(CATALOG_TAG, "max");
-  revalidatePath("/courses");
-  revalidatePath("/courses/[id]", "page");
-  paths.push("/courses", "/courses/[id]");
+  addPath(paths, "/courses");
+  addPath(paths, "/courses/[id]", "page");
+  addPath(paths, "/api/courses");
+  addPath(paths, "/sitemap.xml");
 }
 
 function revalidateTransfers(paths: string[]) {
@@ -34,28 +46,17 @@ function revalidateTransfers(paths: string[]) {
   // Flush the route-level Full Route Cache for all cached transfer pages.
   // revalidateTag alone clears unstable_cache entries but not the ISR page
   // cache — revalidatePath is required to purge the CDN-cached rendered page.
-  revalidatePath("/transfers");
-  revalidatePath("/transfers/subjects");
-  revalidatePath("/transfers/subjects/[subject]", "page");
-  revalidatePath("/transfers/organizations");
-  revalidatePath("/transfers/organizations/[organization]", "page");
-  revalidatePath("/transfers/levels");
-  revalidatePath("/transfers/levels/[level]", "page");
-  revalidatePath("/transfers/courses");
-  revalidatePath("/transfers/courses/[courseNumber]", "page");
-  revalidatePath("/api/v1/transfer-coverage");
-  paths.push(
-    "/transfers",
-    "/transfers/subjects",
-    "/transfers/subjects/[subject]",
-    "/transfers/organizations",
-    "/transfers/organizations/[organization]",
-    "/transfers/levels",
-    "/transfers/levels/[level]",
-    "/transfers/courses",
-    "/transfers/courses/[courseNumber]",
-    "/api/v1/transfer-coverage",
-  );
+  addPath(paths, "/transfers");
+  addPath(paths, "/transfers/subjects");
+  addPath(paths, "/transfers/subjects/[subject]", "page");
+  addPath(paths, "/transfers/organizations");
+  addPath(paths, "/transfers/organizations/[organization]", "page");
+  addPath(paths, "/transfers/levels");
+  addPath(paths, "/transfers/levels/[level]", "page");
+  addPath(paths, "/transfers/courses");
+  addPath(paths, "/transfers/courses/[courseNumber]", "page");
+  addPath(paths, "/api/v1/transfer-coverage");
+  addPath(paths, "/sitemap.xml");
 }
 
 export async function POST(request: Request) {

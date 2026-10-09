@@ -2,7 +2,7 @@ import React from "react";
 import Link from "next/link";
 import { CourseNodeData } from "@/types/program";
 import { buildCourseLookup, resolvePrerequisites } from "@/lib/coursePrerequisites";
-import { coursePath } from "@/features/courses/lib/courseIds";
+import { coursePath, isValidCourseId, normalizeCourseId } from "@/features/courses/lib/courseIds";
 
 export function ProgramCourseInventory({ courses }: { courses: CourseNodeData[] }) {
   const byId = buildCourseLookup(courses);
@@ -35,7 +35,8 @@ export function ProgramCourseInventory({ courses }: { courses: CourseNodeData[] 
         <tbody>
           {listed.map((course) => {
             const prereqs = resolvePrerequisites(course, byId);
-            const coursesUrl = course.code.trim() ? coursePath(course.code) : null;
+            const isCbeCompetency = Boolean(course.isCompetency || !isValidCourseId(normalizeCourseId(course.code)));
+            const coursesUrl = !isCbeCompetency && course.code.trim() ? coursePath(course.code) : null;
             return (
               <tr key={course.id} className="border-t border-surface-variant">
                 <th scope="row" className="px-3 py-2 font-mono font-semibold text-primary">
@@ -51,6 +52,9 @@ export function ProgramCourseInventory({ courses }: { courses: CourseNodeData[] 
                   )}
                   {course.isExternal ? (
                     <span className="ml-2 text-[11px] font-sans font-medium text-on-surface-variant">External</span>
+                  ) : null}
+                  {course.isCompetency ? (
+                    <span className="ml-2 text-[11px] font-sans font-medium text-on-surface-variant">Competency</span>
                   ) : null}
                 </th>
                 <td className="px-3 py-2 text-on-surface">{course.title}</td>

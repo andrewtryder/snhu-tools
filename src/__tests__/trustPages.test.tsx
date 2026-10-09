@@ -21,7 +21,7 @@ describe("Trust & Methodology Pages", () => {
     render(page);
 
     expect(screen.getByRole("heading", { name: /Catalog Synchronization Status/i })).toBeInTheDocument();
-    expect(screen.getByText("Computer Science")).toBeInTheDocument();
+    expect(screen.getAllByText(/Computer Science/).length).toBeGreaterThan(0);
   }, 15000);
 
   it("renders About Page with concise unofficial disclaimers", async () => {

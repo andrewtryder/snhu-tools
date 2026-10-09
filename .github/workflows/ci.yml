@@ -33,4 +33,14 @@ jobs:
         run: npm ci
 
       - name: Run quality checks
+        env:
+          # CI only: committed fixture data is intentionally isolated from Vercel deployments.
+          ALLOW_FIXTURE_SNAPSHOTS: "true"
         run: npm run check
+
+      - name: Verify fixture snapshots are rejected for production
+        run: node scripts/verify-ci-build-protections.mjs --mode=reject-fixture
+
+      - name: Verify non-fixture snapshots build for production
+        run: node scripts/verify-ci-build-protections.mjs --mode=accept-non-fixture
+

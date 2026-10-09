@@ -39,3 +39,13 @@ yarn-error.log*
 # TypeScript
 *.tsbuildinfo
 next-env.d.ts
+
+# Backups
+/backups/
+*.dump
+
+# Static snapshot staging, backups, and journals (keeps src/data/snapshots tracked)
+/src/data/.snapshot-stage-*
+/src/data/.snapshots.previous-*
+/src/data/.snapshot-promotion.json
+/.snapshot-backup-temp-*
