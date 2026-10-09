@@ -1,11 +1,11 @@
-import { cpSync, existsSync, mkdirSync, readdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { cpSync, existsSync, mkdirSync, readdirSync, readFileSync, renameSync, rmSync } from "node:fs";
+import { createHash } from "node:crypto";
 import path from "node:path";
 import { spawnSync } from "node:child_process";
 
 const rootDir = process.cwd();
 const activeDir = path.resolve(rootDir, "src/data/snapshots");
 const fixtureDir = path.resolve(rootDir, "src/data/fixtures/snapshots");
-const backupDir = path.resolve(rootDir, ".snapshot-backup-temp-" + Date.now());
 
 function copyDir(src, dest, filterFn) {
   mkdirSync(dest, { recursive: true });
@@ -15,16 +15,61 @@ function copyDir(src, dest, filterFn) {
   }
 }
 
-function restoreBackup() {
-  if (existsSync(backupDir)) {
-    copyDir(backupDir, activeDir);
-    rmSync(backupDir, { recursive: true, force: true });
+function assertValidReviewedSnapshot(dir) {
+  const manifestPath = path.join(dir, "manifest.json");
+  if (!existsSync(manifestPath)) {
+    throw new Error(`Non-fixture validation failed: manifest missing in ${dir}`);
   }
-}
+  const manifest = JSON.parse(readFileSync(manifestPath, "utf8"));
+  if (manifest.schemaVersion !== 1) {
+    throw new Error(`Unsupported schema version ${manifest.schemaVersion}`);
+  }
+  if (manifest.fixture !== false) {
+    throw new Error("Snapshot manifest must have fixture === false for non-fixture production builds");
+  }
+  const prov = manifest.provenance;
+  if (!prov || prov.kind === "fixture" || !prov.approved || !prov.approvalReference || !/^[a-f0-9]{64}$/i.test(prov.sourceDigest)) {
+    throw new Error(`Invalid non-fixture provenance in ${dir}: ${JSON.stringify(prov)}`);
+  }
+  const requiredDomains = ["programs", "courses", "transfers", "search"];
+  for (const domain of requiredDomains) {
+    const domainEntry = manifest.domains?.[domain];
+    if (!domainEntry || !domainEntry.required || !domainEntry.sha256) {
+      throw new Error(`Manifest missing required domain entry for ${domain}`);
+    }
+    const filePath = path.join(dir, domainEntry.file || `${domain}.json`);
+    if (!existsSync(filePath)) {
+      throw new Error(`Domain file missing: ${filePath}`);
+    }
+    const content = readFileSync(filePath, "utf8");
+    const data = JSON.parse(content);
+    const hash = createHash("sha256").update(JSON.stringify(data)).digest("hex");
+    if (hash !== domainEntry.sha256) {
+      throw new Error(`Checksum mismatch for ${domain}: expected ${domainEntry.sha256}, got ${hash}`);
+    }
+    if (!data.meta || data.meta.domain !== domain) {
+      throw new Error(`Malformed metadata in ${domain}`);
+    }
+    for (const [key, expectedCount] of Object.entries(domainEntry.counts || {})) {
+      if (typeof expectedCount !== "number" || expectedCount <= 0) {
+        throw new Error(`Incomplete ${key} count in manifest for ${domain}: ${expectedCount}`);
+      }
+      if (data.meta.counts?.[key] !== expectedCount) {
+        throw new Error(`Count mismatch in ${domain} for ${key}: expected ${expectedCount}, got ${data.meta.counts?.[key]}`);
+      }
+    }
+  }
 
-process.on("exit", restoreBackup);
-process.on("SIGINT", () => { restoreBackup(); process.exit(130); });
-process.on("SIGTERM", () => { restoreBackup(); process.exit(143); });
+  const reportPath = path.join(dir, "report.json");
+  if (existsSync(reportPath)) {
+    const report = JSON.parse(readFileSync(reportPath, "utf8"));
+    const rec = report.reconciliation;
+    if (rec?.courses?.records?.rejectedRows !== 0 || rec?.courses?.prerequisiteEdges?.rejectedRows !== 0) {
+      throw new Error("Report reconciliation contains non-zero rejected rows");
+    }
+  }
+  return true;
+}
 
 function findStagedNonFixtureDir() {
   const dataDir = path.resolve(rootDir, "src/data");
@@ -33,20 +78,56 @@ function findStagedNonFixtureDir() {
   for (const entry of entries) {
     if (entry.isDirectory() && entry.name.startsWith(".snapshot-stage-")) {
       const stagePath = path.join(dataDir, entry.name);
-      const manifestPath = path.join(stagePath, "manifest.json");
-      if (existsSync(manifestPath)) {
-        try {
-          const manifest = JSON.parse(readFileSync(manifestPath, "utf8"));
-          if (manifest.fixture === false) {
-            return stagePath;
-          }
-        } catch {
-          // Ignore invalid manifest
+      try {
+        if (assertValidReviewedSnapshot(stagePath)) {
+          return stagePath;
         }
+      } catch {
+        // Continue looking for valid stage
       }
     }
   }
   return null;
+}
+
+function withTemporarySnapshot(snapshotSourceDir, fn) {
+  const tempActiveBackup = path.resolve(rootDir, `src/data/.snapshots.active-temp-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`);
+  let backupCreated = false;
+
+  const restore = () => {
+    if (backupCreated && existsSync(tempActiveBackup)) {
+      if (existsSync(activeDir)) {
+        rmSync(activeDir, { recursive: true, force: true });
+      }
+      renameSync(tempActiveBackup, activeDir);
+      backupCreated = false;
+    }
+  };
+
+  const onExit = () => restore();
+  const onSignal = () => {
+    restore();
+    process.exit(1);
+  };
+
+  process.on("exit", onExit);
+  process.on("SIGINT", onSignal);
+  process.on("SIGTERM", onSignal);
+
+  try {
+    if (existsSync(activeDir)) {
+      renameSync(activeDir, tempActiveBackup);
+      backupCreated = true;
+    }
+    mkdirSync(activeDir, { recursive: true });
+    copyDir(snapshotSourceDir, activeDir);
+    return fn();
+  } finally {
+    process.removeListener("exit", onExit);
+    process.removeListener("SIGINT", onSignal);
+    process.removeListener("SIGTERM", onSignal);
+    restore();
+  }
 }
 
 function runBuild(extraEnv = {}) {
@@ -62,63 +143,65 @@ function runBuild(extraEnv = {}) {
 
 function verifyRejectFixture() {
   console.log("==> Verifying production deployment rejects fixture snapshots...");
-  // Load fixture snapshot into active
-  copyDir(fixtureDir, activeDir);
 
-  const manifestPath = path.join(activeDir, "manifest.json");
-  const manifest = JSON.parse(readFileSync(manifestPath, "utf8"));
-  if (manifest.fixture !== true) {
-    throw new Error("Fixture manifest did not have fixture=true");
-  }
+  withTemporarySnapshot(fixtureDir, () => {
+    const manifestPath = path.join(activeDir, "manifest.json");
+    const manifest = JSON.parse(readFileSync(manifestPath, "utf8"));
+    if (manifest.fixture !== true) {
+      throw new Error("Fixture manifest did not have fixture=true");
+    }
 
-  const result = runBuild({ VERCEL_ENV: "production" });
-  if (result.status === 0) {
-    throw new Error("Fixture snapshot unexpectedly passed a production build");
-  }
+    const result = runBuild({ VERCEL_ENV: "production" });
+    if (result.status === 0) {
+      throw new Error("Fixture snapshot unexpectedly passed a production build");
+    }
 
-  const output = (result.stdout || "") + (result.stderr || "");
-  if (!output.includes("Fixture static snapshots are forbidden in Vercel production deployments")) {
-    console.warn("Build failed as expected, but output differed:\n" + output);
-  }
-  console.log("✔ Fixture snapshots successfully rejected in production build.");
+    const output = (result.stdout || "") + (result.stderr || "");
+    const expectedError = "Fixture static snapshots are forbidden in Vercel production deployments";
+    if (!output.includes(expectedError)) {
+      throw new Error(`Build failed but did not produce the expected guard error ("${expectedError}"). Output:\n${output}`);
+    }
+    console.log("✔ Fixture snapshots successfully rejected in production build.");
+  });
 }
 
 function verifyAcceptNonFixture() {
   console.log("==> Verifying production deployment accepts non-fixture snapshots...");
   const stagedDir = findStagedNonFixtureDir();
 
+  let targetDir = null;
   if (stagedDir) {
+    targetDir = stagedDir;
     console.log(`Using staged non-fixture snapshot from: ${path.relative(rootDir, stagedDir)}`);
-    copyDir(stagedDir, activeDir, (file) => file.endsWith(".json") && file !== "report.json");
   } else {
-    const currentManifestPath = path.join(activeDir, "manifest.json");
-    const currentManifest = existsSync(currentManifestPath)
-      ? JSON.parse(readFileSync(currentManifestPath, "utf8"))
-      : null;
-
-    if (currentManifest && currentManifest.fixture === false) {
+    try {
+      assertValidReviewedSnapshot(activeDir);
+      targetDir = activeDir;
       console.log("Using current active non-fixture snapshot.");
-    } else {
-      console.log("Synthesizing isolated non-fixture test environment from fixture bundles...");
-      copyDir(fixtureDir, activeDir);
-      const manifest = JSON.parse(readFileSync(path.join(activeDir, "manifest.json"), "utf8"));
-      manifest.fixture = false;
-      manifest.provenance = {
-        kind: "fixture-verified",
-        source: "ci-isolated-environment",
-        sourceDigest: "ci-synthetic-digest",
-        approvalReference: "PR-27",
-        approved: true,
-      };
-      writeFileSync(path.join(activeDir, "manifest.json"), JSON.stringify(manifest, null, 2));
+    } catch (err) {
+      throw new Error(
+        "No genuinely reviewed non-fixture snapshot found with valid provenance, verified checksums, and complete domain counts. Refusing to synthesize fixture data.\n" +
+        err.message
+      );
     }
   }
 
-  const result = runBuild({ VERCEL_ENV: "production" });
-  if (result.status !== 0) {
-    const output = (result.stdout || "") + (result.stderr || "");
-    throw new Error("Non-fixture snapshot failed production build:\n" + output);
+  if (targetDir === activeDir) {
+    const result = runBuild({ VERCEL_ENV: "production" });
+    if (result.status !== 0) {
+      const output = (result.stdout || "") + (result.stderr || "");
+      throw new Error("Non-fixture snapshot failed production build:\n" + output);
+    }
+  } else {
+    withTemporarySnapshot(targetDir, () => {
+      const result = runBuild({ VERCEL_ENV: "production" });
+      if (result.status !== 0) {
+        const output = (result.stdout || "") + (result.stderr || "");
+        throw new Error("Staged non-fixture snapshot failed production build:\n" + output);
+      }
+    });
   }
+
   console.log("✔ Reviewed non-fixture snapshot successfully built for production.");
 }
 
@@ -127,20 +210,13 @@ function main() {
   const rejectOnly = args.includes("--mode=reject-fixture") || args.includes("--reject-fixture");
   const acceptOnly = args.includes("--mode=accept-non-fixture") || args.includes("--accept-non-fixture");
 
-  // Save backup of original active snapshot
-  copyDir(activeDir, backupDir);
-
-  try {
-    if (rejectOnly) {
-      verifyRejectFixture();
-    } else if (acceptOnly) {
-      verifyAcceptNonFixture();
-    } else {
-      verifyRejectFixture();
-      verifyAcceptNonFixture();
-    }
-  } finally {
-    restoreBackup();
+  if (rejectOnly) {
+    verifyRejectFixture();
+  } else if (acceptOnly) {
+    verifyAcceptNonFixture();
+  } else {
+    verifyRejectFixture();
+    verifyAcceptNonFixture();
   }
 }
 
