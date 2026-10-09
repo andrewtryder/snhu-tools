@@ -46,12 +46,21 @@ export interface QuiescenceCheckResult {
   reasons: string[];
 }
 
+export interface QuiescenceEvidence {
+  markersBefore: SyncMarkerState;
+  markersAfter?: SyncMarkerState | null;
+  maxRecencyDays?: number;
+  now?: Date | string;
+}
+
 export interface GateValidationOptions {
   canonicalInventory?: CanonicalProgramRecord[];
   allowProgramDeletions?: boolean;
   maxShrinkagePercent?: number;
   baselineManifest?: SnapshotManifest | null;
   baselineBundles?: SnapshotBundles | null;
+  quiescenceEvidence?: QuiescenceEvidence | null;
+  requireQuiescenceEvidence?: boolean;
 }
 
 export interface GateValidationResult {
@@ -105,7 +114,14 @@ export async function loadCanonicalInventory(filePath?: string): Promise<Canonic
   return parsed;
 }
 
-export async function checkQuiescence(pool: Pool): Promise<QuiescenceCheckResult> {
+export function computeSyncMarkerDigest(markers: SyncMarkerState): string {
+  return createHash("sha256").update(JSON.stringify(markers)).digest("hex");
+}
+
+export async function checkQuiescence(
+  pool: Pool,
+  options?: { maxRecencyDays?: number; now?: Date | string }
+): Promise<QuiescenceCheckResult> {
   const client = await pool.connect();
   const reasons: string[] = [];
   try {
@@ -148,9 +164,42 @@ export async function checkQuiescence(pool: Pool): Promise<QuiescenceCheckResult
     if (!markers.programs) reasons.push("program_sync_state has no completed_at timestamp");
     if (!markers.transfers) reasons.push("transfer_sync_state has no completed_at timestamp");
 
-    if (markers.catalogStatus === "running") reasons.push("catalog_sync_state is currently running");
-    if (markers.programsStatus === "running") reasons.push("program_sync_state is currently running");
-    if (markers.transfersStatus === "running") reasons.push("transfer_sync_state is currently running");
+    // Exact status validation against database sync state schemas
+    if (!markers.catalogStatus) reasons.push("catalog_sync_state status is missing");
+    else if (markers.catalogStatus === "running") reasons.push("catalog_sync_state is currently running");
+    else if (markers.catalogStatus === "awaiting_bootstrap") reasons.push("catalog_sync_state is awaiting bootstrap");
+    else if (markers.catalogStatus !== "idle") reasons.push(`catalog_sync_state status is not idle (${markers.catalogStatus})`);
+
+    if (!markers.programsStatus) reasons.push("program_sync_state status is missing");
+    else if (markers.programsStatus === "in_progress") reasons.push("program_sync_state is currently in progress");
+    else if (markers.programsStatus === "error") reasons.push("program_sync_state is in error state");
+    else if (markers.programsStatus !== "idle") reasons.push(`program_sync_state status is not idle (${markers.programsStatus})`);
+
+    if (!markers.transfersStatus) reasons.push("transfer_sync_state status is missing");
+    else if (markers.transfersStatus === "running") reasons.push("transfer_sync_state is currently running");
+    else if (markers.transfersStatus !== "idle") reasons.push(`transfer_sync_state status is not idle (${markers.transfersStatus})`);
+
+    // Recency check
+    const nowMs = options?.now ? new Date(options.now).getTime() : Date.now();
+    const maxRecencyDays = options?.maxRecencyDays ?? 8;
+    const maxAgeMs = maxRecencyDays * 24 * 60 * 60 * 1000;
+
+    for (const [domain, ts] of [
+      ["catalog", markers.catalog],
+      ["programs", markers.programs],
+      ["transfers", markers.transfers],
+    ] as const) {
+      if (ts) {
+        const tsMs = new Date(ts).getTime();
+        if (Number.isNaN(tsMs)) {
+          reasons.push(`${domain}_sync_state completed_at timestamp '${ts}' is invalid`);
+        } else if (nowMs - tsMs > maxAgeMs) {
+          reasons.push(`${domain}_sync_state completed_at (${ts}) is stale (older than ${maxRecencyDays} days)`);
+        } else if (tsMs - nowMs > 5 * 60 * 1000) {
+          reasons.push(`${domain}_sync_state completed_at (${ts}) is in the future`);
+        }
+      }
+    }
 
     return {
       quiescent: reasons.length === 0,
@@ -160,6 +209,82 @@ export async function checkQuiescence(pool: Pool): Promise<QuiescenceCheckResult
   } finally {
     client.release();
   }
+}
+
+export function validateQuiescenceAndTimestamps(
+  evidence?: QuiescenceEvidence | null,
+  manifest?: SnapshotManifest | null
+): string[] {
+  if (!evidence) {
+    return ["Quiescence and sync status is unverifiable: no database sync evidence provided"];
+  }
+
+  const errors: string[] = [];
+  const { markersBefore, markersAfter, maxRecencyDays = 8, now } = evidence;
+
+  // 1. Completion markers presence
+  if (!markersBefore.catalog) errors.push("catalog_sync_state has no completed_at timestamp");
+  if (!markersBefore.programs) errors.push("program_sync_state has no completed_at timestamp");
+  if (!markersBefore.transfers) errors.push("transfer_sync_state has no completed_at timestamp");
+
+  // 2. Status validity
+  if (!markersBefore.catalogStatus) {
+    errors.push("catalog_sync_state status is missing");
+  } else if (markersBefore.catalogStatus !== "idle") {
+    errors.push(`catalog_sync_state status is '${markersBefore.catalogStatus}' (must be 'idle')`);
+  }
+
+  if (!markersBefore.programsStatus) {
+    errors.push("program_sync_state status is missing");
+  } else if (markersBefore.programsStatus !== "idle") {
+    errors.push(`program_sync_state status is '${markersBefore.programsStatus}' (must be 'idle')`);
+  }
+
+  if (!markersBefore.transfersStatus) {
+    errors.push("transfer_sync_state status is missing");
+  } else if (markersBefore.transfersStatus !== "idle") {
+    errors.push(`transfer_sync_state status is '${markersBefore.transfersStatus}' (must be 'idle')`);
+  }
+
+  // 3. Recency validation
+  const nowMs = now ? new Date(now).getTime() : Date.now();
+  const maxAgeMs = maxRecencyDays * 24 * 60 * 60 * 1000;
+
+  for (const [domain, ts] of [
+    ["catalog", markersBefore.catalog],
+    ["programs", markersBefore.programs],
+    ["transfers", markersBefore.transfers],
+  ] as const) {
+    if (ts) {
+      const tsMs = new Date(ts).getTime();
+      if (Number.isNaN(tsMs)) {
+        errors.push(`${domain} completed_at timestamp '${ts}' is invalid`);
+      } else if (nowMs - tsMs > maxAgeMs) {
+        errors.push(`${domain} completed_at timestamp (${ts}) is stale (older than ${maxRecencyDays} days)`);
+      } else if (tsMs - nowMs > 5 * 60 * 1000) {
+        errors.push(`${domain} completed_at timestamp (${ts}) is in the future`);
+      }
+    }
+  }
+
+  // 4. Marker shifting check
+  if (markersAfter) {
+    if (JSON.stringify(markersBefore) !== JSON.stringify(markersAfter)) {
+      errors.push("Sync markers shifted between pre-export and post-export checks");
+    }
+  }
+
+  // 5. Manifest sourceDigest reconciliation
+  if (manifest?.provenance?.sourceDigest) {
+    const expectedDigest = computeSyncMarkerDigest(markersBefore);
+    if (manifest.provenance.sourceDigest !== expectedDigest) {
+      errors.push(
+        `Manifest sourceDigest (${manifest.provenance.sourceDigest}) does not match sync markers digest (${expectedDigest})`
+      );
+    }
+  }
+
+  return errors;
 }
 
 export function validateManifestAndProvenance(manifest: SnapshotManifest): string[] {
@@ -601,6 +726,11 @@ export function validateAllGates(
     ...scanForSecrets(stagedBundles.search, "search"),
   ];
 
+  const quiescenceErrors =
+    options.requireQuiescenceEvidence === false && !options.quiescenceEvidence
+      ? []
+      : validateQuiescenceAndTimestamps(options.quiescenceEvidence, manifest);
+
   errors.push(
     ...manifestErrors,
     ...checksumErrors,
@@ -610,7 +740,8 @@ export function validateAllGates(
     ...structureErrors,
     ...cbeErrors,
     ...shrinkageErrors,
-    ...secretErrors
+    ...secretErrors,
+    ...quiescenceErrors
   );
 
   const buildGateStatus = (gateErrors: string[]) => ({
@@ -628,7 +759,10 @@ export function validateAllGates(
     cbePrograms: buildGateStatus(cbeErrors),
     inventoryShrinkage: buildGateStatus(shrinkageErrors),
     secretScanning: buildGateStatus(secretErrors),
-    quiescenceAndTimestamps: { passed: true, message: "PASSED" },
+    quiescenceAndTimestamps:
+      options.requireQuiescenceEvidence === false && !options.quiescenceEvidence
+        ? { passed: true, message: "SKIPPED: Waived for offline fixture test without database" }
+        : buildGateStatus(quiescenceErrors),
   };
 
   return {

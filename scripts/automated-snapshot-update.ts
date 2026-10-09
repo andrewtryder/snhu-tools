@@ -18,6 +18,7 @@ import { exportTransfersFromDatabase } from "../src/lib/static-export/transfers"
 import {
   checkQuiescence,
   computeInventoryDiff,
+  computeSyncMarkerDigest,
   generatePrSummary,
   hasDomainDifferences,
   loadCanonicalInventory,
@@ -73,21 +74,31 @@ export function parseAutomationArgs(argv: string[]): AutomationArgs {
   };
 }
 
-async function exportBundlesFromDatabase(
-  postgresUrl: string,
-  approvalRef: string
-): Promise<{ bundles: SnapshotBundles; provenance: SnapshotProvenance; markers: SyncMarkerState }> {
-  const pool = new Pool({
-    connectionString: postgresUrl,
-    max: 1,
-    connectionTimeoutMillis: 10_000,
-    idleTimeoutMillis: 5_000,
-    statement_timeout: 60_000,
-    application_name: "snhu-weekly-snapshot-update",
-  });
+export async function exportBundlesFromDatabase(
+  poolOrUrl: Pool | string,
+  approvalRef: string,
+  options?: { now?: Date | string; maxRecencyDays?: number }
+): Promise<{
+  bundles: SnapshotBundles;
+  provenance: SnapshotProvenance;
+  markersBefore: SyncMarkerState;
+  markersAfter: SyncMarkerState;
+}> {
+  const pool =
+    typeof poolOrUrl === "string"
+      ? new Pool({
+          connectionString: poolOrUrl,
+          max: 1,
+          connectionTimeoutMillis: 10_000,
+          idleTimeoutMillis: 5_000,
+          statement_timeout: 60_000,
+          application_name: "snhu-weekly-snapshot-update",
+        })
+      : poolOrUrl;
+  const isCreatedPool = typeof poolOrUrl === "string";
 
   try {
-    const quiescence = await checkQuiescence(pool);
+    const quiescence = await checkQuiescence(pool, options);
     if (!quiescence.quiescent) {
       throw new Error(`Database is not quiescent for export: ${quiescence.reasons.join(", ")}`);
     }
@@ -96,7 +107,7 @@ async function exportBundlesFromDatabase(
     const courses = await exportCoursesFromDatabase(pool);
     const transfers = await exportTransfersFromDatabase(pool);
 
-    const postCheck = await checkQuiescence(pool);
+    const postCheck = await checkQuiescence(pool, options);
     if (JSON.stringify(quiescence.markers) !== JSON.stringify(postCheck.markers)) {
       throw new Error("Cross-domain sync markers shifted during database export; aborting export");
     }
@@ -111,20 +122,30 @@ async function exportBundlesFromDatabase(
     const provenance: SnapshotProvenance = {
       kind: "postgres",
       source: "postgres-readonly-export",
-      sourceDigest: quiescence.markers.catalog ?? "0".repeat(64),
+      sourceDigest: computeSyncMarkerDigest(quiescence.markers),
       approvalReference: approvalRef,
       approved: true,
     };
 
-    return { bundles, provenance, markers: quiescence.markers };
+    return {
+      bundles,
+      provenance,
+      markersBefore: quiescence.markers,
+      markersAfter: postCheck.markers,
+    };
   } finally {
-    await pool.end();
+    if (isCreatedPool) {
+      await pool.end();
+    }
   }
 }
 
-export async function runAutomatedSnapshotUpdate(argv: string[]) {
+export async function runAutomatedSnapshotUpdate(
+  argv: string[],
+  runnerOptions?: { pool?: Pool; now?: Date | string }
+) {
   const args = parseAutomationArgs(argv);
-  const now = new Date();
+  const now = runnerOptions?.now ? new Date(runnerOptions.now) : new Date();
   const dateStr = now.toISOString().slice(0, 10);
   const approvalRef = args.approvalReference ?? `WEEKLY-${dateStr}`;
 
@@ -154,7 +175,7 @@ export async function runAutomatedSnapshotUpdate(argv: string[]) {
   let stagedManifest: import("../src/lib/static-export/snapshot").SnapshotManifest;
   let stagedReport: import("../src/lib/static-export/snapshot").SnapshotReport;
   let stagedDirectory: string;
-  let syncMarkers: SyncMarkerState | null = null;
+  let syncMarkers: { before: SyncMarkerState; after: SyncMarkerState } | null = null;
 
   if (args.stageDir) {
     console.log(`[snapshot-automation] Loading existing staged export from ${args.stageDir}`);
@@ -167,15 +188,19 @@ export async function runAutomatedSnapshotUpdate(argv: string[]) {
     stagedReport = JSON.parse(r);
   } else {
     const postgresUrl = process.env.READONLY_POSTGRES_URL || process.env.POSTGRES_URL;
-    if (!postgresUrl) {
+    const pool = runnerOptions?.pool ?? postgresUrl;
+    if (!pool) {
       throw new Error(
         "[snapshot-automation] Missing READONLY_POSTGRES_URL (or POSTGRES_URL) for database export"
       );
     }
 
     console.log("[snapshot-automation] Exporting fresh snapshot from read-only PostgreSQL...");
-    const dbExport = await exportBundlesFromDatabase(postgresUrl, approvalRef);
-    syncMarkers = dbExport.markers;
+    const dbExport = await exportBundlesFromDatabase(pool, approvalRef, { now });
+    syncMarkers = {
+      before: dbExport.markersBefore,
+      after: dbExport.markersAfter,
+    };
 
     console.log("[snapshot-automation] Staging fresh snapshot...");
     const staged = await stageSnapshot(dbExport.bundles, args.activeDir, {
@@ -199,6 +224,14 @@ export async function runAutomatedSnapshotUpdate(argv: string[]) {
     maxShrinkagePercent: args.maxShrinkagePercent,
     baselineManifest,
     baselineBundles,
+    quiescenceEvidence: syncMarkers
+      ? {
+          markersBefore: syncMarkers.before,
+          markersAfter: syncMarkers.after,
+          now,
+        }
+      : undefined,
+    requireQuiescenceEvidence: !args.stageDir,
   });
 
   if (!gateResults.passed) {
@@ -236,7 +269,7 @@ export async function runAutomatedSnapshotUpdate(argv: string[]) {
     baselineManifest,
     diff,
     gateResults,
-    syncMarkers,
+    syncMarkers: syncMarkers?.before,
     dateStr,
   });
 

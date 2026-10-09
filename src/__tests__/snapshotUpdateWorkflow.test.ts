@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import path from "node:path";
 import { mkdtemp, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
@@ -7,6 +7,7 @@ import {
   DEFAULT_MAX_SHRINKAGE_PERCENT,
   checkQuiescence,
   computeInventoryDiff,
+  computeSyncMarkerDigest,
   generatePrSummary,
   hasDomainDifferences,
   loadCanonicalInventory,
@@ -19,17 +20,27 @@ import {
   validateInventoryShrinkage,
   validateManifestAndProvenance,
   validateProgramStructures,
+  validateQuiescenceAndTimestamps,
   validateReconciliation,
+  type QuiescenceEvidence,
+  type SyncMarkerState,
 } from "../lib/static-export/workflow";
 import {
   loadBundles,
   loadManifest,
   recoverSnapshotPromotion,
+  stageSnapshot,
   type SnapshotBundles,
   type SnapshotManifest,
   type SnapshotReport,
 } from "../lib/static-export/snapshot";
-import { runAutomatedSnapshotUpdate } from "../../scripts/automated-snapshot-update";
+import * as programsExporter from "../lib/static-export/programs";
+import * as coursesExporter from "../lib/static-export/courses";
+import * as transfersExporter from "../lib/static-export/transfers";
+import {
+  exportBundlesFromDatabase,
+  runAutomatedSnapshotUpdate,
+} from "../../scripts/automated-snapshot-update";
 
 describe("Weekly Snapshot Workflow Integrity Gates", () => {
   const activeDir = path.resolve("src/data/snapshots");
@@ -63,12 +74,54 @@ describe("Weekly Snapshot Workflow Integrity Gates", () => {
     return { manifest, bundles, report, canonicalInventory };
   }
 
-  it("passes all acceptance gates on the committed approved production snapshot", async () => {
+  function createMockSyncPool(options?: {
+    firstMarkers?: Partial<SyncMarkerState>;
+    secondMarkers?: Partial<SyncMarkerState>;
+  }) {
+    let callCount = 0;
+    const defaultMarkers: SyncMarkerState = {
+      catalog: "2026-10-09T03:00:00.000Z",
+      programs: "2026-10-09T05:00:00.000Z",
+      transfers: "2026-10-09T04:00:00.000Z",
+      catalogStatus: "idle",
+      programsStatus: "idle",
+      transfersStatus: "idle",
+    };
+
+    const first = { ...defaultMarkers, ...options?.firstMarkers };
+    const second = { ...defaultMarkers, ...options?.secondMarkers };
+
+    return {
+      connect: async () => ({
+        query: async () => {
+          callCount++;
+          const current = callCount === 1 ? first : second;
+          return {
+            rows: [
+              {
+                catalog: current.catalog,
+                programs: current.programs,
+                transfers: current.transfers,
+                catalog_status: current.catalogStatus,
+                programs_status: current.programsStatus,
+                transfers_status: current.transfersStatus,
+              },
+            ],
+          };
+        },
+        release: () => {},
+      }),
+      end: async () => {},
+    } as unknown as import("pg").Pool;
+  }
+
+  it("passes all acceptance gates on the committed approved production snapshot when evidence is waived", async () => {
     const { manifest, bundles, report, canonicalInventory } = await getBaseFixtures();
     const result = validateAllGates(bundles, manifest, report, {
       canonicalInventory,
       baselineBundles: bundles,
       baselineManifest: manifest,
+      requireQuiescenceEvidence: false,
     });
 
     expect(result.passed).toBe(true);
@@ -82,6 +135,133 @@ describe("Weekly Snapshot Workflow Integrity Gates", () => {
     expect(result.gates.cbePrograms.passed).toBe(true);
     expect(result.gates.inventoryShrinkage.passed).toBe(true);
     expect(result.gates.secretScanning.passed).toBe(true);
+    expect(result.gates.quiescenceAndTimestamps.passed).toBe(true);
+    expect(result.gates.quiescenceAndTimestamps.message).toContain("SKIPPED");
+  });
+
+  it("passes all ten acceptance gates including quiescenceAndTimestamps when valid evidence and matching digest are provided", async () => {
+    const { manifest, bundles, report, canonicalInventory } = await getBaseFixtures();
+    const sampleMarkers: SyncMarkerState = {
+      catalog: "2026-10-09T03:00:00.000Z",
+      programs: "2026-10-09T05:00:00.000Z",
+      transfers: "2026-10-09T04:00:00.000Z",
+      catalogStatus: "idle",
+      programsStatus: "idle",
+      transfersStatus: "idle",
+    };
+    const validDigest = computeSyncMarkerDigest(sampleMarkers);
+    const validManifest: SnapshotManifest = {
+      ...manifest,
+      provenance: {
+        ...manifest.provenance!,
+        sourceDigest: validDigest,
+      },
+    };
+    const evidence: QuiescenceEvidence = {
+      markersBefore: sampleMarkers,
+      markersAfter: sampleMarkers,
+      now: "2026-10-09T06:00:00.000Z",
+    };
+
+    const result = validateAllGates(bundles, validManifest, report, {
+      canonicalInventory,
+      baselineBundles: bundles,
+      baselineManifest: validManifest,
+      quiescenceEvidence: evidence,
+    });
+
+    expect(result.passed).toBe(true);
+    expect(result.errors).toHaveLength(0);
+    expect(result.gates.manifestSchema.passed).toBe(true);
+    expect(result.gates.checksums.passed).toBe(true);
+    expect(result.gates.reconciliation.passed).toBe(true);
+    expect(result.gates.canonicalIdentifiers.passed).toBe(true);
+    expect(result.gates.canonicalProgramInventory.passed).toBe(true);
+    expect(result.gates.programStructures.passed).toBe(true);
+    expect(result.gates.cbePrograms.passed).toBe(true);
+    expect(result.gates.inventoryShrinkage.passed).toBe(true);
+    expect(result.gates.secretScanning.passed).toBe(true);
+    expect(result.gates.quiescenceAndTimestamps.passed).toBe(true);
+    expect(result.gates.quiescenceAndTimestamps.message).toBe("PASSED");
+  });
+
+  describe("Provenance Source Digest & Determinism (Task 1 Regression)", () => {
+    it("fails stageSnapshot when provenance.sourceDigest is a raw timestamp string", async () => {
+      const { bundles, manifest } = await getBaseFixtures();
+      const rawTimestamp = "2026-10-09 03:00:00+00";
+
+      await expect(
+        stageSnapshot(bundles, activeDir, {
+          fixture: false,
+          provenance: {
+            kind: "postgres",
+            source: "postgres-readonly-export",
+            sourceDigest: rawTimestamp,
+            approvalReference: "WEEKLY-2026-10-09",
+            approved: true,
+          },
+          baseline: manifest,
+        })
+      ).rejects.toThrow("Invalid snapshot provenance");
+    });
+
+    it("succeeds stageSnapshot when provenance.sourceDigest is computed from realistic PostgreSQL timestamps via computeSyncMarkerDigest", async () => {
+      const { bundles, manifest } = await getBaseFixtures();
+      const postgresMarkers: SyncMarkerState = {
+        catalog: "2026-10-09 03:00:00.123456+00",
+        programs: "2026-10-09 05:00:00.654321+00",
+        transfers: "2026-10-09 04:00:00.987654+00",
+        catalogStatus: "idle",
+        programsStatus: "idle",
+        transfersStatus: "idle",
+      };
+
+      const digest = computeSyncMarkerDigest(postgresMarkers);
+      expect(digest).toMatch(/^[a-f0-9]{64}$/i);
+
+      const staged = await stageSnapshot(bundles, activeDir, {
+        fixture: false,
+        provenance: {
+          kind: "postgres",
+          source: "postgres-readonly-export",
+          sourceDigest: digest,
+          approvalReference: "WEEKLY-2026-10-09",
+          approved: true,
+        },
+        baseline: manifest,
+      });
+
+      try {
+        expect(staged.manifest.provenance?.sourceDigest).toBe(digest);
+        expect(staged.report.provenance.sourceDigest).toBe(digest);
+      } finally {
+        await rm(staged.directory, { recursive: true, force: true });
+      }
+    });
+
+    it("produces deterministic SHA-256 digests from identical marker objects", () => {
+      const markersA: SyncMarkerState = {
+        catalog: "2026-10-09T03:00:00Z",
+        programs: "2026-10-09T05:00:00Z",
+        transfers: "2026-10-09T04:00:00Z",
+        catalogStatus: "idle",
+        programsStatus: "idle",
+        transfersStatus: "idle",
+      };
+      const markersB: SyncMarkerState = {
+        catalog: "2026-10-09T03:00:00Z",
+        programs: "2026-10-09T05:00:00Z",
+        transfers: "2026-10-09T04:00:00Z",
+        catalogStatus: "idle",
+        programsStatus: "idle",
+        transfersStatus: "idle",
+      };
+
+      const hashA = computeSyncMarkerDigest(markersA);
+      const hashB = computeSyncMarkerDigest(markersB);
+      expect(hashA).toBe(hashB);
+      expect(hashA).toMatch(/^[a-f0-9]{64}$/);
+    });
   });
 
   describe("Gate: Manifest Schema & Provenance", () => {
@@ -348,7 +528,7 @@ describe("Weekly Snapshot Workflow Integrity Gates", () => {
   describe("Gate: Inventory Shrinkage Protection", () => {
     it("fails if courses inventory drops by more than strict threshold (1%)", async () => {
       const { bundles } = await getBaseFixtures();
-      const shrunkCount = Math.floor(bundles.courses.ids.length * 0.95); // 5% drop
+      const shrunkCount = Math.floor(bundles.courses.ids.length * 0.95);
       const tamperedBundles: SnapshotBundles = {
         ...bundles,
         courses: {
@@ -407,55 +587,192 @@ describe("Weekly Snapshot Workflow Integrity Gates", () => {
     });
   });
 
-  describe("Quiescence and Upstream Synchronization Checking", () => {
-    it("fails quiescence check if any sync table is missing completed_at or is currently running", async () => {
-      const mockPool = {
-        connect: async () => ({
-          query: async () => ({
-            rows: [
-              {
-                catalog: "2026-10-09T03:30:00Z",
-                programs: null, // Incomplete!
-                transfers: "2026-10-09T04:30:00Z",
-                catalog_status: "completed",
-                programs_status: "running", // Running!
-                transfers_status: "completed",
-              },
-            ],
-          }),
-          release: () => {},
-        }),
-      } as unknown as import("pg").Pool;
+  describe("Gate: Quiescence & Upstream Synchronization (Task 2)", () => {
+    it("fails closed when evidence is missing and not explicitly waived", async () => {
+      const { bundles, manifest, report, canonicalInventory } = await getBaseFixtures();
+      const result = validateAllGates(bundles, manifest, report, {
+        canonicalInventory,
+        baselineBundles: bundles,
+        baselineManifest: manifest,
+      });
 
-      const result = await checkQuiescence(mockPool);
-      expect(result.quiescent).toBe(false);
-      expect(result.reasons.some((r) => r.includes("program_sync_state has no completed_at"))).toBe(true);
-      expect(result.reasons.some((r) => r.includes("program_sync_state is currently running"))).toBe(true);
+      expect(result.passed).toBe(false);
+      expect(result.gates.quiescenceAndTimestamps.passed).toBe(false);
+      expect(result.gates.quiescenceAndTimestamps.message).toContain("unverifiable");
     });
 
-    it("passes quiescence check when all sync jobs are completed", async () => {
-      const mockPool = {
-        connect: async () => ({
-          query: async () => ({
-            rows: [
-              {
-                catalog: "2026-10-09T03:30:00Z",
-                programs: "2026-10-09T05:30:00Z",
-                transfers: "2026-10-09T04:30:00Z",
-                catalog_status: "completed",
-                programs_status: "completed",
-                transfers_status: "completed",
-              },
-            ],
-          }),
-          release: () => {},
-        }),
-      } as unknown as import("pg").Pool;
+    it("fails validation if any sync domain has missing completed_at timestamp", () => {
+      const baseMarkers: SyncMarkerState = {
+        catalog: "2026-10-09T03:00:00Z",
+        programs: "2026-10-09T05:00:00Z",
+        transfers: null,
+        catalogStatus: "idle",
+        programsStatus: "idle",
+        transfersStatus: "idle",
+      };
 
-      const result = await checkQuiescence(mockPool);
+      const errors = validateQuiescenceAndTimestamps({
+        markersBefore: baseMarkers,
+        markersAfter: baseMarkers,
+        now: "2026-10-09T06:00:00Z",
+      });
+
+      expect(errors.some((e) => e.includes("transfer_sync_state has no completed_at"))).toBe(true);
+    });
+
+    it("fails validation if any sync job is currently running, in progress, or in error", () => {
+      const runningCatalog: SyncMarkerState = {
+        catalog: "2026-10-09T03:00:00Z",
+        programs: "2026-10-09T05:00:00Z",
+        transfers: "2026-10-09T04:00:00Z",
+        catalogStatus: "running",
+        programsStatus: "idle",
+        transfersStatus: "idle",
+      };
+
+      const errorCatalog = validateQuiescenceAndTimestamps({
+        markersBefore: runningCatalog,
+        markersAfter: runningCatalog,
+        now: "2026-10-09T06:00:00Z",
+      });
+      expect(errorCatalog.some((e) => e.includes("catalog_sync_state status is 'running'"))).toBe(true);
+
+      const inProgressPrograms: SyncMarkerState = {
+        ...runningCatalog,
+        catalogStatus: "idle",
+        programsStatus: "in_progress",
+      };
+      const errorPrograms = validateQuiescenceAndTimestamps({
+        markersBefore: inProgressPrograms,
+        markersAfter: inProgressPrograms,
+        now: "2026-10-09T06:00:00Z",
+      });
+      expect(errorPrograms.some((e) => e.includes("program_sync_state status is 'in_progress'"))).toBe(true);
+
+      const errorTransfers: SyncMarkerState = {
+        ...runningCatalog,
+        catalogStatus: "idle",
+        transfersStatus: "running",
+      };
+      const errorTransfersResult = validateQuiescenceAndTimestamps({
+        markersBefore: errorTransfers,
+        markersAfter: errorTransfers,
+        now: "2026-10-09T06:00:00Z",
+      });
+      expect(errorTransfersResult.some((e) => e.includes("transfer_sync_state status is 'running'"))).toBe(true);
+    });
+
+    it("fails validation if weekly sync timestamps are stale (> 8 days)", () => {
+      const staleMarkers: SyncMarkerState = {
+        catalog: "2026-09-25T03:00:00Z", // 14 days old
+        programs: "2026-10-09T05:00:00Z",
+        transfers: "2026-10-09T04:00:00Z",
+        catalogStatus: "idle",
+        programsStatus: "idle",
+        transfersStatus: "idle",
+      };
+
+      const errors = validateQuiescenceAndTimestamps({
+        markersBefore: staleMarkers,
+        markersAfter: staleMarkers,
+        now: "2026-10-09T06:00:00Z",
+        maxRecencyDays: 8,
+      });
+
+      expect(errors.some((e) => e.includes("catalog completed_at timestamp") && e.includes("stale"))).toBe(true);
+    });
+
+    it("fails validation if completion timestamp is in the future", () => {
+      const futureMarkers: SyncMarkerState = {
+        catalog: "2026-10-09T12:00:00Z", // In future relative to 06:00:00Z
+        programs: "2026-10-09T05:00:00Z",
+        transfers: "2026-10-09T04:00:00Z",
+        catalogStatus: "idle",
+        programsStatus: "idle",
+        transfersStatus: "idle",
+      };
+
+      const errors = validateQuiescenceAndTimestamps({
+        markersBefore: futureMarkers,
+        markersAfter: futureMarkers,
+        now: "2026-10-09T06:00:00Z",
+      });
+
+      expect(errors.some((e) => e.includes("catalog completed_at timestamp") && e.includes("in the future"))).toBe(true);
+    });
+
+    it("fails validation if sync markers shifted between pre-export and post-export", () => {
+      const before: SyncMarkerState = {
+        catalog: "2026-10-09T03:00:00Z",
+        programs: "2026-10-09T05:00:00Z",
+        transfers: "2026-10-09T04:00:00Z",
+        catalogStatus: "idle",
+        programsStatus: "idle",
+        transfersStatus: "idle",
+      };
+      const after: SyncMarkerState = {
+        ...before,
+        programs: "2026-10-09T05:45:00Z",
+      };
+
+      const errors = validateQuiescenceAndTimestamps({
+        markersBefore: before,
+        markersAfter: after,
+        now: "2026-10-09T06:00:00Z",
+      });
+
+      expect(errors.some((e) => e.includes("Sync markers shifted between pre-export and post-export"))).toBe(true);
+    });
+
+    it("fails validation if manifest provenance sourceDigest does not match sync markers digest", async () => {
+      const { manifest } = await getBaseFixtures();
+      const markers: SyncMarkerState = {
+        catalog: "2026-10-09T03:00:00Z",
+        programs: "2026-10-09T05:00:00Z",
+        transfers: "2026-10-09T04:00:00Z",
+        catalogStatus: "idle",
+        programsStatus: "idle",
+        transfersStatus: "idle",
+      };
+
+      const tamperedManifest: SnapshotManifest = {
+        ...manifest,
+        provenance: {
+          ...manifest.provenance!,
+          sourceDigest: "0000000000000000000000000000000000000000000000000000000000000000",
+        },
+      };
+
+      const errors = validateQuiescenceAndTimestamps(
+        {
+          markersBefore: markers,
+          markersAfter: markers,
+          now: "2026-10-09T06:00:00Z",
+        },
+        tamperedManifest
+      );
+
+      expect(errors.some((e) => e.includes("does not match sync markers digest"))).toBe(true);
+    });
+
+    it("checkQuiescence returns non-quiescent when database rows contain active jobs", async () => {
+      const pool = createMockSyncPool({
+        firstMarkers: {
+          programsStatus: "in_progress",
+        },
+      });
+
+      const result = await checkQuiescence(pool);
+      expect(result.quiescent).toBe(false);
+      expect(result.reasons.some((r) => r.includes("program_sync_state is currently in progress"))).toBe(true);
+    });
+
+    it("checkQuiescence returns quiescent when all database rows are completed and idle", async () => {
+      const pool = createMockSyncPool();
+      const result = await checkQuiescence(pool, { now: "2026-10-09T06:00:00Z" });
       expect(result.quiescent).toBe(true);
       expect(result.reasons).toHaveLength(0);
-      expect(result.markers.catalog).toBe("2026-10-09T03:30:00Z");
+      expect(result.markers.catalogStatus).toBe("idle");
     });
   });
 
@@ -485,7 +802,10 @@ describe("Weekly Snapshot Workflow Integrity Gates", () => {
 
     it("generates structured markdown PR summary with domain tables and gate statuses", async () => {
       const { manifest, bundles, report, canonicalInventory } = await getBaseFixtures();
-      const gateResults = validateAllGates(bundles, manifest, report, { canonicalInventory });
+      const gateResults = validateAllGates(bundles, manifest, report, {
+        canonicalInventory,
+        requireQuiescenceEvidence: false,
+      });
       const diff = computeInventoryDiff(bundles, bundles);
 
       const summary = generatePrSummary({
@@ -512,7 +832,192 @@ describe("Weekly Snapshot Workflow Integrity Gates", () => {
     });
   });
 
-  describe("Runner & Recovery Lifecycle", () => {
+  describe("End-to-End Offline Simulation & Runner Operations (Task 3)", () => {
+    it("exportBundlesFromDatabase succeeds with valid mock pool, sha256 provenance, and unchanged markers", async () => {
+      const { bundles } = await getBaseFixtures();
+      const mockPool = createMockSyncPool();
+
+      vi.spyOn(programsExporter, "exportProgramsFromDatabase").mockResolvedValueOnce(bundles.programs);
+      vi.spyOn(coursesExporter, "exportCoursesFromDatabase").mockResolvedValueOnce(bundles.courses);
+      vi.spyOn(transfersExporter, "exportTransfersFromDatabase").mockResolvedValueOnce(bundles.transfers);
+
+      const result = await exportBundlesFromDatabase(mockPool, "WEEKLY-2026-10-09", {
+        now: "2026-10-09T06:00:00Z",
+      });
+
+      expect(result.provenance.kind).toBe("postgres");
+      expect(result.provenance.approved).toBe(true);
+      expect(result.provenance.sourceDigest).toMatch(/^[a-f0-9]{64}$/i);
+      expect(result.provenance.sourceDigest).toBe(computeSyncMarkerDigest(result.markersBefore));
+      expect(result.markersBefore).toEqual(result.markersAfter);
+      expect(result.bundles.programs.directory).toHaveLength(227);
+    });
+
+    it("exportBundlesFromDatabase aborts when database is not quiescent", async () => {
+      const mockPool = createMockSyncPool({
+        firstMarkers: {
+          programsStatus: "in_progress",
+        },
+      });
+
+      await expect(
+        exportBundlesFromDatabase(mockPool, "WEEKLY-2026-10-09", { now: "2026-10-09T06:00:00Z" })
+      ).rejects.toThrow("Database is not quiescent for export");
+    });
+
+    it("exportBundlesFromDatabase aborts when sync markers shift during export", async () => {
+      const { bundles } = await getBaseFixtures();
+      const mockPool = createMockSyncPool({
+        firstMarkers: { catalog: "2026-10-09T03:00:00Z" },
+        secondMarkers: { catalog: "2026-10-09T03:30:00Z" },
+      });
+
+      vi.spyOn(programsExporter, "exportProgramsFromDatabase").mockResolvedValueOnce(bundles.programs);
+      vi.spyOn(coursesExporter, "exportCoursesFromDatabase").mockResolvedValueOnce(bundles.courses);
+      vi.spyOn(transfersExporter, "exportTransfersFromDatabase").mockResolvedValueOnce(bundles.transfers);
+
+      await expect(
+        exportBundlesFromDatabase(mockPool, "WEEKLY-2026-10-09", { now: "2026-10-09T06:00:00Z" })
+      ).rejects.toThrow("Cross-domain sync markers shifted during database export");
+    });
+
+    it("runAutomatedSnapshotUpdate throws clear error when database credentials are missing", async () => {
+      const origEnable = process.env.ENABLE_WEEKLY_SNAPSHOT_WORKFLOW;
+      const origPg = process.env.POSTGRES_URL;
+      const origRoPg = process.env.READONLY_POSTGRES_URL;
+
+      process.env.ENABLE_WEEKLY_SNAPSHOT_WORKFLOW = "true";
+      delete process.env.POSTGRES_URL;
+      delete process.env.READONLY_POSTGRES_URL;
+
+      try {
+        await expect(runAutomatedSnapshotUpdate([])).rejects.toThrow(
+          "Missing READONLY_POSTGRES_URL (or POSTGRES_URL) for database export"
+        );
+      } finally {
+        if (origEnable !== undefined) process.env.ENABLE_WEEKLY_SNAPSHOT_WORKFLOW = origEnable;
+        else delete process.env.ENABLE_WEEKLY_SNAPSHOT_WORKFLOW;
+        if (origPg !== undefined) process.env.POSTGRES_URL = origPg;
+        if (origRoPg !== undefined) process.env.READONLY_POSTGRES_URL = origRoPg;
+      }
+    });
+
+    it("runAutomatedSnapshotUpdate completes normal sync with no changes and exits cleanly without PR or promotion", async () => {
+      const { bundles } = await getBaseFixtures();
+      const mockPool = createMockSyncPool();
+
+      vi.spyOn(programsExporter, "exportProgramsFromDatabase").mockResolvedValueOnce(bundles.programs);
+      vi.spyOn(coursesExporter, "exportCoursesFromDatabase").mockResolvedValueOnce(bundles.courses);
+      vi.spyOn(transfersExporter, "exportTransfersFromDatabase").mockResolvedValueOnce(bundles.transfers);
+
+      const result = await runAutomatedSnapshotUpdate(["--dry-run"], {
+        pool: mockPool,
+        now: "2026-10-09T06:00:00Z",
+      });
+
+      expect(result.status).toBe("no_changes");
+      expect(result.changesDetected).toBe(false);
+      expect(result.prCreated).toBe(false);
+    });
+
+    it("runAutomatedSnapshotUpdate handles legitimate modifications in dry run mode without promoting or creating PR", async () => {
+      const { bundles } = await getBaseFixtures();
+      const mockPool = createMockSyncPool();
+
+      // Introduce a legitimate course addition
+      const modifiedCourses = {
+        ...bundles.courses,
+        ids: [...bundles.courses.ids, "CS999"],
+        records: {
+          ...bundles.courses.records,
+          CS999: {
+            catalog_course_id: "CS999",
+            title: "Advanced Quantum Computing",
+            pid: "pid-cs-999",
+            description: "Study quantum algorithms",
+            academic_level: "Graduate",
+            credits: "3",
+            subject_code: "CS",
+          },
+        },
+        summaries: [
+          ...bundles.courses.summaries,
+          { catalog_course_id: "CS999", title: "Advanced Quantum Computing" },
+        ],
+        meta: {
+          ...bundles.courses.meta,
+          counts: {
+            ...bundles.courses.meta.counts,
+            ids: bundles.courses.ids.length + 1,
+            records: Object.keys(bundles.courses.records).length + 1,
+          },
+        },
+        reconciliation: {
+          ...bundles.courses.reconciliation!,
+          records: {
+            ...bundles.courses.reconciliation!.records,
+            sourceRows: bundles.courses.reconciliation!.records.sourceRows + 1,
+            exportedRecords: bundles.courses.reconciliation!.records.exportedRecords + 1,
+          },
+          sourceCoverage: bundles.courses.reconciliation?.sourceCoverage
+            ? {
+                ...bundles.courses.reconciliation.sourceCoverage,
+                coursesData: {
+                  ...bundles.courses.reconciliation.sourceCoverage.coursesData,
+                  totalRows: bundles.courses.reconciliation.sourceCoverage.coursesData.totalRows + 1,
+                  candidateRows: bundles.courses.reconciliation.sourceCoverage.coursesData.candidateRows + 1,
+                },
+              }
+            : undefined,
+        },
+      };
+
+      vi.spyOn(programsExporter, "exportProgramsFromDatabase").mockResolvedValueOnce(bundles.programs);
+      vi.spyOn(coursesExporter, "exportCoursesFromDatabase").mockResolvedValueOnce(modifiedCourses);
+      vi.spyOn(transfersExporter, "exportTransfersFromDatabase").mockResolvedValueOnce(bundles.transfers);
+
+      const result = await runAutomatedSnapshotUpdate(["--dry-run"], {
+        pool: mockPool,
+        now: "2026-10-09T06:00:00Z",
+      });
+
+      expect(result.status).toBe("dry_run_completed");
+      expect(result.changesDetected).toBe(true);
+      expect(result.prCreated).toBe(false);
+      expect(result.prSummary).toContain("# Weekly Automated Catalog Snapshot Update (2026-10-09)");
+      expect(result.prSummary).toContain("| **Courses** | 2394 | 2395 | +1 |");
+
+      // Verify active production snapshot on disk remains unchanged
+      const activeManifestAfter = await loadManifest(activeDir);
+      expect(activeManifestAfter?.domains.courses.counts.ids).toBe(2394);
+    });
+
+    it("runAutomatedSnapshotUpdate fails when acceptance gates fail, preserving current deployed snapshot", async () => {
+      const { bundles } = await getBaseFixtures();
+      const mockPool = createMockSyncPool();
+
+      // Tampered bundles: course inventory drops drastically (violating shrinkage gate)
+      const tamperedCourses = {
+        ...bundles.courses,
+        ids: bundles.courses.ids.slice(0, 1000), // Huge shrinkage
+      };
+
+      vi.spyOn(programsExporter, "exportProgramsFromDatabase").mockResolvedValueOnce(bundles.programs);
+      vi.spyOn(coursesExporter, "exportCoursesFromDatabase").mockResolvedValueOnce(tamperedCourses);
+      vi.spyOn(transfersExporter, "exportTransfersFromDatabase").mockResolvedValueOnce(bundles.transfers);
+
+      await expect(
+        runAutomatedSnapshotUpdate(["--dry-run"], {
+          pool: mockPool,
+          now: "2026-10-09T06:00:00Z",
+        })
+      ).rejects.toThrow();
+
+      // Verify deployed snapshot is preserved untouched
+      const activeManifest = await loadManifest(activeDir);
+      expect(activeManifest?.domains.courses.counts.ids).toBe(2394);
+    });
+
     it("exits cleanly with status: 'disabled' when automation flag is false", async () => {
       const origEnv = process.env.ENABLE_WEEKLY_SNAPSHOT_WORKFLOW;
       delete process.env.ENABLE_WEEKLY_SNAPSHOT_WORKFLOW;
