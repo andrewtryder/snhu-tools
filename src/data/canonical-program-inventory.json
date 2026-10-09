@@ -1,0 +1,2272 @@
+[
+  {
+    "slug": "accounting-and-finance-bs",
+    "pid": "N1W674UKg",
+    "title": "Accounting and Finance (BS)",
+    "credential": "Bachelor of Science",
+    "degreeLevel": "BS",
+    "catalogYear": "2025-2026",
+    "requiredCourseCount": 10,
+    "totalCredits": 120
+  },
+  {
+    "slug": "accounting-as",
+    "pid": "NyTO7EItl",
+    "title": "Accounting (AS)",
+    "credential": "Associate of Science",
+    "degreeLevel": "AS",
+    "catalogYear": "2025-2026",
+    "requiredCourseCount": 14,
+    "totalCredits": 60
+  },
+  {
+    "slug": "accounting-bs",
+    "pid": "EJeCh74Ltl",
+    "title": "Accounting (BS)",
+    "credential": "Bachelor of Science",
+    "degreeLevel": "BS",
+    "catalogYear": "2025-2026",
+    "requiredCourseCount": 14,
+    "totalCredits": 120
+  },
+  {
+    "slug": "accounting-certificate-certificate",
+    "pid": "Hkf7ELHUll",
+    "title": "Accounting (Certificate)",
+    "credential": "Certificate",
+    "degreeLevel": "Other",
+    "catalogYear": "2025-2026",
+    "requiredCourseCount": 6,
+    "totalCredits": 18
+  },
+  {
+    "slug": "accounting-graduate-certificate-certificate",
+    "pid": "E1lf4N8Kx",
+    "title": "Accounting (Graduate Certificate)",
+    "credential": "Certificate",
+    "degreeLevel": "Other",
+    "catalogYear": "2025-2026",
+    "requiredCourseCount": 8,
+    "totalCredits": 18
+  },
+  {
+    "slug": "accounting-minor-minor",
+    "pid": "VJ5pYFGhl",
+    "title": "Accounting (Minor)",
+    "credential": "Minor",
+    "degreeLevel": "Other",
+    "catalogYear": "2025-2026",
+    "requiredCourseCount": 5,
+    "totalCredits": 15
+  },
+  {
+    "slug": "accounting-ms",
+    "pid": "4k1jENItl",
+    "title": "Accounting (MS)",
+    "credential": "Master of Science",
+    "degreeLevel": "MS",
+    "catalogYear": "2025-2026",
+    "requiredCourseCount": 15,
+    "totalCredits": 30
+  },
+  {
+    "slug": "advanced-counterterrorism-and-homeland-security-graduate-certificate-certificate",
+    "pid": "SJIaJ-9Fe",
+    "title": "Advanced Counterterrorism and Homeland Security (Graduate Certificate)",
+    "credential": "Certificate",
+    "degreeLevel": "Other",
+    "catalogYear": "2025-2026",
+    "requiredCourseCount": 4,
+    "totalCredits": 12
+  },
+  {
+    "slug": "advanced-graduate-studies-in-creative-writing-post-masters-certificate-certificate",
+    "pid": "H1NA82idB",
+    "title": "Advanced Graduate Studies in Creative Writing (Post Master's Certificate)",
+    "credential": "Certificate",
+    "degreeLevel": "Other",
+    "catalogYear": "2025-2026",
+    "requiredCourseCount": 4,
+    "totalCredits": 33
+  },
+  {
+    "slug": "advanced-graduate-studies-in-district-leadership-post-masters-certificate-certificate",
+    "pid": "HJHmJ9DLM",
+    "title": "Advanced Graduate Studies in District Leadership (Post Master's Certificate)",
+    "credential": "Certificate",
+    "degreeLevel": "Other",
+    "catalogYear": "2025-2026",
+    "requiredCourseCount": 4,
+    "totalCredits": 36
+  },
+  {
+    "slug": "advanced-graduate-study-post-masters-certificate-certificate",
+    "pid": "EyShW6cKx",
+    "title": "Advanced Graduate Study (Post Master's Certificate)",
+    "credential": "Certificate",
+    "degreeLevel": "Other",
+    "catalogYear": "2025-2026",
+    "requiredCourseCount": 0,
+    "totalCredits": 31
+  },
+  {
+    "slug": "aeronautical-engineering-bs",
+    "pid": "Bkirhp53x",
+    "title": "Aeronautical Engineering (BS)",
+    "credential": "Bachelor of Science",
+    "degreeLevel": "BS",
+    "catalogYear": "2025-2026",
+    "requiredCourseCount": 34,
+    "totalCredits": 125
+  },
+  {
+    "slug": "air-force-studies-minor-minor",
+    "pid": "S1vI-ezmL",
+    "title": "Air Force Studies (Minor)",
+    "credential": "Minor",
+    "degreeLevel": "Other",
+    "catalogYear": "2025-2026",
+    "requiredCourseCount": 8,
+    "totalCredits": 16
+  },
+  {
+    "slug": "american-studies-minor-minor",
+    "pid": "VJRfitz2e",
+    "title": "American Studies (Minor)",
+    "credential": "Minor",
+    "degreeLevel": "Other",
+    "catalogYear": "2025-2026",
+    "requiredCourseCount": 5,
+    "totalCredits": 15
+  },
+  {
+    "slug": "anthropology-and-geography-minor-minor",
+    "pid": "HyhVB4xqz",
+    "title": "Anthropology and Geography (Minor)",
+    "credential": "Minor",
+    "degreeLevel": "Other",
+    "catalogYear": "2025-2026",
+    "requiredCourseCount": 2,
+    "totalCredits": 15
+  },
+  {
+    "slug": "anthropology-ba",
+    "pid": "4kf93PTcl",
+    "title": "Anthropology (BA)",
+    "credential": "Bachelor of Arts",
+    "degreeLevel": "BA",
+    "catalogYear": "2025-2026",
+    "requiredCourseCount": 14,
+    "totalCredits": 120
+  },
+  {
+    "slug": "applied-artificial-intelligence-minor-minor",
+    "pid": "rk8VtM8Mex",
+    "title": "Applied Artificial Intelligence (Minor)",
+    "credential": "Minor",
+    "degreeLevel": "Other",
+    "catalogYear": "2025-2026",
+    "requiredCourseCount": 2,
+    "totalCredits": 15
+  },
+  {
+    "slug": "applied-mathematics-minor-minor",
+    "pid": "N1Q09Yz2e",
+    "title": "Applied Mathematics (Minor)",
+    "credential": "Minor",
+    "degreeLevel": "Other",
+    "catalogYear": "2025-2026",
+    "requiredCourseCount": 4,
+    "totalCredits": 18
+  },
+  {
+    "slug": "army-studies-minor-minor",
+    "pid": "rkm6gezmU",
+    "title": "Army Studies (Minor)",
+    "credential": "Minor",
+    "degreeLevel": "Other",
+    "catalogYear": "2025-2026",
+    "requiredCourseCount": 6,
+    "totalCredits": 16
+  },
+  {
+    "slug": "art-history-minor-minor",
+    "pid": "41ct5tzne",
+    "title": "Art History (Minor)",
+    "credential": "Minor",
+    "degreeLevel": "Other",
+    "catalogYear": "2025-2026",
+    "requiredCourseCount": 5,
+    "totalCredits": 15
+  },
+  {
+    "slug": "behavioral-neuroscience-minor-minor",
+    "pid": "EkMLUqWhx",
+    "title": "Behavioral Neuroscience (Minor)",
+    "credential": "Minor",
+    "degreeLevel": "Other",
+    "catalogYear": "2025-2026",
+    "requiredCourseCount": 7,
+    "totalCredits": 16
+  },
+  {
+    "slug": "bioinformatics-minor-minor",
+    "pid": "Byj91a6AP",
+    "title": "Bioinformatics (Minor)",
+    "credential": "Minor",
+    "degreeLevel": "Other",
+    "catalogYear": "2025-2026",
+    "requiredCourseCount": 10,
+    "totalCredits": 15
+  },
+  {
+    "slug": "biology-and-culture-minor-minor",
+    "pid": "rJ7Y_cvRw",
+    "title": "Biology and Culture (Minor)",
+    "credential": "Minor",
+    "degreeLevel": "Other",
+    "catalogYear": "2025-2026",
+    "requiredCourseCount": 5,
+    "totalCredits": 15
+  },
+  {
+    "slug": "biology-bs",
+    "pid": "B1t5mJoxz",
+    "title": "Biology (BS)",
+    "credential": "Bachelor of Science",
+    "degreeLevel": "BS",
+    "catalogYear": "2025-2026",
+    "requiredCourseCount": 22,
+    "totalCredits": 120
+  },
+  {
+    "slug": "biology-minor-minor",
+    "pid": "4J7nr5-2l",
+    "title": "Biology (Minor)",
+    "credential": "Minor",
+    "degreeLevel": "Other",
+    "catalogYear": "2025-2026",
+    "requiredCourseCount": 4,
+    "totalCredits": 17
+  },
+  {
+    "slug": "biomedical-science-bs",
+    "pid": "HJek_x-Dgx",
+    "title": "Biomedical Science (BS)",
+    "credential": "Bachelor of Science",
+    "degreeLevel": "BS",
+    "catalogYear": "2025-2026",
+    "requiredCourseCount": 26,
+    "totalCredits": 121
+  },
+  {
+    "slug": "business-administration-as",
+    "pid": "VkCd7VLtg",
+    "title": "Business Administration (AS)",
+    "credential": "Associate of Science",
+    "degreeLevel": "AS",
+    "catalogYear": "2025-2026",
+    "requiredCourseCount": 13,
+    "totalCredits": 60
+  },
+  {
+    "slug": "business-administration-bs",
+    "pid": "NyGpX48Ke",
+    "title": "Business Administration (BS)",
+    "credential": "Bachelor of Science",
+    "degreeLevel": "BS",
+    "catalogYear": "2025-2026",
+    "requiredCourseCount": 4,
+    "totalCredits": 120
+  },
+  {
+    "slug": "business-administration-bsa-bachelor-of-science",
+    "pid": "BkJA9f9Gye",
+    "title": "Business Administration (BSA)",
+    "credential": "Bachelor of Science",
+    "degreeLevel": "BS",
+    "catalogYear": "2025-2026",
+    "requiredCourseCount": 4,
+    "totalCredits": 93
+  },
+  {
+    "slug": "business-administration-mba-master-of-science",
+    "pid": "V1Cr4VIte",
+    "title": "Business Administration (MBA)",
+    "credential": "Master of Business Administration",
+    "degreeLevel": "MBA",
+    "catalogYear": "2025-2026",
+    "requiredCourseCount": 9,
+    "totalCredits": 30
+  },
+  {
+    "slug": "business-analysis-and-reporting-for-accounting-graduate-certificate-certificate",
+    "pid": "rkpiFw_so",
+    "title": "Business Analysis and Reporting for Accounting (Graduate Certificate)",
+    "credential": "Certificate",
+    "degreeLevel": "Other",
+    "catalogYear": "2025-2026",
+    "requiredCourseCount": 10,
+    "totalCredits": 12
+  },
+  {
+    "slug": "business-analytics-certificate-certificate",
+    "pid": "B1p0oLzQR",
+    "title": "Business Analytics (Certificate)",
+    "credential": "Certificate",
+    "degreeLevel": "Other",
+    "catalogYear": "2025-2026",
+    "requiredCourseCount": 5,
+    "totalCredits": 18
+  },
+  {
+    "slug": "business-analytics-minor-minor",
+    "pid": "41DCsuCpe",
+    "title": "Business Analytics (Minor)",
+    "credential": "Minor",
+    "degreeLevel": "Other",
+    "catalogYear": "2025-2026",
+    "requiredCourseCount": 5,
+    "totalCredits": 15
+  },
+  {
+    "slug": "business-analytics-ms",
+    "pid": "rkyDsRjxI",
+    "title": "Business Analytics (MS)",
+    "credential": "Master of Science",
+    "degreeLevel": "MS",
+    "catalogYear": "2025-2026",
+    "requiredCourseCount": 9,
+    "totalCredits": 30
+  },
+  {
+    "slug": "business-core-non-degree",
+    "pid": "NJXciDa5g",
+    "title": "Business Core",
+    "credential": "Non Degree",
+    "degreeLevel": "Other",
+    "catalogYear": "2025-2026",
+    "requiredCourseCount": 10,
+    "totalCredits": 30
+  },
+  {
+    "slug": "business-operations-certificate-certificate",
+    "pid": "ryhJltQRI",
+    "title": "Business Operations (Certificate)",
+    "credential": "Certificate",
+    "degreeLevel": "Other",
+    "catalogYear": "2025-2026",
+    "requiredCourseCount": 24,
+    "totalCredits": 24
+  },
+  {
+    "slug": "business-writing-minor-minor",
+    "pid": "NkVabcM3l",
+    "title": "Business Writing (Minor)",
+    "credential": "Minor",
+    "degreeLevel": "Other",
+    "catalogYear": "2025-2026",
+    "requiredCourseCount": 4,
+    "totalCredits": 15
+  },
+  {
+    "slug": "communication-ba",
+    "pid": "41hY7ELYe",
+    "title": "Communication (BA)",
+    "credential": "Bachelor of Arts",
+    "degreeLevel": "BA",
+    "catalogYear": "2025-2026",
+    "requiredCourseCount": 6,
+    "totalCredits": 120
+  },
+  {
+    "slug": "communication-ma-master-of-science",
+    "pid": "4yrHN4IYx",
+    "title": "Communication (MA)",
+    "credential": "Master of Arts",
+    "degreeLevel": "MA",
+    "catalogYear": "2025-2026",
+    "requiredCourseCount": 8,
+    "totalCredits": 36
+  },
+  {
+    "slug": "communication-minor-minor",
+    "pid": "NkO-m5fnx",
+    "title": "Communication (Minor)",
+    "credential": "Minor",
+    "degreeLevel": "Other",
+    "catalogYear": "2025-2026",
+    "requiredCourseCount": 2,
+    "totalCredits": 15
+  },
+  {
+    "slug": "communications-ba",
+    "pid": "rJUTINrWQ",
+    "title": "Communications (BA)",
+    "credential": "Bachelor of Arts",
+    "degreeLevel": "BA",
+    "catalogYear": "2025-2026",
+    "requiredCourseCount": 51,
+    "totalCredits": 120
+  },
+  {
+    "slug": "community-health-education-bs",
+    "pid": "NkiRXVIFl",
+    "title": "Community Health Education (BS)",
+    "credential": "Bachelor of Science",
+    "degreeLevel": "BS",
+    "catalogYear": "2025-2026",
+    "requiredCourseCount": 15,
+    "totalCredits": 120
+  },
+  {
+    "slug": "comparative-race-studies-minor-minor",
+    "pid": "B1IMbHm1d",
+    "title": "Comparative Race Studies (Minor)",
+    "credential": "Minor",
+    "degreeLevel": "Other",
+    "catalogYear": "2025-2026",
+    "requiredCourseCount": 0,
+    "totalCredits": 15
+  },
+  {
+    "slug": "computer-information-systems-bs",
+    "pid": "4y2CmNLKg",
+    "title": "Computer Information Systems (BS)",
+    "credential": "Bachelor of Science",
+    "degreeLevel": "BS",
+    "catalogYear": "2025-2026",
+    "requiredCourseCount": 11,
+    "totalCredits": 120
+  },
+  {
+    "slug": "computer-information-systems-minor-minor",
+    "pid": "Sye9eDumI",
+    "title": "Computer Information Systems (Minor)",
+    "credential": "Minor",
+    "degreeLevel": "Other",
+    "catalogYear": "2025-2026",
+    "requiredCourseCount": 4,
+    "totalCredits": 18
+  },
+  {
+    "slug": "computer-science-as",
+    "pid": "SJEWxKZN8",
+    "title": "Computer Science (AS)",
+    "credential": "Associate of Science",
+    "degreeLevel": "AS",
+    "catalogYear": "2025-2026",
+    "requiredCourseCount": 14,
+    "totalCredits": 60
+  },
+  {
+    "slug": "computer-science-bs",
+    "pid": "V1S14E8tg",
+    "title": "Computer Science (BS)",
+    "credential": "Bachelor of Science",
+    "degreeLevel": "BS",
+    "catalogYear": "2025-2026",
+    "requiredCourseCount": 21,
+    "totalCredits": 120
+  },
+  {
+    "slug": "computer-science-ms",
+    "pid": "BJBHxDGZkg",
+    "title": "Computer Science (MS)",
+    "credential": "Master of Science",
+    "degreeLevel": "MS",
+    "catalogYear": "2025-2026",
+    "requiredCourseCount": 10,
+    "totalCredits": 30
+  },
+  {
+    "slug": "construction-management-bs",
+    "pid": "ByNYWsRpl",
+    "title": "Construction Management (BS)",
+    "credential": "Bachelor of Science",
+    "degreeLevel": "BS",
+    "catalogYear": "2025-2026",
+    "requiredCourseCount": 26,
+    "totalCredits": 120
+  },
+  {
+    "slug": "construction-science-minor-minor",
+    "pid": "BkQhb53HV",
+    "title": "Construction Science (Minor)",
+    "credential": "Minor",
+    "degreeLevel": "Other",
+    "catalogYear": "2025-2026",
+    "requiredCourseCount": 6,
+    "totalCredits": 16
+  },
+  {
+    "slug": "creative-writing-and-english-ba",
+    "pid": "VyxqmEUFx",
+    "title": "Creative Writing and English (BA)",
+    "credential": "Bachelor of Arts",
+    "degreeLevel": "BA",
+    "catalogYear": "2025-2026",
+    "requiredCourseCount": 9,
+    "totalCredits": 120
+  },
+  {
+    "slug": "creative-writing-mfa-master-of-science",
+    "pid": "H1ILJTI9Z",
+    "title": "Creative Writing (MFA)",
+    "credential": "Master of Fine Arts",
+    "degreeLevel": "Other",
+    "catalogYear": "2025-2026",
+    "requiredCourseCount": 16,
+    "totalCredits": 48
+  },
+  {
+    "slug": "creative-writing-minor-minor",
+    "pid": "V1wrX5G2e",
+    "title": "Creative Writing (Minor)",
+    "credential": "Minor",
+    "degreeLevel": "Other",
+    "catalogYear": "2025-2026",
+    "requiredCourseCount": 1,
+    "totalCredits": 15
+  },
+  {
+    "slug": "crime-and-criminology-certificate-certificate",
+    "pid": "V1HGNVIFx",
+    "title": "Crime and Criminology (Certificate)",
+    "credential": "Certificate",
+    "degreeLevel": "Other",
+    "catalogYear": "2025-2026",
+    "requiredCourseCount": 2,
+    "totalCredits": 12
+  },
+  {
+    "slug": "criminal-justice-as",
+    "pid": "V1kt7VLFl",
+    "title": "Criminal Justice (AS)",
+    "credential": "Associate of Science",
+    "degreeLevel": "AS",
+    "catalogYear": "2025-2026",
+    "requiredCourseCount": 9,
+    "totalCredits": 60
+  },
+  {
+    "slug": "criminal-justice-bs",
+    "pid": "EylJ4EIYl",
+    "title": "Criminal Justice (BS)",
+    "credential": "Bachelor of Science",
+    "degreeLevel": "BS",
+    "catalogYear": "2025-2026",
+    "requiredCourseCount": 14,
+    "totalCredits": 120
+  },
+  {
+    "slug": "criminal-justice-communication-certificate-certificate",
+    "pid": "Bkl5SxllE",
+    "title": "Criminal Justice Communication (Certificate)",
+    "credential": "Certificate",
+    "degreeLevel": "Other",
+    "catalogYear": "2025-2026",
+    "requiredCourseCount": 6,
+    "totalCredits": 18
+  },
+  {
+    "slug": "criminal-justice-minor-minor",
+    "pid": "EJZMazG0l",
+    "title": "Criminal Justice (Minor)",
+    "credential": "Minor",
+    "degreeLevel": "Other",
+    "catalogYear": "2025-2026",
+    "requiredCourseCount": 4,
+    "totalCredits": 15
+  },
+  {
+    "slug": "criminal-justice-ms",
+    "pid": "NJ6oVV8Fg",
+    "title": "Criminal Justice (MS)",
+    "credential": "Master of Science",
+    "degreeLevel": "MS",
+    "catalogYear": "2025-2026",
+    "requiredCourseCount": 7,
+    "totalCredits": 30
+  },
+  {
+    "slug": "culinary-arts-minor-minor",
+    "pid": "H1hs3Q7T7",
+    "title": "Culinary Arts (Minor)",
+    "credential": "Minor",
+    "degreeLevel": "Other",
+    "catalogYear": "2025-2026",
+    "requiredCourseCount": 5,
+    "totalCredits": 15
+  },
+  {
+    "slug": "curriculum-and-instruction-med-master-of-science",
+    "pid": "V1XqEV8tl",
+    "title": "Curriculum and Instruction (MEd)",
+    "credential": "Master of Education",
+    "degreeLevel": "Other",
+    "catalogYear": "2025-2026",
+    "requiredCourseCount": 9,
+    "totalCredits": 36
+  },
+  {
+    "slug": "cyber-security-ms",
+    "pid": "4112448tg",
+    "title": "Cyber Security (MS)",
+    "credential": "Master of Science",
+    "degreeLevel": "MS",
+    "catalogYear": "2025-2026",
+    "requiredCourseCount": 10,
+    "totalCredits": 36
+  },
+  {
+    "slug": "cybersecurity-as",
+    "pid": "Hkx-bwNvu",
+    "title": "Cybersecurity (AS)",
+    "credential": "Associate of Science",
+    "degreeLevel": "AS",
+    "catalogYear": "2025-2026",
+    "requiredCourseCount": 12,
+    "totalCredits": 60
+  },
+  {
+    "slug": "cybersecurity-bs",
+    "pid": "B1fl01trz",
+    "title": "Cybersecurity (BS)",
+    "credential": "Bachelor of Science",
+    "degreeLevel": "BS",
+    "catalogYear": "2025-2026",
+    "requiredCourseCount": 19,
+    "totalCredits": 120
+  },
+  {
+    "slug": "cybersecurity-certificate-certificate",
+    "pid": "Hyt46wCP9",
+    "title": "Cybersecurity (Certificate)",
+    "credential": "Certificate",
+    "degreeLevel": "Other",
+    "catalogYear": "2025-2026",
+    "requiredCourseCount": 6,
+    "totalCredits": 18
+  },
+  {
+    "slug": "cybersecurity-minor-minor",
+    "pid": "BJMbk8Pqee",
+    "title": "Cybersecurity (Minor)",
+    "credential": "Minor",
+    "degreeLevel": "Other",
+    "catalogYear": "2025-2026",
+    "requiredCourseCount": 4,
+    "totalCredits": 15
+  },
+  {
+    "slug": "data-analytics-as",
+    "pid": "r1G2CDW4I",
+    "title": "Data Analytics (AS)",
+    "credential": "Associate of Science",
+    "degreeLevel": "AS",
+    "catalogYear": "2025-2026",
+    "requiredCourseCount": 12,
+    "totalCredits": 60
+  },
+  {
+    "slug": "data-analytics-bs",
+    "pid": "418kEN8Fg",
+    "title": "Data Analytics (BS)",
+    "credential": "Bachelor of Science",
+    "degreeLevel": "BS",
+    "catalogYear": "2025-2026",
+    "requiredCourseCount": 17,
+    "totalCredits": 120
+  },
+  {
+    "slug": "data-analytics-ms",
+    "pid": "4kxhVE8Yg",
+    "title": "Data Analytics (MS)",
+    "credential": "Master of Science",
+    "degreeLevel": "MS",
+    "catalogYear": "2025-2026",
+    "requiredCourseCount": 11,
+    "totalCredits": 36
+  },
+  {
+    "slug": "data-driven-decision-making-certificate-certificate",
+    "pid": "BkZ3KnkD8",
+    "title": "Data Driven Decision Making (Certificate)",
+    "credential": "Certificate",
+    "degreeLevel": "Other",
+    "catalogYear": "2025-2026",
+    "requiredCourseCount": 4,
+    "totalCredits": 12
+  },
+  {
+    "slug": "data-literacy-in-psychology-certificate-certificate",
+    "pid": "SklHO-zm8",
+    "title": "Data Literacy in Psychology (Certificate)",
+    "credential": "Certificate",
+    "degreeLevel": "Other",
+    "catalogYear": "2025-2026",
+    "requiredCourseCount": 4,
+    "totalCredits": 12
+  },
+  {
+    "slug": "digital-photography-aa-associate-of-science",
+    "pid": "4J9VMGzRx",
+    "title": "Digital Photography (AA)",
+    "credential": "Associate of Arts",
+    "degreeLevel": "AA",
+    "catalogYear": "2025-2026",
+    "requiredCourseCount": 11,
+    "totalCredits": 60
+  },
+  {
+    "slug": "digital-photography-ba",
+    "pid": "EyQ9XV8Yg",
+    "title": "Digital Photography (BA)",
+    "credential": "Bachelor of Arts",
+    "degreeLevel": "BA",
+    "catalogYear": "2025-2026",
+    "requiredCourseCount": 15,
+    "totalCredits": 120
+  },
+  {
+    "slug": "digital-studies-minor-minor",
+    "pid": "ryvxLtXlU",
+    "title": "Digital Studies (Minor)",
+    "credential": "Minor",
+    "degreeLevel": "Other",
+    "catalogYear": "2025-2026",
+    "requiredCourseCount": 6,
+    "totalCredits": 15
+  },
+  {
+    "slug": "diversity-and-globalization-minor-minor",
+    "pid": "SkB4LdeIN",
+    "title": "Diversity and Globalization (Minor)",
+    "credential": "Minor",
+    "degreeLevel": "Other",
+    "catalogYear": "2025-2026",
+    "requiredCourseCount": 1,
+    "totalCredits": 15
+  },
+  {
+    "slug": "drone-pilot-operations-minor-minor",
+    "pid": "Sy0YJtWGyg",
+    "title": "Drone Pilot Operations (Minor)",
+    "credential": "Minor",
+    "degreeLevel": "Other",
+    "catalogYear": "2025-2026",
+    "requiredCourseCount": 5,
+    "totalCredits": 15
+  },
+  {
+    "slug": "dyslexia-and-language-based-learning-disabilities-graduate-certificate-certificate",
+    "pid": "rJqs8_Af1l",
+    "title": "Dyslexia and Language-Based Learning Disabilities (Graduate Certificate)",
+    "credential": "Certificate",
+    "degreeLevel": "Other",
+    "catalogYear": "2025-2026",
+    "requiredCourseCount": 5,
+    "totalCredits": 15
+  },
+  {
+    "slug": "early-childhood-and-special-education-med-master-of-science",
+    "pid": "HJ6TVYfoW",
+    "title": "Early Childhood and Special Education (MEd)",
+    "credential": "Master of Education",
+    "degreeLevel": "Other",
+    "catalogYear": "2025-2026",
+    "requiredCourseCount": 0,
+    "totalCredits": 36
+  },
+  {
+    "slug": "economics-and-finance-bs",
+    "pid": "NyeJ5WaqYe",
+    "title": "Economics and Finance (BS)",
+    "credential": "Bachelor of Science",
+    "degreeLevel": "BS",
+    "catalogYear": "2025-2026",
+    "requiredCourseCount": 10,
+    "totalCredits": 120
+  },
+  {
+    "slug": "economics-minor-minor",
+    "pid": "4JQ-Nqz3x",
+    "title": "Economics (Minor)",
+    "credential": "Minor",
+    "degreeLevel": "Other",
+    "catalogYear": "2025-2026",
+    "requiredCourseCount": 7,
+    "totalCredits": 18
+  },
+  {
+    "slug": "education-aa-associate-of-science",
+    "pid": "Hyfd2FW9U",
+    "title": "Education (AA)",
+    "credential": "Associate of Arts",
+    "degreeLevel": "AA",
+    "catalogYear": "2025-2026",
+    "requiredCourseCount": 6,
+    "totalCredits": 60
+  },
+  {
+    "slug": "education-ba",
+    "pid": "N1XoX4Ltg",
+    "title": "Education (BA)",
+    "credential": "Bachelor of Arts",
+    "degreeLevel": "BA",
+    "catalogYear": "2025-2026",
+    "requiredCourseCount": 5,
+    "totalCredits": 121
+  },
+  {
+    "slug": "education-for-licensure-ba",
+    "pid": "ryiQbo5gK",
+    "title": "Education for Licensure (BA)",
+    "credential": "Bachelor of Arts",
+    "degreeLevel": "BA",
+    "catalogYear": "2025-2026",
+    "requiredCourseCount": 9,
+    "totalCredits": 111
+  },
+  {
+    "slug": "education-leadership-phd-doctoral-research",
+    "pid": "HJ2Bqy1mN",
+    "title": "Education Leadership (PhD)",
+    "credential": "Doctoral (Research)",
+    "degreeLevel": "Other",
+    "catalogYear": "2025-2026",
+    "requiredCourseCount": 18,
+    "totalCredits": 54
+  },
+  {
+    "slug": "education-with-ba-degree-minor",
+    "pid": "4Jhxd_Mhe",
+    "title": "Education with BA Degree (Minor)",
+    "credential": "Minor",
+    "degreeLevel": "Other",
+    "catalogYear": "2025-2026",
+    "requiredCourseCount": 6,
+    "totalCredits": 16
+  },
+  {
+    "slug": "educational-leadership-and-administration-med-master-of-science",
+    "pid": "ryBKSFsX1e",
+    "title": "Educational Leadership and Administration (MEd)",
+    "credential": "Master of Education",
+    "degreeLevel": "Other",
+    "catalogYear": "2025-2026",
+    "requiredCourseCount": 9,
+    "totalCredits": 36
+  },
+  {
+    "slug": "educational-leadership-edd-doctoral-research",
+    "pid": "NkBRZpcYx",
+    "title": "Educational Leadership (EdD)",
+    "credential": "Doctoral (Research)",
+    "degreeLevel": "Other",
+    "catalogYear": "2025-2026",
+    "requiredCourseCount": 20,
+    "totalCredits": 48
+  },
+  {
+    "slug": "educational-studies-med-master-of-science",
+    "pid": "VyOqN48tl",
+    "title": "Educational Studies (MEd)",
+    "credential": "Master of Education",
+    "degreeLevel": "Other",
+    "catalogYear": "2025-2026",
+    "requiredCourseCount": 1,
+    "totalCredits": 33
+  },
+  {
+    "slug": "educator-practices-med-master-of-science",
+    "pid": "ByMHYbYvB",
+    "title": "Educator Practices (MEd)",
+    "credential": "Master of Education",
+    "degreeLevel": "Other",
+    "catalogYear": "2025-2026",
+    "requiredCourseCount": 11,
+    "totalCredits": 36
+  },
+  {
+    "slug": "electrical-engineering-bs",
+    "pid": "B1kB1QUjm",
+    "title": "Electrical Engineering (BS)",
+    "credential": "Bachelor of Science",
+    "degreeLevel": "BS",
+    "catalogYear": "2025-2026",
+    "requiredCourseCount": 34,
+    "totalCredits": 124
+  },
+  {
+    "slug": "elementary-and-special-education-med-master-of-science",
+    "pid": "NJF5EELFg",
+    "title": "Elementary and Special Education (MEd)",
+    "credential": "Master of Education",
+    "degreeLevel": "Other",
+    "catalogYear": "2025-2026",
+    "requiredCourseCount": 0,
+    "totalCredits": 36
+  },
+  {
+    "slug": "elementary-education-for-licensure-ba",
+    "pid": "SkwyRJzgT",
+    "title": "Elementary Education for Licensure (BA)",
+    "credential": "Bachelor of Arts",
+    "degreeLevel": "BA",
+    "catalogYear": "2025-2026",
+    "requiredCourseCount": 11,
+    "totalCredits": 120
+  },
+  {
+    "slug": "elementary-education-with-general-special-education-ba",
+    "pid": "SJkCskz58",
+    "title": "Elementary Education with General Special Education (BA)",
+    "credential": "Bachelor of Arts",
+    "degreeLevel": "BA",
+    "catalogYear": "2025-2026",
+    "requiredCourseCount": 20,
+    "totalCredits": 120
+  },
+  {
+    "slug": "engineering-technology-as",
+    "pid": "SyXlWYGjp",
+    "title": "Engineering Technology (AS)",
+    "credential": "Associate of Science",
+    "degreeLevel": "AS",
+    "catalogYear": "2025-2026",
+    "requiredCourseCount": 15,
+    "totalCredits": 60
+  },
+  {
+    "slug": "engineering-technology-bs",
+    "pid": "r1W245fiT",
+    "title": "Engineering Technology (BS)",
+    "credential": "Bachelor of Science",
+    "degreeLevel": "BS",
+    "catalogYear": "2025-2026",
+    "requiredCourseCount": 23,
+    "totalCredits": 120
+  },
+  {
+    "slug": "english-and-creative-writing-ma-master-of-science",
+    "pid": "NkPHEEIYg",
+    "title": "English and Creative Writing (MA)",
+    "credential": "Master of Arts",
+    "degreeLevel": "MA",
+    "catalogYear": "2025-2026",
+    "requiredCourseCount": 10,
+    "totalCredits": 36
+  },
+  {
+    "slug": "english-ba",
+    "pid": "Ny_cXEUYe",
+    "title": "English (BA)",
+    "credential": "Bachelor of Arts",
+    "degreeLevel": "BA",
+    "catalogYear": "2025-2026",
+    "requiredCourseCount": 9,
+    "totalCredits": 120
+  },
+  {
+    "slug": "english-language-and-literature-minor-minor",
+    "pid": "VyL_45Mhe",
+    "title": "English Language and Literature (Minor)",
+    "credential": "Minor",
+    "degreeLevel": "Other",
+    "catalogYear": "2025-2026",
+    "requiredCourseCount": 0,
+    "totalCredits": 15
+  },
+  {
+    "slug": "english-ma-master-of-science",
+    "pid": "Ek5r4VUFe",
+    "title": "English (MA)",
+    "credential": "Master of Arts",
+    "degreeLevel": "MA",
+    "catalogYear": "2025-2026",
+    "requiredCourseCount": 12,
+    "totalCredits": 36
+  },
+  {
+    "slug": "entrepreneurship-bs",
+    "pid": "rJOvufGMq",
+    "title": "Entrepreneurship (BS)",
+    "credential": "Bachelor of Science",
+    "degreeLevel": "BS",
+    "catalogYear": "2025-2026",
+    "requiredCourseCount": 13,
+    "totalCredits": 120
+  },
+  {
+    "slug": "entrepreneurship-minor-minor",
+    "pid": "H1Y2OWfUf",
+    "title": "Entrepreneurship (Minor)",
+    "credential": "Minor",
+    "degreeLevel": "Other",
+    "catalogYear": "2025-2026",
+    "requiredCourseCount": 6,
+    "totalCredits": 18
+  },
+  {
+    "slug": "environmental-leadership-social-entrepreneurship-and-sustainability-ma-master-of-science",
+    "pid": "SkSHunSSU",
+    "title": "Environmental Leadership, Social Entrepreneurship, and Sustainability (MA)",
+    "credential": "Master of Arts",
+    "degreeLevel": "MA",
+    "catalogYear": "2025-2026",
+    "requiredCourseCount": 15,
+    "totalCredits": 30
+  },
+  {
+    "slug": "environmental-science-bs",
+    "pid": "N1Ok44IYg",
+    "title": "Environmental Science (BS)",
+    "credential": "Bachelor of Science",
+    "degreeLevel": "BS",
+    "catalogYear": "2025-2026",
+    "requiredCourseCount": 18,
+    "totalCredits": 120
+  },
+  {
+    "slug": "esport-minor-minor",
+    "pid": "H1p_Au2HN",
+    "title": "Esport (Minor)",
+    "credential": "Minor",
+    "degreeLevel": "Other",
+    "catalogYear": "2025-2026",
+    "requiredCourseCount": 3,
+    "totalCredits": 15
+  },
+  {
+    "slug": "ethics-minor-minor",
+    "pid": "H1cLVfKOH",
+    "title": "Ethics (Minor)",
+    "credential": "Minor",
+    "degreeLevel": "Other",
+    "catalogYear": "2025-2026",
+    "requiredCourseCount": 5,
+    "totalCredits": 15
+  },
+  {
+    "slug": "fiction-mfa-master-of-science",
+    "pid": "VkjZf65te",
+    "title": "Fiction (MFA)",
+    "credential": "Master of Fine Arts",
+    "degreeLevel": "Other",
+    "catalogYear": "2025-2026",
+    "requiredCourseCount": 4,
+    "totalCredits": 60
+  },
+  {
+    "slug": "finance-as",
+    "pid": "HJkeoeILa",
+    "title": "Finance (AS)",
+    "credential": "Associate of Science",
+    "degreeLevel": "AS",
+    "catalogYear": "2025-2026",
+    "requiredCourseCount": 11,
+    "totalCredits": 60
+  },
+  {
+    "slug": "finance-bs",
+    "pid": "VyqkNNLFx",
+    "title": "Finance (BS)",
+    "credential": "Bachelor of Science",
+    "degreeLevel": "BS",
+    "catalogYear": "2025-2026",
+    "requiredCourseCount": 10,
+    "totalCredits": 120
+  },
+  {
+    "slug": "finance-minor-minor",
+    "pid": "E1rFH5zhg",
+    "title": "Finance (Minor)",
+    "credential": "Minor",
+    "degreeLevel": "Other",
+    "catalogYear": "2025-2026",
+    "requiredCourseCount": 7,
+    "totalCredits": 18
+  },
+  {
+    "slug": "finance-ms",
+    "pid": "4JZ3ENLKl",
+    "title": "Finance (MS)",
+    "credential": "Master of Science",
+    "degreeLevel": "MS",
+    "catalogYear": "2025-2026",
+    "requiredCourseCount": 15,
+    "totalCredits": 36
+  },
+  {
+    "slug": "forensic-accounting-and-fraud-examination-graduate-certificate-certificate",
+    "pid": "Sk2h5ZQ9n",
+    "title": "Forensic Accounting and Fraud Examination (Graduate Certificate)",
+    "credential": "Certificate",
+    "degreeLevel": "Other",
+    "catalogYear": "2025-2026",
+    "requiredCourseCount": 10,
+    "totalCredits": 12
+  },
+  {
+    "slug": "game-art-and-development-minor-minor",
+    "pid": "NkkKquM3l",
+    "title": "Game Art and Development (Minor)",
+    "credential": "Minor",
+    "degreeLevel": "Other",
+    "catalogYear": "2025-2026",
+    "requiredCourseCount": 5,
+    "totalCredits": 15
+  },
+  {
+    "slug": "game-design-and-development-bs",
+    "pid": "E1ok4V8Kl",
+    "title": "Game Design and Development (BS)",
+    "credential": "Bachelor of Science",
+    "degreeLevel": "BS",
+    "catalogYear": "2025-2026",
+    "requiredCourseCount": 9,
+    "totalCredits": 120
+  },
+  {
+    "slug": "game-programming-and-development-minor-minor",
+    "pid": "ryCT7MYdl",
+    "title": "Game Programming and Development (Minor)",
+    "credential": "Minor",
+    "degreeLevel": "Other",
+    "catalogYear": "2025-2026",
+    "requiredCourseCount": 4,
+    "totalCredits": 15
+  },
+  {
+    "slug": "gender-studies-minor-minor",
+    "pid": "4y0jjdG3l",
+    "title": "Gender Studies (Minor)",
+    "credential": "Minor",
+    "degreeLevel": "Other",
+    "catalogYear": "2025-2026",
+    "requiredCourseCount": 5,
+    "totalCredits": 15
+  },
+  {
+    "slug": "general-education-the-commons-non-degree",
+    "pid": "N1_ZoPa9x",
+    "title": "General Education: The Commons",
+    "credential": "Non Degree",
+    "degreeLevel": "Other",
+    "catalogYear": "2025-2026",
+    "requiredCourseCount": 11,
+    "totalCredits": 42
+  },
+  {
+    "slug": "general-studies-aa-associate-of-science",
+    "pid": "r1G9UNSbm",
+    "title": "General Studies (AA)",
+    "credential": "Associate of Arts",
+    "degreeLevel": "AA",
+    "catalogYear": "2025-2026",
+    "requiredCourseCount": 51,
+    "totalCredits": 60
+  },
+  {
+    "slug": "general-studies-ba",
+    "pid": "4ymsQEIte",
+    "title": "General Studies (BA)",
+    "credential": "Bachelor of Arts",
+    "degreeLevel": "BA",
+    "catalogYear": "2025-2026",
+    "requiredCourseCount": 1,
+    "totalCredits": 120
+  },
+  {
+    "slug": "geosciences-bs",
+    "pid": "41RyE4UYe",
+    "title": "Geosciences (BS)",
+    "credential": "Bachelor of Science",
+    "degreeLevel": "BS",
+    "catalogYear": "2025-2026",
+    "requiredCourseCount": 20,
+    "totalCredits": 120
+  },
+  {
+    "slug": "graphic-design-and-media-arts-ba",
+    "pid": "N1-oQ4LKe",
+    "title": "Graphic Design and Media Arts (BA)",
+    "credential": "Bachelor of Arts",
+    "degreeLevel": "BA",
+    "catalogYear": "2025-2026",
+    "requiredCourseCount": 8,
+    "totalCredits": 120
+  },
+  {
+    "slug": "graphic-design-minor-minor",
+    "pid": "NkKrsOMnl",
+    "title": "Graphic Design (Minor)",
+    "credential": "Minor",
+    "degreeLevel": "Other",
+    "catalogYear": "2025-2026",
+    "requiredCourseCount": 5,
+    "totalCredits": 15
+  },
+  {
+    "slug": "health-information-management-bs",
+    "pid": "4JNeEEUKl",
+    "title": "Health Information Management (BS)",
+    "credential": "Bachelor of Science",
+    "degreeLevel": "BS",
+    "catalogYear": "2025-2026",
+    "requiredCourseCount": 21,
+    "totalCredits": 120
+  },
+  {
+    "slug": "health-information-management-ms",
+    "pid": "V1nLA3fE-",
+    "title": "Health Information Management (MS)",
+    "credential": "Master of Science",
+    "degreeLevel": "MS",
+    "catalogYear": "2025-2026",
+    "requiredCourseCount": 12,
+    "totalCredits": 36
+  },
+  {
+    "slug": "health-sciences-bs",
+    "pid": "VyIe4N8Yx",
+    "title": "Health Sciences (BS)",
+    "credential": "Bachelor of Science",
+    "degreeLevel": "BS",
+    "catalogYear": "2025-2026",
+    "requiredCourseCount": 9,
+    "totalCredits": 120
+  },
+  {
+    "slug": "healthcare-administration-bs",
+    "pid": "NyblE4LKe",
+    "title": "Healthcare Administration (BS)",
+    "credential": "Bachelor of Science",
+    "degreeLevel": "BS",
+    "catalogYear": "2025-2026",
+    "requiredCourseCount": 18,
+    "totalCredits": 120
+  },
+  {
+    "slug": "healthcare-administration-ms",
+    "pid": "E1SnVNLKe",
+    "title": "Healthcare Administration (MS)",
+    "credential": "Master of Science",
+    "degreeLevel": "MS",
+    "catalogYear": "2025-2026",
+    "requiredCourseCount": 14,
+    "totalCredits": 36
+  },
+  {
+    "slug": "healthcare-management-aa-associate-of-science",
+    "pid": "ryX_U4rWQ",
+    "title": "Healthcare Management (AA)",
+    "credential": "Associate of Arts",
+    "degreeLevel": "AA",
+    "catalogYear": "2025-2026",
+    "requiredCourseCount": 60,
+    "totalCredits": 60
+  },
+  {
+    "slug": "healthcare-management-ba",
+    "pid": "SJ2tLNH-7",
+    "title": "Healthcare Management (BA)",
+    "credential": "Bachelor of Arts",
+    "degreeLevel": "BA",
+    "catalogYear": "2025-2026",
+    "requiredCourseCount": 51,
+    "totalCredits": 120
+  },
+  {
+    "slug": "healthcare-quality-and-safety-post-masters-graduate-certificate-certificate",
+    "pid": "Sy07aQSzO",
+    "title": "Healthcare Quality and Safety (Post Master's Graduate Certificate)",
+    "credential": "Certificate",
+    "degreeLevel": "Other",
+    "catalogYear": "2025-2026",
+    "requiredCourseCount": 4,
+    "totalCredits": 12
+  },
+  {
+    "slug": "higher-education-administration-ms",
+    "pid": "Vkr3ENLKl",
+    "title": "Higher Education Administration (MS)",
+    "credential": "Master of Science",
+    "degreeLevel": "MS",
+    "catalogYear": "2025-2026",
+    "requiredCourseCount": 12,
+    "totalCredits": 36
+  },
+  {
+    "slug": "history-ba",
+    "pid": "VkNsQEIYx",
+    "title": "History (BA)",
+    "credential": "Bachelor of Arts",
+    "degreeLevel": "BA",
+    "catalogYear": "2025-2026",
+    "requiredCourseCount": 6,
+    "totalCredits": 120
+  },
+  {
+    "slug": "history-ma-master-of-science",
+    "pid": "4J9BNVItx",
+    "title": "History (MA)",
+    "credential": "Master of Arts",
+    "degreeLevel": "MA",
+    "catalogYear": "2025-2026",
+    "requiredCourseCount": 6,
+    "totalCredits": 33
+  },
+  {
+    "slug": "history-minor-minor",
+    "pid": "Ekd_wcM2l",
+    "title": "History (Minor)",
+    "credential": "Minor",
+    "degreeLevel": "Other",
+    "catalogYear": "2025-2026",
+    "requiredCourseCount": 0,
+    "totalCredits": 15
+  },
+  {
+    "slug": "human-resource-management-bs",
+    "pid": "rJ9umMfFr",
+    "title": "Human Resource Management (BS)",
+    "credential": "Bachelor of Science",
+    "degreeLevel": "BS",
+    "catalogYear": "2025-2026",
+    "requiredCourseCount": 12,
+    "totalCredits": 120
+  },
+  {
+    "slug": "human-resource-management-certificate-certificate",
+    "pid": "rJdJ9Rcolx",
+    "title": "Human Resource Management (Certificate)",
+    "credential": "Certificate",
+    "degreeLevel": "Other",
+    "catalogYear": "2025-2026",
+    "requiredCourseCount": 6,
+    "totalCredits": 18
+  },
+  {
+    "slug": "human-resource-management-graduate-certificate-certificate",
+    "pid": "SyWoALH8xg",
+    "title": "Human Resource Management (Graduate Certificate)",
+    "credential": "Certificate",
+    "degreeLevel": "Other",
+    "catalogYear": "2025-2026",
+    "requiredCourseCount": 5,
+    "totalCredits": 12
+  },
+  {
+    "slug": "human-resource-management-ms",
+    "pid": "Ey82VNUtx",
+    "title": "Human Resource Management (MS)",
+    "credential": "Master of Science",
+    "degreeLevel": "MS",
+    "catalogYear": "2025-2026",
+    "requiredCourseCount": 13,
+    "totalCredits": 36
+  },
+  {
+    "slug": "human-services-ba",
+    "pid": "EkujXVIKg",
+    "title": "Human Services (BA)",
+    "credential": "Bachelor of Arts",
+    "degreeLevel": "BA",
+    "catalogYear": "2025-2026",
+    "requiredCourseCount": 18,
+    "totalCredits": 120
+  },
+  {
+    "slug": "information-systems-and-controls-graduate-certificate-certificate",
+    "pid": "rylrUDdis",
+    "title": "Information Systems and Controls (Graduate Certificate)",
+    "credential": "Certificate",
+    "degreeLevel": "Other",
+    "catalogYear": "2025-2026",
+    "requiredCourseCount": 10,
+    "totalCredits": 12
+  },
+  {
+    "slug": "information-technologies-as",
+    "pid": "NyzKXV8Ye",
+    "title": "Information Technologies (AS)",
+    "credential": "Associate of Science",
+    "degreeLevel": "AS",
+    "catalogYear": "2025-2026",
+    "requiredCourseCount": 9,
+    "totalCredits": 60
+  },
+  {
+    "slug": "information-technologies-ba",
+    "pid": "EyjsXN8tl",
+    "title": "Information Technologies (BA)",
+    "credential": "Bachelor of Arts",
+    "degreeLevel": "BA",
+    "catalogYear": "2025-2026",
+    "requiredCourseCount": 16,
+    "totalCredits": 120
+  },
+  {
+    "slug": "information-technologies-bs",
+    "pid": "VJ3x44LKg",
+    "title": "Information Technologies (BS)",
+    "credential": "Bachelor of Science",
+    "degreeLevel": "BS",
+    "catalogYear": "2025-2026",
+    "requiredCourseCount": 17,
+    "totalCredits": 120
+  },
+  {
+    "slug": "information-technology-minor-minor",
+    "pid": "EJWKd5Ghl",
+    "title": "Information Technology (Minor)",
+    "credential": "Minor",
+    "degreeLevel": "Other",
+    "catalogYear": "2025-2026",
+    "requiredCourseCount": 2,
+    "totalCredits": 15
+  },
+  {
+    "slug": "information-technology-ms",
+    "pid": "4kK2V4LYg",
+    "title": "Information Technology (MS)",
+    "credential": "Master of Science",
+    "degreeLevel": "MS",
+    "catalogYear": "2025-2026",
+    "requiredCourseCount": 10,
+    "totalCredits": 36
+  },
+  {
+    "slug": "international-business-low-residency-phd-doctoral-research",
+    "pid": "rJVo6D8nL",
+    "title": "International Business (Low Residency PhD)",
+    "credential": "Doctoral (Research)",
+    "degreeLevel": "Other",
+    "catalogYear": "2025-2026",
+    "requiredCourseCount": 10,
+    "totalCredits": 46
+  },
+  {
+    "slug": "international-business-minor-minor",
+    "pid": "4y1GRdM2e",
+    "title": "International Business (Minor)",
+    "credential": "Minor",
+    "degreeLevel": "Other",
+    "catalogYear": "2025-2026",
+    "requiredCourseCount": 6,
+    "totalCredits": 15
+  },
+  {
+    "slug": "international-business-phd-doctoral-research",
+    "pid": "NJJwGp5Fx",
+    "title": "International Business (PhD)",
+    "credential": "Doctoral (Research)",
+    "degreeLevel": "Other",
+    "catalogYear": "2025-2026",
+    "requiredCourseCount": 10,
+    "totalCredits": 46
+  },
+  {
+    "slug": "international-sport-management-minor-minor",
+    "pid": "EyhB0dMnl",
+    "title": "International Sport Management (Minor)",
+    "credential": "Minor",
+    "degreeLevel": "Other",
+    "catalogYear": "2025-2026",
+    "requiredCourseCount": 9,
+    "totalCredits": 15
+  },
+  {
+    "slug": "introduction-to-computer-programming-certificate-certificate",
+    "pid": "Syj9YGSiP",
+    "title": "Introduction to Computer Programming (Certificate)",
+    "credential": "Certificate",
+    "degreeLevel": "Other",
+    "catalogYear": "2025-2026",
+    "requiredCourseCount": 4,
+    "totalCredits": 12
+  },
+  {
+    "slug": "joint-military-studies-minor-minor",
+    "pid": "SyFoGgG7I",
+    "title": "Joint Military Studies (Minor)",
+    "credential": "Minor",
+    "degreeLevel": "Other",
+    "catalogYear": "2025-2026",
+    "requiredCourseCount": 0,
+    "totalCredits": 18
+  },
+  {
+    "slug": "justice-studies-bs",
+    "pid": "4JzW4VLYe",
+    "title": "Justice Studies (BS)",
+    "credential": "Bachelor of Science",
+    "degreeLevel": "BS",
+    "catalogYear": "2025-2026",
+    "requiredCourseCount": 7,
+    "totalCredits": 120
+  },
+  {
+    "slug": "justice-studies-minor-minor",
+    "pid": "V1WwkFG2l",
+    "title": "Justice Studies (Minor)",
+    "credential": "Minor",
+    "degreeLevel": "Other",
+    "catalogYear": "2025-2026",
+    "requiredCourseCount": 2,
+    "totalCredits": 15
+  },
+  {
+    "slug": "law-and-legal-process-certificate-certificate",
+    "pid": "EkjXEVUKx",
+    "title": "Law and Legal Process (Certificate)",
+    "credential": "Certificate",
+    "degreeLevel": "Other",
+    "catalogYear": "2025-2026",
+    "requiredCourseCount": 2,
+    "totalCredits": 12
+  },
+  {
+    "slug": "law-politics-and-societies-ba",
+    "pid": "By49DG5uel",
+    "title": "Law, Politics, and Societies (BA)",
+    "credential": "Bachelor of Arts",
+    "degreeLevel": "BA",
+    "catalogYear": "2025-2026",
+    "requiredCourseCount": 12,
+    "totalCredits": 120
+  },
+  {
+    "slug": "leadership-in-public-service-graduate-certificate-certificate",
+    "pid": "SJdNjxGDf",
+    "title": "Leadership in Public Service (Graduate Certificate)",
+    "credential": "Certificate",
+    "degreeLevel": "Other",
+    "catalogYear": "2025-2026",
+    "requiredCourseCount": 4,
+    "totalCredits": 12
+  },
+  {
+    "slug": "leadership-of-nonprofit-organizations-graduate-certificate-certificate",
+    "pid": "V13QVELYe",
+    "title": "Leadership of Nonprofit Organizations (Graduate Certificate)",
+    "credential": "Certificate",
+    "degreeLevel": "Other",
+    "catalogYear": "2025-2026",
+    "requiredCourseCount": 6,
+    "totalCredits": 18
+  },
+  {
+    "slug": "liberal-arts-aa-associate-of-science",
+    "pid": "4J5_QE8Ye",
+    "title": "Liberal Arts (AA)",
+    "credential": "Associate of Arts",
+    "degreeLevel": "AA",
+    "catalogYear": "2025-2026",
+    "requiredCourseCount": 0,
+    "totalCredits": 60
+  },
+  {
+    "slug": "management-accounting-graduate-certificate-certificate",
+    "pid": "rJ436Pdjo",
+    "title": "Management Accounting (Graduate Certificate)",
+    "credential": "Certificate",
+    "degreeLevel": "Other",
+    "catalogYear": "2025-2026",
+    "requiredCourseCount": 10,
+    "totalCredits": 12
+  },
+  {
+    "slug": "management-ba",
+    "pid": "H1pYI4BZQ",
+    "title": "Management (BA)",
+    "credential": "Bachelor of Arts",
+    "degreeLevel": "BA",
+    "catalogYear": "2025-2026",
+    "requiredCourseCount": 51,
+    "totalCredits": 120
+  },
+  {
+    "slug": "management-ms",
+    "pid": "Vy-6E48Yx",
+    "title": "Management (MS)",
+    "credential": "Master of Science",
+    "degreeLevel": "MS",
+    "catalogYear": "2025-2026",
+    "requiredCourseCount": 9,
+    "totalCredits": 36
+  },
+  {
+    "slug": "marketing-as",
+    "pid": "4kQY7NUtg",
+    "title": "Marketing (AS)",
+    "credential": "Associate of Science",
+    "degreeLevel": "AS",
+    "catalogYear": "2025-2026",
+    "requiredCourseCount": 13,
+    "totalCredits": 60
+  },
+  {
+    "slug": "marketing-bs",
+    "pid": "EyQ-V48te",
+    "title": "Marketing (BS)",
+    "credential": "Bachelor of Science",
+    "degreeLevel": "BS",
+    "catalogYear": "2025-2026",
+    "requiredCourseCount": 9,
+    "totalCredits": 120
+  },
+  {
+    "slug": "marketing-minor-minor",
+    "pid": "EklVt5G2e",
+    "title": "Marketing (Minor)",
+    "credential": "Minor",
+    "degreeLevel": "Other",
+    "catalogYear": "2025-2026",
+    "requiredCourseCount": 6,
+    "totalCredits": 21
+  },
+  {
+    "slug": "marketing-ms",
+    "pid": "NkXTEN8tg",
+    "title": "Marketing (MS)",
+    "credential": "Master of Science",
+    "degreeLevel": "MS",
+    "catalogYear": "2025-2026",
+    "requiredCourseCount": 7,
+    "totalCredits": 30
+  },
+  {
+    "slug": "master-of-public-health-mph-master-of-science",
+    "pid": "BJBFG3ORz",
+    "title": "Master of Public Health (MPH)",
+    "credential": "Master of Science",
+    "degreeLevel": "MS",
+    "catalogYear": "2025-2026",
+    "requiredCourseCount": 14,
+    "totalCredits": 42
+  },
+  {
+    "slug": "mathematical-modeling-minor-minor",
+    "pid": "rkJvv81AZ",
+    "title": "Mathematical Modeling (Minor)",
+    "credential": "Minor",
+    "degreeLevel": "Other",
+    "catalogYear": "2025-2026",
+    "requiredCourseCount": 5,
+    "totalCredits": 15
+  },
+  {
+    "slug": "mathematics-ba",
+    "pid": "VJnjmVIKe",
+    "title": "Mathematics (BA)",
+    "credential": "Bachelor of Arts",
+    "degreeLevel": "BA",
+    "catalogYear": "2025-2026",
+    "requiredCourseCount": 10,
+    "totalCredits": 120
+  },
+  {
+    "slug": "mathematics-minor-minor",
+    "pid": "4yyFt9G2l",
+    "title": "Mathematics (Minor)",
+    "credential": "Minor",
+    "degreeLevel": "Other",
+    "catalogYear": "2025-2026",
+    "requiredCourseCount": 5,
+    "totalCredits": 18
+  },
+  {
+    "slug": "mechanical-engineering-bs",
+    "pid": "Bk8TkVtnx",
+    "title": "Mechanical Engineering (BS)",
+    "credential": "Bachelor of Science",
+    "degreeLevel": "BS",
+    "catalogYear": "2025-2026",
+    "requiredCourseCount": 31,
+    "totalCredits": 123
+  },
+  {
+    "slug": "medical-office-administration-certificate-certificate",
+    "pid": "HJi-S-QHee",
+    "title": "Medical Office Administration (Certificate)",
+    "credential": "Certificate",
+    "degreeLevel": "Other",
+    "catalogYear": "2025-2026",
+    "requiredCourseCount": 24,
+    "totalCredits": 24
+  },
+  {
+    "slug": "nonfiction-mfa-master-of-science",
+    "pid": "Nk3-zTqFg",
+    "title": "Nonfiction (MFA)",
+    "credential": "Master of Fine Arts",
+    "degreeLevel": "Other",
+    "catalogYear": "2025-2026",
+    "requiredCourseCount": 4,
+    "totalCredits": 60
+  },
+  {
+    "slug": "nursing-bsn-bachelor-of-science",
+    "pid": "Ny1MVN8tl",
+    "title": "Nursing (BSN)",
+    "credential": "Bachelor of Science",
+    "degreeLevel": "BS",
+    "catalogYear": "2025-2026",
+    "requiredCourseCount": 14,
+    "totalCredits": 120
+  },
+  {
+    "slug": "nursing-education-post-masters-graduate-certificate-certificate",
+    "pid": "r1IYXFsQA",
+    "title": "Nursing Education (Post Master's Graduate Certificate)",
+    "credential": "Certificate",
+    "degreeLevel": "Other",
+    "catalogYear": "2025-2026",
+    "requiredCourseCount": 4,
+    "totalCredits": 12
+  },
+  {
+    "slug": "nursing-msn-master-of-science",
+    "pid": "Ey66E4LFg",
+    "title": "Nursing (MSN)",
+    "credential": "Master of Science",
+    "degreeLevel": "MS",
+    "catalogYear": "2025-2026",
+    "requiredCourseCount": 6,
+    "totalCredits": 36
+  },
+  {
+    "slug": "nutrition-minor-minor",
+    "pid": "SJAaXRifN",
+    "title": "Nutrition (Minor)",
+    "credential": "Minor",
+    "degreeLevel": "Other",
+    "catalogYear": "2025-2026",
+    "requiredCourseCount": 5,
+    "totalCredits": 16
+  },
+  {
+    "slug": "online-teaching-of-writing-graduate-certificate-certificate",
+    "pid": "BydhETL5b",
+    "title": "Online Teaching of Writing (Graduate Certificate)",
+    "credential": "Certificate",
+    "degreeLevel": "Other",
+    "catalogYear": "2025-2026",
+    "requiredCourseCount": 6,
+    "totalCredits": 12
+  },
+  {
+    "slug": "operations-and-supply-chain-management-graduate-certificate-certificate",
+    "pid": "E1y44NUKe",
+    "title": "Operations and Supply Chain Management (Graduate Certificate)",
+    "credential": "Certificate",
+    "degreeLevel": "Other",
+    "catalogYear": "2025-2026",
+    "requiredCourseCount": 7,
+    "totalCredits": 18
+  },
+  {
+    "slug": "operations-and-supply-chain-management-minor-minor",
+    "pid": "4yDzoczne",
+    "title": "Operations and Supply Chain Management (Minor)",
+    "credential": "Minor",
+    "degreeLevel": "Other",
+    "catalogYear": "2025-2026",
+    "requiredCourseCount": 4,
+    "totalCredits": 18
+  },
+  {
+    "slug": "operations-management-bs",
+    "pid": "4kDb4EIYl",
+    "title": "Operations Management (BS)",
+    "credential": "Bachelor of Science",
+    "degreeLevel": "BS",
+    "catalogYear": "2025-2026",
+    "requiredCourseCount": 9,
+    "totalCredits": 120
+  },
+  {
+    "slug": "operations-management-minor-minor",
+    "pid": "41nqc5G3g",
+    "title": "Operations Management (Minor)",
+    "credential": "Minor",
+    "degreeLevel": "Other",
+    "catalogYear": "2025-2026",
+    "requiredCourseCount": 7,
+    "totalCredits": 18
+  },
+  {
+    "slug": "organizational-leadership-minor-minor",
+    "pid": "E1pw5cz3l",
+    "title": "Organizational Leadership (Minor)",
+    "credential": "Minor",
+    "degreeLevel": "Other",
+    "catalogYear": "2025-2026",
+    "requiredCourseCount": 6,
+    "totalCredits": 18
+  },
+  {
+    "slug": "organizational-leadership-ms",
+    "pid": "41S6NV8tx",
+    "title": "Organizational Leadership (MS)",
+    "credential": "Master of Science",
+    "degreeLevel": "MS",
+    "catalogYear": "2025-2026",
+    "requiredCourseCount": 7,
+    "totalCredits": 36
+  },
+  {
+    "slug": "philosophy-minor-minor",
+    "pid": "4ye3iqM3x",
+    "title": "Philosophy (Minor)",
+    "credential": "Minor",
+    "degreeLevel": "Other",
+    "catalogYear": "2025-2026",
+    "requiredCourseCount": 0,
+    "totalCredits": 15
+  },
+  {
+    "slug": "photography-and-video-minor-minor",
+    "pid": "SksJmL6rgx",
+    "title": "Photography and Video (Minor)",
+    "credential": "Minor",
+    "degreeLevel": "Other",
+    "catalogYear": "2025-2026",
+    "requiredCourseCount": 3,
+    "totalCredits": 15
+  },
+  {
+    "slug": "physics-bs",
+    "pid": "HJrh8gyI4",
+    "title": "Physics (BS)",
+    "credential": "Bachelor of Science",
+    "degreeLevel": "BS",
+    "catalogYear": "2025-2026",
+    "requiredCourseCount": 24,
+    "totalCredits": 121
+  },
+  {
+    "slug": "policing-and-law-enforcement-certificate-certificate",
+    "pid": "4yf44NItg",
+    "title": "Policing and Law Enforcement (Certificate)",
+    "credential": "Certificate",
+    "degreeLevel": "Other",
+    "catalogYear": "2025-2026",
+    "requiredCourseCount": 4,
+    "totalCredits": 12
+  },
+  {
+    "slug": "political-science-ba",
+    "pid": "VyynmVUte",
+    "title": "Political Science (BA)",
+    "credential": "Bachelor of Arts",
+    "degreeLevel": "BA",
+    "catalogYear": "2025-2026",
+    "requiredCourseCount": 15,
+    "totalCredits": 120
+  },
+  {
+    "slug": "political-science-minor-minor",
+    "pid": "VyR1T5Mnl",
+    "title": "Political Science (Minor)",
+    "credential": "Minor",
+    "degreeLevel": "Other",
+    "catalogYear": "2025-2026",
+    "requiredCourseCount": 4,
+    "totalCredits": 15
+  },
+  {
+    "slug": "professional-accountancy-ms",
+    "pid": "By9ujb_Z_",
+    "title": "Professional Accountancy (MS)",
+    "credential": "Master of Science",
+    "degreeLevel": "MS",
+    "catalogYear": "2025-2026",
+    "requiredCourseCount": 13,
+    "totalCredits": 36
+  },
+  {
+    "slug": "professional-sales-minor-minor",
+    "pid": "V1OaNFzng",
+    "title": "Professional Sales (Minor)",
+    "credential": "Minor",
+    "degreeLevel": "Other",
+    "catalogYear": "2025-2026",
+    "requiredCourseCount": 4,
+    "totalCredits": 15
+  },
+  {
+    "slug": "professional-study-graduate-certificate-certificate",
+    "pid": "NJNEVNLFg",
+    "title": "Professional Study (Graduate Certificate)",
+    "credential": "Certificate",
+    "degreeLevel": "Other",
+    "catalogYear": "2025-2026",
+    "requiredCourseCount": 0,
+    "totalCredits": 15
+  },
+  {
+    "slug": "professional-study-post-masters-certificate-certificate",
+    "pid": "rJyszQZOf",
+    "title": "Professional Study (Post Master's Certificate)",
+    "credential": "Certificate",
+    "degreeLevel": "Other",
+    "catalogYear": "2025-2026",
+    "requiredCourseCount": 0,
+    "totalCredits": 15
+  },
+  {
+    "slug": "professional-writing-graduate-certificate-certificate",
+    "pid": "SkdMAfR1Z",
+    "title": "Professional Writing (Graduate Certificate)",
+    "credential": "Certificate",
+    "degreeLevel": "Other",
+    "catalogYear": "2025-2026",
+    "requiredCourseCount": 5,
+    "totalCredits": 15
+  },
+  {
+    "slug": "professional-writing-minor-minor",
+    "pid": "VkPdT9z2x",
+    "title": "Professional Writing (Minor)",
+    "credential": "Minor",
+    "degreeLevel": "Other",
+    "catalogYear": "2025-2026",
+    "requiredCourseCount": 5,
+    "totalCredits": 15
+  },
+  {
+    "slug": "project-management-and-operations-ms",
+    "pid": "rkzElbNOm",
+    "title": "Project Management and Operations (MS)",
+    "credential": "Master of Science",
+    "degreeLevel": "MS",
+    "catalogYear": "2025-2026",
+    "requiredCourseCount": 11,
+    "totalCredits": 36
+  },
+  {
+    "slug": "project-management-graduate-certificate-certificate",
+    "pid": "VJGNV4LFx",
+    "title": "Project Management (Graduate Certificate)",
+    "credential": "Certificate",
+    "degreeLevel": "Other",
+    "catalogYear": "2025-2026",
+    "requiredCourseCount": 6,
+    "totalCredits": 15
+  },
+  {
+    "slug": "project-management-minor-minor",
+    "pid": "VkSlEKG2l",
+    "title": "Project Management (Minor)",
+    "credential": "Minor",
+    "degreeLevel": "Other",
+    "catalogYear": "2025-2026",
+    "requiredCourseCount": 3,
+    "totalCredits": 15
+  },
+  {
+    "slug": "psychology-ba",
+    "pid": "E1NnQVItl",
+    "title": "Psychology (BA)",
+    "credential": "Bachelor of Arts",
+    "degreeLevel": "BA",
+    "catalogYear": "2025-2026",
+    "requiredCourseCount": 10,
+    "totalCredits": 120
+  },
+  {
+    "slug": "psychology-minor-minor",
+    "pid": "Vy1Bp5Gnl",
+    "title": "Psychology (Minor)",
+    "credential": "Minor",
+    "degreeLevel": "Other",
+    "catalogYear": "2025-2026",
+    "requiredCourseCount": 3,
+    "totalCredits": 15
+  },
+  {
+    "slug": "psychology-ms",
+    "pid": "41u64N8Ke",
+    "title": "Psychology (MS)",
+    "credential": "Master of Science",
+    "degreeLevel": "MS",
+    "catalogYear": "2025-2026",
+    "requiredCourseCount": 11,
+    "totalCredits": 36
+  },
+  {
+    "slug": "public-health-bs",
+    "pid": "NJYZN4LYx",
+    "title": "Public Health (BS)",
+    "credential": "Bachelor of Science",
+    "degreeLevel": "BS",
+    "catalogYear": "2025-2026",
+    "requiredCourseCount": 15,
+    "totalCredits": 120
+  },
+  {
+    "slug": "public-health-minor-minor",
+    "pid": "NyjbmFf2e",
+    "title": "Public Health (Minor)",
+    "credential": "Minor",
+    "degreeLevel": "Other",
+    "catalogYear": "2025-2026",
+    "requiredCourseCount": 3,
+    "totalCredits": 15
+  },
+  {
+    "slug": "public-relations-minor-minor",
+    "pid": "EJcBVKG2e",
+    "title": "Public Relations (Minor)",
+    "credential": "Minor",
+    "degreeLevel": "Other",
+    "catalogYear": "2025-2026",
+    "requiredCourseCount": 5,
+    "totalCredits": 15
+  },
+  {
+    "slug": "research-minor-minor",
+    "pid": "rydFx6TB4",
+    "title": "Research (Minor)",
+    "credential": "Minor",
+    "degreeLevel": "Other",
+    "catalogYear": "2025-2026",
+    "requiredCourseCount": 0,
+    "totalCredits": 15
+  },
+  {
+    "slug": "robotics-minor-minor",
+    "pid": "SJnThimi7",
+    "title": "Robotics (Minor)",
+    "credential": "Minor",
+    "degreeLevel": "Other",
+    "catalogYear": "2025-2026",
+    "requiredCourseCount": 5,
+    "totalCredits": 15
+  },
+  {
+    "slug": "secondary-education-med-master-of-science",
+    "pid": "4k25V4Ute",
+    "title": "Secondary Education (MEd)",
+    "credential": "Master of Education",
+    "degreeLevel": "Other",
+    "catalogYear": "2025-2026",
+    "requiredCourseCount": 10,
+    "totalCredits": 36
+  },
+  {
+    "slug": "six-sigma-black-belt-graduate-certificate-certificate",
+    "pid": "VkclAC61Z",
+    "title": "Six Sigma Black Belt (Graduate Certificate)",
+    "credential": "Certificate",
+    "degreeLevel": "Other",
+    "catalogYear": "2025-2026",
+    "requiredCourseCount": 5,
+    "totalCredits": 12
+  },
+  {
+    "slug": "social-justice-minor-minor",
+    "pid": "SJdqavxZu",
+    "title": "Social Justice (Minor)",
+    "credential": "Minor",
+    "degreeLevel": "Other",
+    "catalogYear": "2025-2026",
+    "requiredCourseCount": 5,
+    "totalCredits": 15
+  },
+  {
+    "slug": "social-media-marketing-minor-minor",
+    "pid": "Vywhvtzne",
+    "title": "Social Media Marketing (Minor)",
+    "credential": "Minor",
+    "degreeLevel": "Other",
+    "catalogYear": "2025-2026",
+    "requiredCourseCount": 5,
+    "totalCredits": 15
+  },
+  {
+    "slug": "sociology-ba",
+    "pid": "V1CKXVUYx",
+    "title": "Sociology (BA)",
+    "credential": "Bachelor of Arts",
+    "degreeLevel": "BA",
+    "catalogYear": "2025-2026",
+    "requiredCourseCount": 12,
+    "totalCredits": 120
+  },
+  {
+    "slug": "sociology-minor-minor",
+    "pid": "NJ-b1jGne",
+    "title": "Sociology (Minor)",
+    "credential": "Minor",
+    "degreeLevel": "Other",
+    "catalogYear": "2025-2026",
+    "requiredCourseCount": 2,
+    "totalCredits": 15
+  },
+  {
+    "slug": "special-education-minor-minor",
+    "pid": "V1Dtel0Ub",
+    "title": "Special Education (Minor)",
+    "credential": "Minor",
+    "degreeLevel": "Other",
+    "catalogYear": "2025-2026",
+    "requiredCourseCount": 4,
+    "totalCredits": 15
+  },
+  {
+    "slug": "sport-management-bs",
+    "pid": "4JobENUKe",
+    "title": "Sport Management (BS)",
+    "credential": "Bachelor of Science",
+    "degreeLevel": "BS",
+    "catalogYear": "2025-2026",
+    "requiredCourseCount": 8,
+    "totalCredits": 120
+  },
+  {
+    "slug": "sport-management-minor-minor",
+    "pid": "V18YA9z3g",
+    "title": "Sport Management (Minor)",
+    "credential": "Minor",
+    "degreeLevel": "Other",
+    "catalogYear": "2025-2026",
+    "requiredCourseCount": 3,
+    "totalCredits": 15
+  },
+  {
+    "slug": "sport-management-ms",
+    "pid": "Eyqp4VIKg",
+    "title": "Sport Management (MS)",
+    "credential": "Master of Science",
+    "degreeLevel": "MS",
+    "catalogYear": "2025-2026",
+    "requiredCourseCount": 9,
+    "totalCredits": 36
+  },
+  {
+    "slug": "statistical-modeling-minor-minor",
+    "pid": "HyOUyYCTb",
+    "title": "Statistical Modeling (Minor)",
+    "credential": "Minor",
+    "degreeLevel": "Other",
+    "catalogYear": "2025-2026",
+    "requiredCourseCount": 5,
+    "totalCredits": 15
+  },
+  {
+    "slug": "stem-master-of-business-administration-smba-master-of-science",
+    "pid": "ry13E98Bj",
+    "title": "STEM Master of Business Administration (SMBA)",
+    "credential": "Master of Business Administration",
+    "degreeLevel": "MBA",
+    "catalogYear": "2025-2026",
+    "requiredCourseCount": 11,
+    "totalCredits": 30
+  },
+  {
+    "slug": "tax-compliance-and-planning-graduate-certificate-certificate",
+    "pid": "SkxD3wOij",
+    "title": "Tax Compliance and Planning (Graduate Certificate)",
+    "credential": "Certificate",
+    "degreeLevel": "Other",
+    "catalogYear": "2025-2026",
+    "requiredCourseCount": 9,
+    "totalCredits": 12
+  },
+  {
+    "slug": "teaching-english-as-a-foreign-language-ms",
+    "pid": "4ymLG69Fg",
+    "title": "Teaching English as a Foreign Language (MS)",
+    "credential": "Master of Science",
+    "degreeLevel": "MS",
+    "catalogYear": "2025-2026",
+    "requiredCourseCount": 12,
+    "totalCredits": 36
+  },
+  {
+    "slug": "teaching-english-as-a-second-language-graduate-certificate",
+    "pid": "B1qxX0_dxe",
+    "title": "Teaching English as a Second Language (Graduate Certificate)",
+    "credential": "Certificate",
+    "degreeLevel": "Other",
+    "catalogYear": "2025-2026",
+    "requiredCourseCount": 4,
+    "totalCredits": 12
+  },
+  {
+    "slug": "teaching-english-as-a-second-or-other-language-ma",
+    "pid": "ByEmson-U",
+    "title": "Teaching English as a Second or Other Language (MA)",
+    "credential": "Master of Arts",
+    "degreeLevel": "MA",
+    "catalogYear": "2025-2026",
+    "requiredCourseCount": 10,
+    "totalCredits": 36
+  },
+  {
+    "slug": "technical-management-ii-bs",
+    "pid": "VyabVNLtl",
+    "title": "Technical Management II (BS)",
+    "credential": "Bachelor of Science",
+    "degreeLevel": "BS",
+    "catalogYear": "2025-2026",
+    "requiredCourseCount": 8,
+    "totalCredits": 120
+  },
+  {
+    "slug": "terrorism-and-homeland-security-certificate-certificate",
+    "pid": "Nk3N4NUFx",
+    "title": "Terrorism and Homeland Security (Certificate)",
+    "credential": "Certificate",
+    "degreeLevel": "Other",
+    "catalogYear": "2025-2026",
+    "requiredCourseCount": 5,
+    "totalCredits": 12
+  },
+  {
+    "slug": "transdisciplinary-competencies-graduate-certificate-certificate",
+    "pid": "ByA2-nMTH",
+    "title": "Transdisciplinary Competencies (Graduate Certificate)",
+    "credential": "Certificate",
+    "degreeLevel": "Other",
+    "catalogYear": "2025-2026",
+    "requiredCourseCount": 4,
+    "totalCredits": 12
+  },
+  {
+    "slug": "visual-literacy-minor-minor",
+    "pid": "rJh0oVX1O",
+    "title": "Visual Literacy (Minor)",
+    "credential": "Minor",
+    "degreeLevel": "Other",
+    "catalogYear": "2025-2026",
+    "requiredCourseCount": 6,
+    "totalCredits": 18
+  },
+  {
+    "slug": "wellness-minor-minor",
+    "pid": "r1jG21A1O",
+    "title": "Wellness (Minor)",
+    "credential": "Minor",
+    "degreeLevel": "Other",
+    "catalogYear": "2025-2026",
+    "requiredCourseCount": 0,
+    "totalCredits": 15
+  },
+  {
+    "slug": "world-language-and-culture-minor-minor",
+    "pid": "E1hyFtz3g",
+    "title": "World Language and Culture (Minor)",
+    "credential": "Minor",
+    "degreeLevel": "Other",
+    "catalogYear": "2025-2026",
+    "requiredCourseCount": 2,
+    "totalCredits": 15
+  }
+]
