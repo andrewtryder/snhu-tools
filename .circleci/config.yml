@@ -56,27 +56,6 @@ jobs:
             set -e
             printf '%s\n' "$VALIDATION_EXIT" > /tmp/sync-results/validation-exit-code
             exit 0
-      - run:
-          name: Revalidate programs after promotion
-          command: |
-            set -euo pipefail
-            SYNC_EXIT=$(cat /tmp/sync-results/sync-exit-code)
-            VALIDATION_EXIT=$(cat /tmp/sync-results/validation-exit-code)
-            REVALIDATION_EXIT=0
-            if [ "$SYNC_EXIT" -eq 0 ] && [ "$VALIDATION_EXIT" -eq 0 ]; then
-              SYNC_ACTION=$(node -e 'const fs=require("fs"); console.log(JSON.parse(fs.readFileSync("/tmp/sync-results/sync-output.json", "utf8")).action);')
-              if [ "$SYNC_ACTION" = "promoted" ]; then
-                set +e
-                curl --fail --silent --show-error --request POST --header "Authorization: Bearer ${REVALIDATE_SECRET}" "${SITE_URL}/api/revalidate?scope=programs" | tee /tmp/sync-results/revalidation-response.json
-                REVALIDATION_EXIT=${PIPESTATUS[0]}
-                set -e
-              else
-                echo "Skipping revalidation: sync action was '${SYNC_ACTION}'."
-              fi
-            else
-              echo "Skipping revalidation: synchronization or validation failed."
-            fi
-            printf '%s\n' "$REVALIDATION_EXIT" > /tmp/sync-results/revalidation-exit-code
       - store_artifacts: { path: /tmp/sync-results, destination: program-sync-results }
       - run:
           name: Report program synchronization result
@@ -86,7 +65,6 @@ jobs:
             VALIDATION_EXIT=$(cat /tmp/sync-results/validation-exit-code)
             SYNC_ACTION=$(node -e 'const fs=require("fs"); console.log(JSON.parse(fs.readFileSync("/tmp/sync-results/sync-output.json", "utf8")).action);')
             if [ "$SYNC_EXIT" -ne 0 ] || [ "$VALIDATION_EXIT" -ne 0 ] || [ "$SYNC_ACTION" = "error" ]; then exit 1; fi
-            if [ "$SYNC_ACTION" = "promoted" ] && [ "$(cat /tmp/sync-results/revalidation-exit-code)" -ne 0 ]; then exit 1; fi
 
   sync-course-catalog:
     executor: node-executor
@@ -110,27 +88,6 @@ jobs:
             set -e
             printf '%s\n' "$VALIDATION_EXIT" > /tmp/sync-results/validation-exit-code
             exit 0
-      - run:
-          name: Revalidate courses after promotion
-          command: |
-            set -euo pipefail
-            SYNC_EXIT=$(cat /tmp/sync-results/sync-exit-code)
-            VALIDATION_EXIT=$(cat /tmp/sync-results/validation-exit-code)
-            REVALIDATION_EXIT=0
-            if [ "$SYNC_EXIT" -eq 0 ] && [ "$VALIDATION_EXIT" -eq 0 ]; then
-              SYNC_ACTION=$(node -e 'const fs=require("fs"); console.log(JSON.parse(fs.readFileSync("/tmp/sync-results/sync-output.json", "utf8")).action);')
-              if [ "$SYNC_ACTION" = "promoted" ]; then
-                set +e
-                curl --fail --silent --show-error --request POST --header "Authorization: Bearer ${REVALIDATE_SECRET}" "${SITE_URL}/api/revalidate?scope=courses" | tee /tmp/sync-results/revalidation-response.json
-                REVALIDATION_EXIT=${PIPESTATUS[0]}
-                set -e
-              else
-                echo "Skipping revalidation: sync action was '${SYNC_ACTION}'."
-              fi
-            else
-              echo "Skipping revalidation: synchronization or validation failed."
-            fi
-            printf '%s\n' "$REVALIDATION_EXIT" > /tmp/sync-results/revalidation-exit-code
       - store_artifacts: { path: /tmp/sync-results, destination: course-sync-results }
       - run:
           name: Report course synchronization result
@@ -140,7 +97,6 @@ jobs:
             VALIDATION_EXIT=$(cat /tmp/sync-results/validation-exit-code)
             SYNC_ACTION=$(node -e 'const fs=require("fs"); console.log(JSON.parse(fs.readFileSync("/tmp/sync-results/sync-output.json", "utf8")).action);')
             if [ "$SYNC_EXIT" -ne 0 ] || [ "$VALIDATION_EXIT" -ne 0 ] || [ "$SYNC_ACTION" = "error" ]; then exit 1; fi
-            if [ "$SYNC_ACTION" = "promoted" ] && [ "$(cat /tmp/sync-results/revalidation-exit-code)" -ne 0 ]; then exit 1; fi
 
   sync-transfer-data:
     executor: node-executor
@@ -164,27 +120,6 @@ jobs:
             set -e
             printf '%s\n' "$VALIDATION_EXIT" > /tmp/sync-results/validation-exit-code
             exit 0
-      - run:
-          name: Revalidate transfers after promotion
-          command: |
-            set -euo pipefail
-            SYNC_EXIT=$(cat /tmp/sync-results/sync-exit-code)
-            VALIDATION_EXIT=$(cat /tmp/sync-results/validation-exit-code)
-            REVALIDATION_EXIT=0
-            if [ "$SYNC_EXIT" -eq 0 ] && [ "$VALIDATION_EXIT" -eq 0 ]; then
-              SYNC_ACTION=$(node -e 'const fs=require("fs"); console.log(JSON.parse(fs.readFileSync("/tmp/sync-results/sync-output.json", "utf8")).action);')
-              if [ "$SYNC_ACTION" = "promoted" ]; then
-                set +e
-                curl --fail --silent --show-error --request POST --header "Authorization: Bearer ${REVALIDATE_SECRET}" "${SITE_URL}/api/revalidate?scope=transfers" | tee /tmp/sync-results/revalidation-response.json
-                REVALIDATION_EXIT=${PIPESTATUS[0]}
-                set -e
-              else
-                echo "Skipping revalidation: sync action was '${SYNC_ACTION}'."
-              fi
-            else
-              echo "Skipping revalidation: synchronization or validation failed."
-            fi
-            printf '%s\n' "$REVALIDATION_EXIT" > /tmp/sync-results/revalidation-exit-code
       - store_artifacts: { path: /tmp/sync-results, destination: transfer-sync-results }
       - run:
           name: Report transfer synchronization result
@@ -194,7 +129,6 @@ jobs:
             VALIDATION_EXIT=$(cat /tmp/sync-results/validation-exit-code)
             SYNC_ACTION=$(node -e 'const fs=require("fs"); console.log(JSON.parse(fs.readFileSync("/tmp/sync-results/sync-output.json", "utf8")).action);')
             if [ "$SYNC_EXIT" -ne 0 ] || [ "$VALIDATION_EXIT" -ne 0 ] || [ "$SYNC_ACTION" = "error" ]; then exit 1; fi
-            if [ "$SYNC_ACTION" = "promoted" ] && [ "$(cat /tmp/sync-results/revalidation-exit-code)" -ne 0 ]; then exit 1; fi
 
 workflows:
   program_sync_workflow:
