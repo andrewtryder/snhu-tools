@@ -8,7 +8,7 @@ import GraduatePage, { generateMetadata as graduateMetadata } from "@/app/progra
 import CertificatesPage, { generateMetadata as certificatesMetadata } from "@/app/programs/certificates/page";
 import { filterProgramsByLevel, getCategoryByPath, getPathForCategory } from "@/lib/programLevelCategories";
 import { resolveProgramsRedirect } from "@/lib/programsUrlCanonical";
-import { fixturePrograms } from "@/data/fixturePrograms";
+import { getPrograms } from "@/lib/serverData";
 
 vi.mock("next/navigation", () => ({
   useRouter: () => ({ push: vi.fn() }),
@@ -51,7 +51,8 @@ describe("program category landing pages", () => {
   });
 
   it("lists matching bachelor programs as crawlable links", async () => {
-    const expectedCount = filterProgramsByLevel(fixturePrograms, "bachelor").length;
+    const allPrograms = await getPrograms();
+    const expectedCount = filterProgramsByLevel(allPrograms, "bachelor").length;
     render(await BachelorsPage());
 
     expect(screen.getByRole("heading", { name: "Bachelor’s Degree Programs", level: 1 })).toBeInTheDocument();

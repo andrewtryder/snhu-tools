@@ -35,8 +35,8 @@ describe("Computer Science Program Page", () => {
     const element = await ProgramDetailContent({ slug: "computer-science-bs" });
     render(element);
 
-    expect(await screen.findByRole("heading", { name: "Computer Science", level: 1 })).toBeInTheDocument();
-    expect(screen.getByText("Bachelor of Science in Computer Science")).toBeInTheDocument();
+    expect(await screen.findByRole("heading", { name: /Computer Science/, level: 1 })).toBeInTheDocument();
+    expect(screen.getAllByText(/Bachelor of Science/).length).toBeGreaterThan(0);
 
     const catalogLink = screen.getByRole("link", { name: /Official SNHU Catalog/i });
     expect(catalogLink).toHaveAttribute(

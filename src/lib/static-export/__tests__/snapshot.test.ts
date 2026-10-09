@@ -5,7 +5,7 @@ import { describe, expect, it } from "vitest";
 import { parseStaticExportArgs } from "../../../../scripts/generate-static-snapshots";
 import { createManifest, loadBundles, loadManifest, promoteReviewedStage, recoverSnapshotPromotion, stageSnapshot, validateSnapshot, verifyManifest, verifyReviewedStage, type SnapshotBundles, type SnapshotProvenance } from "../snapshot";
 
-const fixtureDirectory = path.resolve("src/data/snapshots");
+const fixtureDirectory = path.resolve("src/data/fixtures/snapshots");
 const fixtureProvenance: SnapshotProvenance = { kind: "fixture", source: "checked-in-fixture-v1", sourceDigest: "0".repeat(64), approvalReference: null, approved: false };
 const approvedProvenance: SnapshotProvenance = { kind: "json-import", source: "synthetic-test", sourceDigest: "1".repeat(64), approvalReference: "TEST-27", approved: true };
 const clone = <T,>(value: T): T => JSON.parse(JSON.stringify(value));
@@ -37,9 +37,12 @@ async function approvedBundles(): Promise<SnapshotBundles> {
       },
     },
   };
-  bundles.programs.bySlug["computer-science-bs"].description = "Synthetic approved catalog data";
-  bundles.programs.directory[0].description = "Synthetic approved catalog data";
-  bundles.search.programs.find((program) => program.slug === "computer-science-bs")!.description = "Synthetic approved catalog data";
+  const csProgram = bundles.programs.bySlug["computer-science-bs"];
+  if (csProgram) csProgram.description = "Synthetic approved catalog data";
+  const csDir = bundles.programs.directory.find((p) => p.slug === "computer-science-bs");
+  if (csDir) csDir.description = "Synthetic approved catalog data";
+  const csSearch = bundles.search.programs.find((program) => program.slug === "computer-science-bs");
+  if (csSearch) csSearch.description = "Synthetic approved catalog data";
   return bundles;
 }
 

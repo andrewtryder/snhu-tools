@@ -67,6 +67,10 @@ describe("Production Readiness — Fixture Isolation Gate", () => {
   it("rejects fixture snapshots in production without an explicit non-production opt-in", async () => {
     vi.stubEnv("NODE_ENV", "production");
     delete process.env.ALLOW_FIXTURE_SNAPSHOTS;
+    vi.doMock("@/data/snapshots/manifest.json", async (importOriginal) => {
+      const orig = await importOriginal<Record<string, unknown>>();
+      return { default: { ...(orig.default as Record<string, unknown>), fixture: true } };
+    });
 
     const { getPrograms } = await import("@/lib/serverData");
     const { resetStaticSnapshotValidationForTests } = await import("@/lib/staticSnapshots");
@@ -79,15 +83,24 @@ describe("Production Readiness — Fixture Isolation Gate", () => {
     vi.stubEnv("NODE_ENV", "production");
     vi.stubEnv("VERCEL_ENV", "production");
     process.env.ALLOW_FIXTURE_SNAPSHOTS = "true";
+    vi.doMock("@/data/snapshots/manifest.json", async (importOriginal) => {
+      const orig = await importOriginal<Record<string, unknown>>();
+      return { default: { ...(orig.default as Record<string, unknown>), fixture: true } };
+    });
+
     const { getPrograms } = await import("@/lib/serverData");
     const { resetStaticSnapshotValidationForTests } = await import("@/lib/staticSnapshots");
     resetStaticSnapshotValidationForTests();
     await expect(getPrograms()).rejects.toThrow(/forbidden in Vercel production/);
   });
 
-  it("allows fixture access in non-production when ENABLE_PROGRAM_FIXTURES is true", async () => {
+  it("allows fixture access in non-production when ALLOW_FIXTURE_SNAPSHOTS is true", async () => {
     vi.stubEnv("NODE_ENV", "development");
     process.env.ALLOW_FIXTURE_SNAPSHOTS = "true";
+    vi.doMock("@/data/snapshots/manifest.json", async (importOriginal) => {
+      const orig = await importOriginal<Record<string, unknown>>();
+      return { default: { ...(orig.default as Record<string, unknown>), fixture: true } };
+    });
 
     const { getProgramBySlug } = await import("@/lib/serverData");
     const program = await getProgramBySlug("computer-science-bs");
@@ -99,11 +112,31 @@ describe("Production Readiness — Fixture Isolation Gate", () => {
     vi.stubEnv("NODE_ENV", "production");
     vi.stubEnv("VERCEL_ENV", "preview");
     delete process.env.ALLOW_FIXTURE_SNAPSHOTS;
+    vi.doMock("@/data/snapshots/manifest.json", async (importOriginal) => {
+      const orig = await importOriginal<Record<string, unknown>>();
+      return { default: { ...(orig.default as Record<string, unknown>), fixture: true } };
+    });
 
     const { getPrograms } = await import("@/lib/serverData");
     const { resetStaticSnapshotValidationForTests } = await import("@/lib/staticSnapshots");
     resetStaticSnapshotValidationForTests();
 
     await expect(getPrograms()).rejects.toThrow(/Fixture static snapshots are forbidden/);
+  });
+
+  it("permits non-fixture snapshots in production without requiring ALLOW_FIXTURE_SNAPSHOTS", async () => {
+    vi.stubEnv("NODE_ENV", "production");
+    delete process.env.ALLOW_FIXTURE_SNAPSHOTS;
+    vi.doMock("@/data/snapshots/manifest.json", async (importOriginal) => {
+      const orig = await importOriginal<Record<string, unknown>>();
+      return { default: { ...(orig.default as Record<string, unknown>), fixture: false } };
+    });
+
+    const { getPrograms } = await import("@/lib/serverData");
+    const { resetStaticSnapshotValidationForTests } = await import("@/lib/staticSnapshots");
+    resetStaticSnapshotValidationForTests();
+
+    const programs = await getPrograms();
+    expect(programs.length).toBeGreaterThan(0);
   });
 });

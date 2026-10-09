@@ -1,0 +1,256 @@
+{
+  "meta": {
+    "domain": "search",
+    "counts": {
+      "entries": 26
+    }
+  },
+  "programs": [
+    {
+      "slug": "computer-science-bs",
+      "title": "Computer Science",
+      "degreeLevel": "BS",
+      "credential": "Bachelor of Science in Computer Science",
+      "catalogYear": "2025-2026",
+      "totalCredits": 120,
+      "requiredCourseCount": 26,
+      "description": "The Bachelor of Science in Computer Science provides students with deep fundamentals in software development, algorithm design, data structures, computer architecture, and software security. (Prototype fixture data for demonstration).",
+      "sourceCatalogUrl": "https://www.snhu.edu/admission/academic-catalogs#/programs/V1S14E8tg/none"
+    },
+    {
+      "slug": "cybersecurity-bs",
+      "title": "Cybersecurity",
+      "degreeLevel": "BS",
+      "credential": "Bachelor of Science in Cybersecurity",
+      "catalogYear": "2025-2026",
+      "totalCredits": 120,
+      "requiredCourseCount": 24,
+      "description": "Prepares students to protect networks, systems, and digital assets against cyber threats through threat hunting, digital forensics, incident response, and security architecture.",
+      "sourceCatalogUrl": null
+    },
+    {
+      "slug": "information-technology-bs",
+      "title": "Information Technology",
+      "degreeLevel": "BS",
+      "credential": "Bachelor of Science in Information Technology",
+      "catalogYear": "2025-2026",
+      "totalCredits": 120,
+      "requiredCourseCount": 22,
+      "description": "Focuses on enterprise network infrastructure, cloud systems administration, database management, IT service management, and technology deployment.",
+      "sourceCatalogUrl": null
+    },
+    {
+      "slug": "business-administration-bs",
+      "title": "Business Administration",
+      "degreeLevel": "BS",
+      "credential": "Bachelor of Science in Business Administration",
+      "catalogYear": "2025-2026",
+      "totalCredits": 120,
+      "requiredCourseCount": 25,
+      "description": "Develops strategic managerial leadership, financial accounting, marketing dynamics, business law, and operational decision-making skills.",
+      "sourceCatalogUrl": null
+    },
+    {
+      "slug": "psychology-ba",
+      "title": "Psychology",
+      "degreeLevel": "BA",
+      "credential": "Bachelor of Arts in Psychology",
+      "catalogYear": "2025-2026",
+      "totalCredits": 120,
+      "requiredCourseCount": 20,
+      "description": "Explores human behavior, cognitive processes, social psychology, statistical research methods, and psychological assessment.",
+      "sourceCatalogUrl": null
+    },
+    {
+      "slug": "nursing-rn-to-bsn",
+      "title": "Nursing (RN to BSN)",
+      "degreeLevel": "RN to BSN",
+      "credential": "Bachelor of Science in Nursing (RN to BSN)",
+      "catalogYear": "2025-2026",
+      "totalCredits": 120,
+      "requiredCourseCount": 10,
+      "description": "CCNE-accredited completion pathway for registered nurses seeking advanced competencies in evidence-based practice, healthcare quality, and nursing leadership.",
+      "sourceCatalogUrl": null
+    }
+  ],
+  "courses": [
+    {
+      "catalog_course_id": "CS210",
+      "title": "Programming Languages"
+    },
+    {
+      "catalog_course_id": "IT140",
+      "title": "Introduction to Scripting"
+    },
+    {
+      "catalog_course_id": "IT145",
+      "title": "Intro to Software Development"
+    },
+    {
+      "catalog_course_id": "PSY321",
+      "title": "Research Methods in Psychology II"
+    }
+  ],
+  "transfers": [
+    {
+      "subjectPrefix": "PSY",
+      "courseNumber": "PSY321",
+      "title": "Research Methods in Psychology II",
+      "pid": "fixture-transfer-psy321",
+      "eligibilityTimeframe": null,
+      "groupFilter2Name": "Fixture College",
+      "academicLevel": "Undergraduate",
+      "coursePID": "fixture-psy321"
+    },
+    {
+      "subjectPrefix": "CS",
+      "courseNumber": "CS210",
+      "title": "Programming Languages",
+      "pid": "fixture-transfer-cs210-0",
+      "eligibilityTimeframe": null,
+      "groupFilter2Name": "Fixture Provider 0",
+      "academicLevel": "Undergraduate",
+      "coursePID": "fixture-cs210"
+    },
+    {
+      "subjectPrefix": "CS",
+      "courseNumber": "CS210",
+      "title": "Programming Languages",
+      "pid": "fixture-transfer-cs210-1",
+      "eligibilityTimeframe": null,
+      "groupFilter2Name": "Fixture Provider 1",
+      "academicLevel": "Undergraduate",
+      "coursePID": "fixture-cs210"
+    },
+    {
+      "subjectPrefix": "ACC",
+      "courseNumber": "ACC201",
+      "title": "Financial Accounting",
+      "pid": "fixture-transfer-acc201-0",
+      "eligibilityTimeframe": null,
+      "groupFilter2Name": "Fixture Provider 0",
+      "academicLevel": "Undergraduate",
+      "coursePID": "fixture-acc201"
+    },
+    {
+      "subjectPrefix": "ACC",
+      "courseNumber": "ACC201",
+      "title": "Financial Accounting",
+      "pid": "fixture-transfer-acc201-1",
+      "eligibilityTimeframe": null,
+      "groupFilter2Name": "Fixture Provider 1",
+      "academicLevel": "Undergraduate",
+      "coursePID": "fixture-acc201"
+    },
+    {
+      "subjectPrefix": "ACC",
+      "courseNumber": "ACC201",
+      "title": "Financial Accounting",
+      "pid": "fixture-transfer-acc201-2",
+      "eligibilityTimeframe": null,
+      "groupFilter2Name": "Fixture Provider 2",
+      "academicLevel": "Undergraduate",
+      "coursePID": "fixture-acc201"
+    },
+    {
+      "subjectPrefix": "ACC",
+      "courseNumber": "ACC201",
+      "title": "Financial Accounting",
+      "pid": "fixture-transfer-acc201-3",
+      "eligibilityTimeframe": null,
+      "groupFilter2Name": "Fixture Provider 3",
+      "academicLevel": "Undergraduate",
+      "coursePID": "fixture-acc201"
+    },
+    {
+      "subjectPrefix": "ACC",
+      "courseNumber": "ACC201",
+      "title": "Financial Accounting",
+      "pid": "fixture-transfer-acc201-4",
+      "eligibilityTimeframe": null,
+      "groupFilter2Name": "Fixture Provider 4",
+      "academicLevel": "Undergraduate",
+      "coursePID": "fixture-acc201"
+    },
+    {
+      "subjectPrefix": "ACC",
+      "courseNumber": "ACC201",
+      "title": "Financial Accounting",
+      "pid": "fixture-transfer-acc201-5",
+      "eligibilityTimeframe": null,
+      "groupFilter2Name": "Fixture Provider 5",
+      "academicLevel": "Undergraduate",
+      "coursePID": "fixture-acc201"
+    },
+    {
+      "subjectPrefix": "ACC",
+      "courseNumber": "ACC201",
+      "title": "Financial Accounting",
+      "pid": "fixture-transfer-acc201-6",
+      "eligibilityTimeframe": null,
+      "groupFilter2Name": "Fixture Provider 6",
+      "academicLevel": "Undergraduate",
+      "coursePID": "fixture-acc201"
+    },
+    {
+      "subjectPrefix": "ACC",
+      "courseNumber": "ACC201",
+      "title": "Financial Accounting",
+      "pid": "fixture-transfer-acc201-7",
+      "eligibilityTimeframe": null,
+      "groupFilter2Name": "Fixture Provider 7",
+      "academicLevel": "Undergraduate",
+      "coursePID": "fixture-acc201"
+    },
+    {
+      "subjectPrefix": "ACC",
+      "courseNumber": "ACC201",
+      "title": "Financial Accounting",
+      "pid": "fixture-transfer-acc201-8",
+      "eligibilityTimeframe": null,
+      "groupFilter2Name": "Fixture Provider 8",
+      "academicLevel": "Undergraduate",
+      "coursePID": "fixture-acc201"
+    },
+    {
+      "subjectPrefix": "ACC",
+      "courseNumber": "ACC201",
+      "title": "Financial Accounting",
+      "pid": "fixture-transfer-acc201-9",
+      "eligibilityTimeframe": null,
+      "groupFilter2Name": "Fixture Provider 9",
+      "academicLevel": "Undergraduate",
+      "coursePID": "fixture-acc201"
+    },
+    {
+      "subjectPrefix": "ACC",
+      "courseNumber": "ACC201",
+      "title": "Financial Accounting",
+      "pid": "fixture-transfer-acc201-10",
+      "eligibilityTimeframe": null,
+      "groupFilter2Name": "Fixture Provider 10",
+      "academicLevel": "Undergraduate",
+      "coursePID": "fixture-acc201"
+    },
+    {
+      "subjectPrefix": "ACC",
+      "courseNumber": "ACC201",
+      "title": "Financial Accounting",
+      "pid": "fixture-transfer-acc201-11",
+      "eligibilityTimeframe": null,
+      "groupFilter2Name": "Fixture Provider 11",
+      "academicLevel": "Undergraduate",
+      "coursePID": "fixture-acc201"
+    },
+    {
+      "subjectPrefix": "ACC",
+      "courseNumber": "ACC201",
+      "title": "Financial Accounting",
+      "pid": "fixture-transfer-acc201-12",
+      "eligibilityTimeframe": null,
+      "groupFilter2Name": "Fixture Provider 12",
+      "academicLevel": "Undergraduate",
+      "coursePID": "fixture-acc201"
+    }
+  ]
+}

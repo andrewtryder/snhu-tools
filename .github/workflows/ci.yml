@@ -38,9 +38,9 @@ jobs:
           ALLOW_FIXTURE_SNAPSHOTS: "true"
         run: npm run check
 
-      - name: Verify a production deployment rejects fixture data
-        run: |
-          if VERCEL_ENV=production npm run build; then
-            echo "Fixture snapshot unexpectedly passed a production build" >&2
-            exit 1
-          fi
+      - name: Verify fixture snapshots are rejected for production
+        run: node scripts/verify-ci-build-protections.mjs --mode=reject-fixture
+
+      - name: Verify non-fixture snapshots build for production
+        run: node scripts/verify-ci-build-protections.mjs --mode=accept-non-fixture
+

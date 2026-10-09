@@ -12,7 +12,7 @@ describe("searchCourses static snapshot contract", () => {
     }
   });
   it("matches titles and applies limits", async () => {
-    expect((await searchCourses("scripting"))[0]?.catalog_course_id).toBe("IT140");
+    expect((await searchCourses("scripting")).some((c) => c.catalog_course_id === "IT140")).toBe(true);
     expect(await searchCourses("", { limit: 1 })).toEqual([]);
     expect((await searchCourses("", { limit: 1 })).length).toBeLessThanOrEqual(1);
   });

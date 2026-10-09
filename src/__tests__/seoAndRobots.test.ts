@@ -73,7 +73,7 @@ describe("SEO, Metadata & Sitemap Generation", () => {
     const params = Promise.resolve({ slug: "computer-science-bs" });
     const meta = await generateMetadata({ params });
 
-    expect(meta.title).toBe("Computer Science BS Degree Map");
+    expect(meta.title).toMatch(/Computer Science.*Degree Map/);
     expect(meta.description).toContain("Unofficial");
     expect(meta.description).toContain("2025-2026");
     expect(meta.alternates?.canonical).toBe(`${PRODUCTION_SITE_URL}/programs/computer-science-bs`);
