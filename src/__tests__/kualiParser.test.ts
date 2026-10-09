@@ -11,6 +11,7 @@ import {
 
 import sampleList from "@/data/fixtures/program-list.sample.json";
 import sampleCsProgram from "@/data/fixtures/computer-science-program.sample.json";
+import canonicalProgramInventory from "@/data/fixtures/canonical-program-inventory.json";
 
 describe("kualiParser utility", () => {
   it("generates deterministic kebab-case program slugs", () => {
@@ -74,20 +75,34 @@ describe("kualiParser utility", () => {
     expect(createProgramSlug("Business Administration (MBA)", "Master of Business Administration")).toBe("business-administration-mba-master-of-science");
   });
 
-  it("preserves 100% of the 227-program live slug inventory under corrected credentials", async () => {
-    const fs = await import("fs");
-    const path = await import("path");
-    const stagePath = path.resolve(process.cwd(), "src/data/.snapshot-stage-i8521K/programs.json");
-    if (!fs.existsSync(stagePath)) return;
+  it("preserves 100% of the 227-program live slug inventory under corrected credentials", () => {
+    expect(canonicalProgramInventory).toHaveLength(227);
 
-    const data = JSON.parse(fs.readFileSync(stagePath, "utf8"));
-    expect(data.directory).toHaveLength(227);
+    const seenPids = new Set<string>();
+    const seenSlugs = new Set<string>();
+    let credentialCorrectionsCount = 0;
 
-    for (const prog of data.directory) {
-      const correctedCred = normalizeCredential(prog.title, prog.credential);
-      const generatedSlug = createProgramSlug(prog.title, correctedCred);
+    for (const prog of canonicalProgramInventory) {
+      expect(prog.sourcePid).toBeTruthy();
+      expect(prog.slug).toBeTruthy();
+      expect(seenPids.has(prog.sourcePid)).toBe(false);
+      expect(seenSlugs.has(prog.slug)).toBe(false);
+      seenPids.add(prog.sourcePid);
+      seenSlugs.add(prog.slug);
+
+      const normalizedCred = normalizeCredential(prog.title, prog.historicalCredential);
+      expect(normalizedCred).toBe(prog.expectedCredential);
+      if (normalizedCred !== prog.historicalCredential) {
+        credentialCorrectionsCount++;
+      }
+
+      const generatedSlug = createProgramSlug(prog.title, normalizedCred);
       expect(generatedSlug).toBe(prog.slug);
     }
+
+    expect(credentialCorrectionsCount).toBe(45);
+    expect(seenPids.size).toBe(227);
+    expect(seenSlugs.size).toBe(227);
   });
 
   it("calculates stable SHA-256 hash of raw payloads", () => {
