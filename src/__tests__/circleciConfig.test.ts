@@ -12,25 +12,24 @@ describe("SNHU Tools CircleCI writer configuration", () => {
     }
   });
 
-  it("keeps each domain's command, validator, context, and scoped revalidation explicit", () => {
+  it("keeps each domain's command, validator, and context explicit", () => {
     expect(config).toContain("npm run program:sync");
     expect(config).toContain("npm run catalog:sync");
     expect(config).toContain("npm run transfer:sync");
     expect(config).toContain("scripts/validate-sync-result.mjs");
     expect(config).toContain("scripts/validators/validate-catalog-sync-result.mjs");
     expect(config).toContain("scripts/validators/validate-transfer-sync-result.mjs");
-    expect(config).toContain("scope=programs");
-    expect(config).toContain("scope=courses");
-    expect(config).toContain("scope=transfers");
     expect(config).toContain("snhu-tools-program-sync");
     expect(config).toContain("snhu-tools-course-sync");
     expect(config).toContain("snhu-tools-transfer-sync");
   });
 
-  it("does not add legacy contexts, branch filters, or schedules", () => {
+  it("does not add legacy contexts, branch filters, schedules, or obsolete post-sync revalidation", () => {
     expect(config).not.toMatch(/snhu-(?:deg[\w-]*|courses|transfers)-sync/);
     expect(config).not.toMatch(/scope=all/);
     expect(config).not.toMatch(/filters:\s*[\s\S]*branches|\bmaster\b|\bmain\b/);
     expect(config).not.toMatch(/triggers:|schedule:|cron:/);
+    expect(config).not.toMatch(/scope=(?:programs|courses|transfers)/);
+    expect(config).not.toMatch(/\/api\/revalidate/);
   });
 });

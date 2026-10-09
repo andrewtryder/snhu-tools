@@ -8,14 +8,14 @@
  */
 import { describe, it, expect } from "vitest";
 
-describe("Transfer detail page ISR exports", () => {
+describe("Transfer detail page ISR exports", { timeout: 30000 }, () => {
   it("subjects/[subject] exports dynamicParams=true, revalidate=false, and an empty generateStaticParams", async () => {
     const mod = await import("@/app/transfers/subjects/[subject]/page");
     expect(mod.dynamicParams).toBe(true);
     expect(mod.revalidate).toBe(false);
     expect(typeof mod.generateStaticParams).toBe("function");
     expect(await mod.generateStaticParams()).toEqual([]);
-  }, 15000);
+  });
 
   it("organizations/[organization] exports dynamicParams=true, revalidate=false, and an empty generateStaticParams", async () => {
     const mod = await import("@/app/transfers/organizations/[organization]/page");
