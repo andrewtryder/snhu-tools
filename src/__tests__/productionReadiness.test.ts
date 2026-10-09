@@ -96,6 +96,7 @@ describe("Production Readiness — Fixture Isolation Gate", { timeout: 15000 }, 
 
   it("allows fixture access in non-production when ALLOW_FIXTURE_SNAPSHOTS is true", async () => {
     vi.stubEnv("NODE_ENV", "development");
+    vi.stubEnv("VERCEL_ENV", "development");
     process.env.ALLOW_FIXTURE_SNAPSHOTS = "true";
     vi.doMock("@/data/snapshots/manifest.json", async (importOriginal) => {
       const orig = await importOriginal<Record<string, unknown>>();
