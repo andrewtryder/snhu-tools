@@ -113,4 +113,4 @@ Contributions, bug reports, and focused pull requests are welcome. Because this 
 
 ## License
 
-No open-source license has currently been specified for this project. Copyright remains with the repository owner.
+This project is licensed under the [MIT License](LICENSE).
