@@ -1,18 +1,18 @@
 {
   "schemaVersion": 1,
-  "createdAt": "2026-10-09T02:40:45.320Z",
+  "createdAt": "2026-10-12T16:30:26.201Z",
   "fixture": false,
   "provenance": {
     "kind": "postgres",
     "source": "postgres-readonly-export",
-    "sourceDigest": "5f9ee090cd5c9e108d486cfaaba24a2cb6889810f8a6186c94fcb69e97d8ec58",
-    "approvalReference": "PR-27",
+    "sourceDigest": "9fd3085356bc540e9c7c985c1cc7328126db96cc059b5a1cdc0c5a5d3da9cdbe",
+    "approvalReference": "WEEKLY-2026-10-12",
     "approved": true
   },
   "domains": {
     "programs": {
       "file": "programs.json",
-      "sha256": "0dd031d8c637b05d5dfabde0d2326ec07f72ae86e500574b01c690fa07e60831",
+      "sha256": "ea76e356b17de3196c94f57fbc7fb4ceeb11dfa29dfe07c34ee4e74fffd46c23",
       "required": true,
       "counts": {
         "programs": 227
