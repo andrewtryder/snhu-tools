@@ -36,7 +36,7 @@ describe("Observability & Secret Redaction Engine", () => {
   });
 
   it("enables browser-extension error filtering in Honeybadger browser config", async () => {
-    const { config } = await import("../../honeybadger.browser.config");
+    const { config } = await import("../instrumentation-client");
     expect(config.ignoreBrowserExtensionErrors).toBe(true);
   });
 });

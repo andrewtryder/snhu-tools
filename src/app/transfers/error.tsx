@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
-import { Honeybadger } from "@honeybadger-io/react";
+import Honeybadger from "@honeybadger-io/js";
 import { AppHeader } from "@/components/AppHeader";
 import { AppFooter } from "@/components/AppFooter";
 

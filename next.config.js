@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-require-imports */
-const { setupHoneybadger } = require('@honeybadger-io/nextjs')
+const { withHoneybadgerConfig } = require('@honeybadger-io/nextjs')
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
@@ -25,4 +25,4 @@ const nextConfig = {
   },
 }
 
-module.exports = setupHoneybadger(nextConfig)
+module.exports = withHoneybadgerConfig(nextConfig)
