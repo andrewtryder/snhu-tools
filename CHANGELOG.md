@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.5.0](https://github.com/andrewtryder/snhu-tools/compare/v0.4.0...v0.5.0) (2026-10-18)
+
+
+### Features
+
+* **deps:** upgrade dependencies and migrate Honeybadger to v6 ([b53c1e6](https://github.com/andrewtryder/snhu-tools/commit/b53c1e651104eced6f500298524823a0ca6d17c6))
+
 ## [0.4.0](https://github.com/andrewtryder/snhu-tools/compare/v0.3.0...v0.4.0) (2026-10-09)
 
 
