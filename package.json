@@ -1,6 +1,6 @@
 {
   "name": "snhu-tools",
-  "version": "0.4.0",
+  "version": "0.5.0",
   "description": "Unofficial degree-planning, course-prerequisite, and transfer-equivalency tools for SNHU.",
   "license": "MIT",
   "private": true,
