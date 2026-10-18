@@ -3,11 +3,11 @@
   "provenance": {
     "kind": "postgres",
     "source": "postgres-readonly-export",
-    "sourceDigest": "5f9ee090cd5c9e108d486cfaaba24a2cb6889810f8a6186c94fcb69e97d8ec58",
-    "approvalReference": "PR-27",
+    "sourceDigest": "9fd3085356bc540e9c7c985c1cc7328126db96cc059b5a1cdc0c5a5d3da9cdbe",
+    "approvalReference": "WEEKLY-2026-10-12",
     "approved": true
   },
-  "baseline": "fixture",
+  "baseline": "approved",
   "counts": {
     "programs": 227,
     "courses": 2394,
@@ -84,7 +84,5 @@
       }
     }
   },
-  "warnings": [
-    "No approved production baseline was available for count comparison"
-  ]
+  "warnings": []
 }
