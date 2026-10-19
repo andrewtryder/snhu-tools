@@ -2,7 +2,7 @@
   "meta": {
     "domain": "search",
     "counts": {
-      "entries": 3857
+      "entries": 3870
     }
   },
   "programs": [
@@ -12266,6 +12266,16 @@
     {
       "subjectPrefix": "ACC",
       "courseNumber": "ACC202",
+      "title": "Managerial Accounting",
+      "pid": "Sysj5CgA8",
+      "eligibilityTimeframe": "Ongoing",
+      "groupFilter2Name": "StraighterLine",
+      "academicLevel": "Undergraduate",
+      "coursePID": "NJ9u82Htl"
+    },
+    {
+      "subjectPrefix": "ACC",
+      "courseNumber": "ACC202",
       "title": "Accounting 301: Applied Managerial Accounting",
       "pid": "r1ILOhap_",
       "eligibilityTimeframe": null,
@@ -13584,6 +13594,16 @@
       "coursePID": "Hkko5hlxG"
     },
     {
+      "subjectPrefix": "CHM",
+      "courseNumber": "CHM3ELE",
+      "title": "CHEM450: Biochemistry",
+      "pid": "rJtULR8sh",
+      "eligibilityTimeframe": "Ongoing",
+      "groupFilter2Name": "StraighterLine",
+      "academicLevel": "Undergraduate",
+      "coursePID": null
+    },
+    {
       "subjectPrefix": "CJ",
       "courseNumber": "CJ112",
       "title": "Criminal Justice",
@@ -14602,6 +14622,16 @@
       "groupFilter2Name": "CompTIA",
       "academicLevel": "Undergraduate",
       "coursePID": "HJjnLepBf"
+    },
+    {
+      "subjectPrefix": "CYB",
+      "courseNumber": "CYB220",
+      "title": "Certified Security – Specialty",
+      "pid": "r1n5oG472",
+      "eligibilityTimeframe": "Active Certification",
+      "groupFilter2Name": "Amazon Web Services (AWS)",
+      "academicLevel": "Undergraduate",
+      "coursePID": "ryUbOgaHz"
     },
     {
       "subjectPrefix": "CYB",
@@ -16766,10 +16796,30 @@
     {
       "subjectPrefix": "GEO",
       "courseNumber": "GEO297",
+      "title": "Geography AS Level",
+      "pid": "r1zxVfi00",
+      "eligibilityTimeframe": "Ongoing",
+      "groupFilter2Name": "Cambridge Assessment International Education (AS Level & A Level)",
+      "academicLevel": "Undergraduate",
+      "coursePID": null
+    },
+    {
+      "subjectPrefix": "GEO",
+      "courseNumber": "GEO297",
       "title": "Geography 101: Human & Cultural Geography",
       "pid": "HkJUPZZCU",
       "eligibilityTimeframe": null,
       "groupFilter2Name": "Study.com",
+      "academicLevel": "Undergraduate",
+      "coursePID": null
+    },
+    {
+      "subjectPrefix": "GEO",
+      "courseNumber": "GEO2ELE",
+      "title": "Geography AS Level",
+      "pid": "r1zxVfi00",
+      "eligibilityTimeframe": "Ongoing",
+      "groupFilter2Name": "Cambridge Assessment International Education (AS Level & A Level)",
       "academicLevel": "Undergraduate",
       "coursePID": null
     },
@@ -16904,6 +16954,16 @@
       "coursePID": "rJ2aXnxg8"
     },
     {
+      "subjectPrefix": "GRA",
+      "courseNumber": "GRA280",
+      "title": "Human-Centered Solutions Practitioner",
+      "pid": "HkdWbVYUZl",
+      "eligibilityTimeframe": "5 years",
+      "groupFilter2Name": "SNHU Professional Skills",
+      "academicLevel": "Undergraduate",
+      "coursePID": "rJ2aXnxg8"
+    },
+    {
       "subjectPrefix": "HCM",
       "courseNumber": "HCM1ELE",
       "title": "Certified Clinical Medical Assistant",
@@ -16930,6 +16990,16 @@
       "pid": "HkjmlGlEp",
       "eligibilityTimeframe": null,
       "groupFilter2Name": "Healthcare Financial Management Association (HFMA)",
+      "academicLevel": "Undergraduate",
+      "coursePID": null
+    },
+    {
+      "subjectPrefix": "HCM",
+      "courseNumber": "HCM1ELE",
+      "title": "Healthcare Career Exploration",
+      "pid": "rJq90DWifl",
+      "eligibilityTimeframe": null,
+      "groupFilter2Name": "Sophia Learning",
       "academicLevel": "Undergraduate",
       "coursePID": null
     },
@@ -17200,6 +17270,16 @@
       "pid": "r1sgI0xCI",
       "eligibilityTimeframe": null,
       "groupFilter2Name": "Sophia Learning",
+      "academicLevel": "Undergraduate",
+      "coursePID": "VybWpJIKx"
+    },
+    {
+      "subjectPrefix": "HIS",
+      "courseNumber": "HIS113",
+      "title": "United States History I",
+      "pid": "HJOJh0g0U",
+      "eligibilityTimeframe": null,
+      "groupFilter2Name": "StraighterLine",
       "academicLevel": "Undergraduate",
       "coursePID": "VybWpJIKx"
     },
@@ -17502,6 +17582,16 @@
       "groupFilter2Name": "Cambridge Assessment International Education (AS Level & A Level)",
       "academicLevel": "Undergraduate",
       "coursePID": "V1Umyg8Kx"
+    },
+    {
+      "subjectPrefix": "HIS",
+      "courseNumber": "HIS340",
+      "title": "Historiography & Historical Methods",
+      "pid": "HJrPr2ckt",
+      "eligibilityTimeframe": "Ongoing",
+      "groupFilter2Name": "Study.com",
+      "academicLevel": "Undergraduate",
+      "coursePID": "E1zjn18Fx"
     },
     {
       "subjectPrefix": "HIS",
@@ -21885,6 +21975,16 @@
     },
     {
       "subjectPrefix": "OL",
+      "courseNumber": "OL125",
+      "title": "The Dale Carnegie Course: Skills for Success",
+      "pid": "S14Zc4BoGl",
+      "eligibilityTimeframe": null,
+      "groupFilter2Name": "Dale Carnegie & Associates",
+      "academicLevel": "Undergraduate",
+      "coursePID": "41cobGUFl"
+    },
+    {
+      "subjectPrefix": "OL",
       "courseNumber": "OL1ELE",
       "title": "Human Relations",
       "pid": "SJsFQ7tT8",
@@ -23855,6 +23955,16 @@
     },
     {
       "subjectPrefix": "QSO",
+      "courseNumber": "QSO250",
+      "title": "Business 350: Applied Business Data Analytics",
+      "pid": "Bkn3PnLiMx",
+      "eligibilityTimeframe": null,
+      "groupFilter2Name": "Study.com",
+      "academicLevel": "Undergraduate",
+      "coursePID": "NJT6ei9tg"
+    },
+    {
+      "subjectPrefix": "QSO",
       "courseNumber": "QSO300",
       "title": "Recruiting and Retention School; Guidance Counselor Operations",
       "pid": "HyYANRUe_",
@@ -23912,6 +24022,16 @@
       "groupFilter2Name": "HCL Tech: Rise Academy",
       "academicLevel": "Undergraduate",
       "coursePID": "E1B3b7Ltg"
+    },
+    {
+      "subjectPrefix": "QSO",
+      "courseNumber": "QSO330",
+      "title": "Certified Supply Chain Professional",
+      "pid": "rJ2kUdPR8",
+      "eligibilityTimeframe": null,
+      "groupFilter2Name": "Association for Supply Chain Management (ASCM)",
+      "academicLevel": "Undergraduate",
+      "coursePID": "EkHMzm8Fx"
     },
     {
       "subjectPrefix": "QSO",
@@ -24322,6 +24442,16 @@
       "groupFilter2Name": "Study.com",
       "academicLevel": "Undergraduate",
       "coursePID": null
+    },
+    {
+      "subjectPrefix": "SCS",
+      "courseNumber": "SCS285",
+      "title": "Criminal Justice 306: Research Methods in Criminal Justice",
+      "pid": "B1mPqWb0I",
+      "eligibilityTimeframe": null,
+      "groupFilter2Name": "Study.com",
+      "academicLevel": "Undergraduate",
+      "coursePID": "BJdngNxxV"
     },
     {
       "subjectPrefix": "SNHU",
