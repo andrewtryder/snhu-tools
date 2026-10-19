@@ -3,22 +3,22 @@
   "provenance": {
     "kind": "postgres",
     "source": "postgres-readonly-export",
-    "sourceDigest": "9fd3085356bc540e9c7c985c1cc7328126db96cc059b5a1cdc0c5a5d3da9cdbe",
-    "approvalReference": "WEEKLY-2026-10-12",
+    "sourceDigest": "dd52435d5460676cef28ce9722aa0ae1092a1d8444c8b1537aa68fb8408ede58",
+    "approvalReference": "WEEKLY-2026-10-19",
     "approved": true
   },
   "baseline": "approved",
   "counts": {
     "programs": 227,
     "courses": 2394,
-    "transfers": 1236,
-    "search": 3857
+    "transfers": 1249,
+    "search": 3870
   },
   "rawBytes": {
     "programs": 5730055,
     "courses": 2357654,
-    "transfers": 387823,
-    "search": 921482
+    "transfers": 391940,
+    "search": 925599
   },
   "reconciliation": {
     "courses": {

@@ -1,18 +1,18 @@
 {
   "schemaVersion": 1,
-  "createdAt": "2026-10-12T16:30:26.201Z",
+  "createdAt": "2026-10-19T14:20:52.628Z",
   "fixture": false,
   "provenance": {
     "kind": "postgres",
     "source": "postgres-readonly-export",
-    "sourceDigest": "9fd3085356bc540e9c7c985c1cc7328126db96cc059b5a1cdc0c5a5d3da9cdbe",
-    "approvalReference": "WEEKLY-2026-10-12",
+    "sourceDigest": "dd52435d5460676cef28ce9722aa0ae1092a1d8444c8b1537aa68fb8408ede58",
+    "approvalReference": "WEEKLY-2026-10-19",
     "approved": true
   },
   "domains": {
     "programs": {
       "file": "programs.json",
-      "sha256": "ea76e356b17de3196c94f57fbc7fb4ceeb11dfa29dfe07c34ee4e74fffd46c23",
+      "sha256": "24fcf5d7da8b7c1cc8360e96d837b27b5d9be224133d64499488ec009a01f53b",
       "required": true,
       "counts": {
         "programs": 227
@@ -30,18 +30,18 @@
     },
     "transfers": {
       "file": "transfers.json",
-      "sha256": "6402c6dbf86de8c197a6bde7516f4baa9566d1b71f001ef72aeeebc264ea420e",
+      "sha256": "618d7fe56b26a3da5c74fda719fb7dbd632f5f9500310dcc2bf2d6ae7ef2ab27",
       "required": true,
       "counts": {
-        "rows": 1236
+        "rows": 1249
       }
     },
     "search": {
       "file": "search.json",
-      "sha256": "54fe55182754be26a477557328815e0ad2bdb65497ca46f8b9349fa37254858a",
+      "sha256": "676776014afeef33700ce75139fec0169b8edf906be200ada18e7327b696b0c2",
       "required": true,
       "counts": {
-        "entries": 3857
+        "entries": 3870
       }
     }
   }
