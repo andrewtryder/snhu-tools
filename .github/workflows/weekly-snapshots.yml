@@ -141,3 +141,7 @@ jobs:
               --body-file .snapshot-pr-summary.md \
               --label "snapshots,automated-pr"
           fi
+
+      - name: Clean up temporary snapshot artifacts
+        if: always() && steps.check-auth.outputs.authorized == 'true'
+        run: npm run snapshot:clean

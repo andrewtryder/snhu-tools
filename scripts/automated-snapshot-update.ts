@@ -1,7 +1,9 @@
 import { execSync } from "node:child_process";
-import { readFile, writeFile } from "node:fs/promises";
+import { existsSync } from "node:fs";
+import { readFile, writeFile, rm } from "node:fs/promises";
 import path from "node:path";
 import { Pool } from "pg";
+import { cleanStaleSnapshots } from "./clean-stale-snapshots";
 import { exportCoursesFromDatabase } from "../src/lib/static-export/courses";
 import { exportProgramsFromDatabase } from "../src/lib/static-export/programs";
 import { transformSearch } from "../src/lib/static-export/search";
@@ -150,6 +152,7 @@ export async function runAutomatedSnapshotUpdate(
   const approvalRef = args.approvalReference ?? `WEEKLY-${dateStr}`;
 
   console.log(`[snapshot-automation] Starting automated snapshot update runner (date: ${dateStr})`);
+  cleanStaleSnapshots(args.activeDir);
 
   // 1. Verify enabled state
   const isExplicitlyEnabled =
@@ -235,6 +238,9 @@ export async function runAutomatedSnapshotUpdate(
   });
 
   if (!gateResults.passed) {
+    if (!args.stageDir && stagedDirectory) {
+      await rm(stagedDirectory, { recursive: true, force: true }).catch(() => {});
+    }
     console.error("[snapshot-automation] Acceptance gates FAILED with errors:");
     for (const err of gateResults.errors) console.error(`  - ${err}`);
     throw new Error(`Data integrity acceptance gates failed (${gateResults.errors.length} errors)`);
@@ -243,6 +249,9 @@ export async function runAutomatedSnapshotUpdate(
 
   if (args.checkOnly) {
     console.log("[snapshot-automation] Check-only mode completed successfully.");
+    if (!args.stageDir && stagedDirectory) {
+      await rm(stagedDirectory, { recursive: true, force: true }).catch(() => {});
+    }
     return { status: "checked", changesDetected: false, prCreated: false, gateResults };
   }
 
@@ -253,6 +262,9 @@ export async function runAutomatedSnapshotUpdate(
   if (!changesDetected && !diff.hasChanges) {
     console.log("[snapshot-automation] No catalog changes detected between upstream database and committed baseline.");
     console.log("[snapshot-automation] Exiting cleanly without opening or modifying a pull request.");
+    if (!args.stageDir && stagedDirectory) {
+      await rm(stagedDirectory, { recursive: true, force: true }).catch(() => {});
+    }
     return { status: "no_changes", changesDetected: false, prCreated: false };
   }
 
@@ -279,13 +291,19 @@ export async function runAutomatedSnapshotUpdate(
 
   if (args.dryRun) {
     console.log("[snapshot-automation] Dry run requested: skipping stage promotion and PR operations.");
+    if (!args.stageDir && stagedDirectory) {
+      await rm(stagedDirectory, { recursive: true, force: true }).catch(() => {});
+    }
     return { status: "dry_run_completed", changesDetected: true, prCreated: false, prSummary };
   }
 
   // 7. Promote staged snapshot to active directory
   await recoverSnapshotPromotion(args.activeDir);
   console.log(`[snapshot-automation] Promoting stage ${stagedDirectory} to active directory ${args.activeDir}...`);
-  await promoteReviewedStage(stagedDirectory, args.activeDir, baselineManifest, false, 0.5);
+  const backup = await promoteReviewedStage(stagedDirectory, args.activeDir, baselineManifest, false, 0.5);
+  if (backup && existsSync(backup)) {
+    await rm(backup, { recursive: true, force: true }).catch(() => {});
+  }
   console.log("[snapshot-automation] Promotion complete.");
 
   // 8. Manage branch and PR if requested
