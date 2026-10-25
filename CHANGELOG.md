@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.6.0](https://github.com/andrewtryder/snhu-tools/compare/v0.5.0...v0.6.0) (2026-10-25)
+
+
+### Features
+
+* **snapshots:** automate stale snapshot staging and backup cleanup in pipeline ([#50](https://github.com/andrewtryder/snhu-tools/issues/50)) ([989ad5b](https://github.com/andrewtryder/snhu-tools/commit/989ad5bedcfe0adb015aa9c11a7a4a12fc7fb3dd))
+
 ## [0.5.0](https://github.com/andrewtryder/snhu-tools/compare/v0.4.0...v0.5.0) (2026-10-18)
 
 
