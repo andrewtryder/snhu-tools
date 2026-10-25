@@ -41,9 +41,14 @@ import {
   exportBundlesFromDatabase,
   runAutomatedSnapshotUpdate,
 } from "../../scripts/automated-snapshot-update";
+import { cleanStaleSnapshots } from "../../scripts/clean-stale-snapshots";
 
 describe("Weekly Snapshot Workflow Integrity Gates", () => {
   const activeDir = path.resolve("src/data/snapshots");
+
+  afterAll(() => {
+    cleanStaleSnapshots(activeDir);
+  });
 
   async function getBaseFixtures() {
     const manifest = (await loadManifest(activeDir))!;

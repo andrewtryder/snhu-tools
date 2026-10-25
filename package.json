@@ -17,7 +17,7 @@
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "test:watch": "vitest",
-    "check": "npm run typecheck && npm run lint && npm run lint:actions && npm test && npm run build",
+    "check": "npm run snapshot:clean && npm run typecheck && npm run lint && npm run lint:actions && npm test && npm run build",
     "check:quick": "npm run typecheck && npm run lint && npm run lint:actions",
     "prepare": "husky",
     "db:migrate": "tsx scripts/migrate.ts",
@@ -28,7 +28,8 @@
     "transfer:bootstrap": "tsx scripts/transfer-bootstrap.ts",
     "transfer:sync": "tsx scripts/transfer-sync.ts",
     "snapshot:generate": "tsx scripts/generate-static-snapshots.ts",
-    "snapshot:automate": "tsx scripts/automated-snapshot-update.ts"
+    "snapshot:automate": "tsx scripts/automated-snapshot-update.ts",
+    "snapshot:clean": "tsx scripts/clean-stale-snapshots.ts"
   },
   "dependencies": {
     "@dagrejs/dagre": "^3.1.1",
