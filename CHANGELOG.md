@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.6.1](https://github.com/andrewtryder/snhu-tools/compare/v0.6.0...v0.6.1) (2026-11-04)
+
+
+### Bug Fixes
+
+* defer degree map resize layout ([#56](https://github.com/andrewtryder/snhu-tools/issues/56)) ([18897e5](https://github.com/andrewtryder/snhu-tools/commit/18897e5d82bb4f8c54521a7f14b3181ac065f131))
+
 ## [0.6.0](https://github.com/andrewtryder/snhu-tools/compare/v0.5.0...v0.6.0) (2026-10-25)
 
 
