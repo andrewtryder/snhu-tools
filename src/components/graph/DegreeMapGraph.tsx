@@ -116,15 +116,23 @@ function DegreeMapGraphInner({
   useEffect(() => {
     const el = flowContainerRef.current;
     if (!el || typeof ResizeObserver === "undefined") return;
+    let frame: number | undefined;
     const observer = new ResizeObserver((entries) => {
       const width = entries[0]?.contentRect.width;
       if (!width || width <= 0) return;
-      setViewportWidth((prev) => (Math.abs(prev - width) >= 32 ? width : prev));
+      if (frame !== undefined) cancelAnimationFrame(frame);
+      frame = requestAnimationFrame(() => {
+        frame = undefined;
+        setViewportWidth((prev) => (Math.abs(prev - width) >= 32 ? width : prev));
+      });
     });
     observer.observe(el);
     const initial = el.getBoundingClientRect().width;
     if (initial > 0) setViewportWidth((prev) => (prev === 1200 ? initial : prev));
-    return () => observer.disconnect();
+    return () => {
+      observer.disconnect();
+      if (frame !== undefined) cancelAnimationFrame(frame);
+    };
   }, [isFullScreen]);
 
   useEffect(() => {
