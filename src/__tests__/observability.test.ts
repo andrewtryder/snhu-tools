@@ -1,5 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { sanitizeLogValue } from "@/lib/observability";
+import { shouldReportClientNotice } from "../instrumentation-client";
 
 describe("Observability & Secret Redaction Engine", () => {
   it("redacts database URLs containing passwords", () => {
@@ -38,5 +39,58 @@ describe("Observability & Secret Redaction Engine", () => {
   it("enables browser-extension error filtering in Honeybadger browser config", async () => {
     const { config } = await import("../instrumentation-client");
     expect(config.ignoreBrowserExtensionErrors).toBe(true);
+  });
+
+  describe("Honeybadger client notice filter", () => {
+    it("drops notices from Lightpanda user agents", () => {
+      const notice = { name: "SyntaxError", message: "Invalid or unexpected token" };
+      expect(shouldReportClientNotice(notice, "Lightpanda/1.0")).toBe(false);
+    });
+
+    it("drops ChunkLoadError by error name", () => {
+      const notice = {
+        name: "ChunkLoadError",
+        message: "Failed to load chunk /_next/static/immutable/chunks/3ocbmb7g7s8x5.css from module 96777",
+      };
+      expect(shouldReportClientNotice(notice, "Mozilla/5.0 (Windows NT 10.0; Win64; x64)")).toBe(false);
+    });
+
+    it("drops chunk loading error messages even if name differs", () => {
+      const notice = {
+        name: "Error",
+        message: "Loading chunk 123 failed.",
+      };
+      expect(shouldReportClientNotice(notice)).toBe(false);
+    });
+
+    it("drops unhandled rejection warnings serialized as {\"isTrusted\":true}", () => {
+      const notice = {
+        name: "window.onunhandledrejection",
+        message: 'UnhandledPromiseRejectionWarning: {"isTrusted":true}',
+      };
+      expect(shouldReportClientNotice(notice)).toBe(false);
+    });
+
+    it("drops notices where originalError is a DOM event with isTrusted", () => {
+      const notice = {
+        name: "Error",
+        message: "Event fired",
+        originalError: { isTrusted: true },
+      };
+      expect(shouldReportClientNotice(notice)).toBe(false);
+    });
+
+    it("retains legitimate application errors from regular user browsers", () => {
+      const notice = {
+        name: "TypeError",
+        message: "Cannot read properties of undefined (reading 'title')",
+      };
+      expect(
+        shouldReportClientNotice(
+          notice,
+          "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36",
+        ),
+      ).toBe(true);
+    });
   });
 });
