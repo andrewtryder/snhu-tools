@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.6.2](https://github.com/andrewtryder/snhu-tools/compare/v0.6.1...v0.6.2) (2026-11-08)
+
+
+### Bug Fixes
+
+* **observability:** filter benign bot and client error notices in Honeybadger ([#58](https://github.com/andrewtryder/snhu-tools/issues/58)) ([3938e3e](https://github.com/andrewtryder/snhu-tools/commit/3938e3ea57b31e27c8ce65f14aebf2bb36f37629))
+
 ## [0.6.1](https://github.com/andrewtryder/snhu-tools/compare/v0.6.0...v0.6.1) (2026-11-04)
 
 
