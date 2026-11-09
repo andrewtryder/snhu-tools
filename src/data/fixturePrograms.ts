@@ -745,7 +745,3 @@ export const fixturePrograms: DegreeProgram[] = [
     ],
   },
 ];
-
-export function getProgramBySlug(slug: string): DegreeProgram | undefined {
-  return fixturePrograms.find((p) => p.slug === slug);
-}

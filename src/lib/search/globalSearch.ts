@@ -1,6 +1,6 @@
 import { searchPrograms } from "@/lib/serverData";
 import { searchCourses } from "@/features/courses/lib/searchCourses";
-import { coursePath } from "@/features/courses/lib/courseIds";
+import { coursePath } from "@/lib/courseCode";
 import { searchTransferCourses } from "@/features/transfers/lib/searchTransferCourses";
 import { transferCoursePath } from "@/features/transfers/lib/slug";
 import type {

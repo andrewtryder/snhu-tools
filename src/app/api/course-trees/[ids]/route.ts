@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { getCourseTrees } from "@/features/courses/lib/courses";
-import { parseCourseIdList } from "@/features/courses/lib/courseIds";
+import { parseCourseIdList } from "@/lib/courseCode";
 import type { CourseTree } from "@/features/courses/lib/courseGraphLayout";
 import {
   COURSE_API_ERROR_HEADERS,

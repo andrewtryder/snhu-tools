@@ -14,7 +14,7 @@ import {
   ParserWarning,
 } from "@/types/domainCatalog";
 import { normalizeCourseCode } from "@/lib/courseCode";
-import { isValidCourseId, normalizeCourseId } from "@/features/courses/lib/courseIds";
+import { isValidCourseId, normalizeCourseId } from "@/lib/courseCode";
 import { RequirementRuleMetadata } from "@/types/program";
 
 export function hashSourcePayload(raw: unknown): string {

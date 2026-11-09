@@ -5,7 +5,7 @@ import Link from "next/link";
 import { CourseNodeData } from "@/types/program";
 import { Dialog } from "@/components/ui/Dialog";
 import { Badge } from "@/components/ui/Badge";
-import { coursePath } from "@/features/courses/lib/courseIds";
+import { coursePath } from "@/lib/courseCode";
 import { transferCoursePath } from "@/features/transfers/lib/slug";
 import {
   BookOpenIcon,

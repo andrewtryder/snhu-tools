@@ -83,7 +83,7 @@ jobs:
             printf '%s\n' "$SYNC_EXIT" > /tmp/sync-results/sync-exit-code
             tail -n 1 /tmp/sync-results/sync-output.log > /tmp/sync-results/sync-output.json
             set +e
-            node scripts/validators/validate-catalog-sync-result.mjs /tmp/sync-results/sync-output.json
+            node scripts/validate-sync-result.mjs --domain=catalog /tmp/sync-results/sync-output.json
             VALIDATION_EXIT=$?
             set -e
             printf '%s\n' "$VALIDATION_EXIT" > /tmp/sync-results/validation-exit-code
@@ -115,7 +115,7 @@ jobs:
             printf '%s\n' "$SYNC_EXIT" > /tmp/sync-results/sync-exit-code
             tail -n 1 /tmp/sync-results/sync-output.log > /tmp/sync-results/sync-output.json
             set +e
-            node scripts/validators/validate-transfer-sync-result.mjs /tmp/sync-results/sync-output.json
+            node scripts/validate-sync-result.mjs --domain=transfer /tmp/sync-results/sync-output.json
             VALIDATION_EXIT=$?
             set -e
             printf '%s\n' "$VALIDATION_EXIT" > /tmp/sync-results/validation-exit-code

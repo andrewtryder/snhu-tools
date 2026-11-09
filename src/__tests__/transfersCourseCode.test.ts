@@ -3,8 +3,7 @@ import {
   formatTransferCourseCode,
   isValidTransferCourseCode,
   normalizeTransferCourseCode,
-  parseCoursesQuery,
-} from "@/features/transfers/lib/courseCode";
+} from "@/lib/courseCode";
 import { transferCoursePath } from "@/features/transfers/lib/slug";
 
 describe("Transfers courseCode utilities", () => {
@@ -49,51 +48,6 @@ describe("Transfers courseCode utilities", () => {
       expect(isValidTransferCourseCode("123")).toBe(false);
       expect(isValidTransferCourseCode("CS")).toBe(false);
       expect(isValidTransferCourseCode("DROP TABLE")).toBe(false);
-    });
-  });
-
-  describe("parseCoursesQuery", () => {
-    it("returns MISSING_COURSES on null, undefined, or empty strings", () => {
-      expect(parseCoursesQuery(null)).toEqual({ ok: false, error: "MISSING_COURSES" });
-      expect(parseCoursesQuery("")).toEqual({ ok: false, error: "MISSING_COURSES" });
-      expect(parseCoursesQuery(" , , ")).toEqual({ ok: false, error: "MISSING_COURSES" });
-    });
-
-    it("parses and deduplicates valid course codes preserving order", () => {
-      const result = parseCoursesQuery("CS110, it-140, CS110, MAT 240");
-      expect(result).toEqual({
-        ok: true,
-        courseCodes: ["CS110", "IT140", "MAT240"],
-      });
-    });
-
-    it("returns INVALID_COURSE_CODE when any code is invalid", () => {
-      const result = parseCoursesQuery("CS110, bad_code, MAT240");
-      expect(result).toEqual({
-        ok: false,
-        error: "INVALID_COURSE_CODE",
-        invalidCourseCodes: ["bad_code"],
-      });
-    });
-
-    it("returns TOO_MANY_COURSES when exceeding max limit of 100 unique codes", () => {
-      const codes = Array.from({ length: 101 }, (_, i) => `CS${100 + i}`).join(",");
-      const result = parseCoursesQuery(codes);
-      expect(result).toEqual({
-        ok: false,
-        error: "TOO_MANY_COURSES",
-      });
-    });
-
-    it("does not count duplicates toward the 100 unique course limit", () => {
-      // 100 unique codes repeated twice (200 segments total)
-      const uniqueCodes = Array.from({ length: 100 }, (_, i) => `CS${100 + i}`);
-      const raw = [...uniqueCodes, ...uniqueCodes].join(",");
-      const result = parseCoursesQuery(raw);
-      expect(result.ok).toBe(true);
-      if (result.ok) {
-        expect(result.courseCodes).toHaveLength(100);
-      }
     });
   });
 

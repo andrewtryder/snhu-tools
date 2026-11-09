@@ -1,116 +1,93 @@
 # SNHU Tools
 
-Unofficial interactive academic planning, degree maps, course prerequisite graphs, and transfer equivalency tools for SNHU students.
+**Unofficial interactive academic planning, degree maps, course prerequisite graphs, and transfer equivalency tools for Southern New Hampshire University (SNHU) students.**
 
-SNHU Tools brings together three key resources into one unified application:
-- **Degree Map** (`/programs`): Interactive prerequisite and requirement visualization for SNHU degree programs based on published catalog data.
-- **Course Prerequisites** (`/courses`): Course-level prerequisite relationships and dependencies.
-- **Transfer Equivalencies** (`/transfers`): Unofficial institutional and provider transfer course equivalencies.
+🌐 **Live Site:** [https://snhu-tools.vercel.app](https://snhu-tools.vercel.app)
 
-## Live Site
+---
 
-**[https://snhu-tools.vercel.app](https://snhu-tools.vercel.app)**
+![SNHU Tools Degree Map Preview](./public/home/computer-science-degree-map-preview.webp)
+*Interactive degree map preview showing course nodes, branching prerequisite paths, and program requirements.*
+
+---
+
+## What is SNHU Tools?
+
+Planning a college degree shouldn't feel like deciphering a hundred-page catalog. **SNHU Tools** brings together published course requirements, prerequisite dependency trees, and transfer policies into one fast, easy-to-use visual web app:
+
+* 🗺️ **[Degree Maps](https://snhu-tools.vercel.app/programs)**: Explore undergraduate and graduate programs as interactive visual roadmaps. Clearly see how general education, major courses, concentrations, and electives connect, plus which courses unlock later capstones.
+* 📚 **[Course Prerequisites](https://snhu-tools.vercel.app/courses)**: Look up any course (such as `CS210`, `MAT140`, or `ENG122`) to view full descriptions, credit counts, required prerequisites, and the entire chain of courses it leads into.
+* 🔄 **[Transfer Equivalencies](https://snhu-tools.vercel.app/transfers)**: Search unofficial credit transfers from hundreds of colleges and popular ACE/NCCRS credit providers (Sophia Learning, Study.com, CLEP, AP, StraighterLine) to see how external coursework maps to SNHU equivalents.
+* 🔎 **[Instant Search](https://snhu-tools.vercel.app/search)**: Quickly search across all degree programs, course codes, titles, and transfer subjects with immediate keyboard-friendly suggestions.
+
+---
 
 ## Why This Exists
 
-I built this site as a proud SNHU graduate who wanted a clearer way to understand:
+As a proud SNHU graduate, I built this site to solve a challenge almost every student faces: **visualizing the path to graduation**.
 
-- What courses make up a degree
-- How general education, core, major, concentration, and elective requirements fit together
-- Which courses may need to be completed before others
-- How prerequisite chains can affect degree planning
+When planning terms, it can be tough to see:
+* How major courses, concentrations, and electives fit together
+* Which courses must be taken in sequence due to strict prerequisite chains
+* How external or transfer credits can satisfy degree requirements ahead of time
+* What courses become available once a particular class is completed
 
-This site is a planning and visualization aid, not an official degree audit or prescribed plan of study.
+This tool turns static catalog tables into an interactive, visual roadmap so students can make informed, confident choices with their academic plans.
 
-## Disclaimer
+---
 
-**This site is unofficial and is intended for informational purposes only.**
+## How to Use It
 
-- This project is not affiliated with, endorsed by, or operated by Southern New Hampshire University.
-- Catalog requirements, prerequisite rules, concentrations, course availability, and academic policies can change.
-- Parsed catalog data may be incomplete, delayed, or incorrectly interpreted.
-- A displayed graph is not an official recommended course sequence.
-- Students must verify requirements against the official SNHU Academic Catalog and with an academic advisor before making academic or financial decisions.
+1. **Find Your Degree:** Head to the [Programs directory](https://snhu-tools.vercel.app/programs) and select your degree level (Bachelor's, Associate, Master's, or Certificate).
+2. **Explore the Map:** Use the interactive canvas to zoom, pan, and click on any course node. Related prerequisites and dependent courses highlight automatically.
+3. **Plan Around Prerequisites:** Identify bottleneck courses early so prerequisite sequences don't delay your graduation timeline.
+4. **Check Transfer Credits:** Check the [Transfers directory](https://snhu-tools.vercel.app/transfers) to see how prior learning or online ACE courses might transfer into your program.
 
-## Local Development
+---
 
-Install dependencies:
+## Important Disclaimer
 
+> [!IMPORTANT]
+> **This site is an unofficial, independent student resource and is not affiliated with, operated by, or endorsed by Southern New Hampshire University.**
+> 
+> * Catalog rules, prerequisite requirements, course availability, and transfer policies change regularly.
+> * Visual graphs and equivalency charts are planning aids, not official degree audits or prescribed sequences of study.
+> * Always verify your academic plan with your official **SNHU Academic Advisor** and consult the official **SNHU Academic Catalog** before registering or making academic or financial commitments.
+
+---
+
+<details>
+<summary>🛠️ <strong>For Developers & Contributors (Click to expand)</strong></summary>
+
+### Tech Stack
+* **Framework:** [Next.js](https://nextjs.org/) (App Router, Turbopack) & [React 19](https://react.dev/)
+* **Graph Visualization:** [@xyflow/react](https://reactflow.dev/) (React Flow) & Dagre layout engine
+* **Styling:** [Tailwind CSS v4](https://tailwindcss.com/)
+* **Database & Storage:** PostgreSQL (Neon Serverless) & Drizzle ORM
+* **Testing & Quality:** Vitest, Testing Library, TypeScript, ESLint, Actionlint
+
+### Running Locally
 ```bash
 git clone https://github.com/andrewtryder/snhu-tools.git
 cd snhu-tools
 npm ci
-```
-
-Create a `.env` file (see `.env.example`):
-
-```bash
-cp .env.example .env
-```
-
-Start the development server:
-
-```bash
 npm run dev
 ```
+Open [http://localhost:3000](http://localhost:3000) in your browser.
 
-Open [http://localhost:3000](http://localhost:3000) with your browser.
-
-_Note: Database-backed program pages require a valid PostgreSQL connection and relevant Kuali configuration. Never commit `.env` files or API keys._
-
-## Available Scripts
-
-- `npm run dev` - Start the Next.js development server
-- `npm run build` - Create a production build
-- `npm run start` - Run the production server
-- `npm run lint` - Run ESLint
-- `npm run typecheck` - Run TypeScript typecheck (`tsc --noEmit`)
-- `npm test` - Run Vitest tests
-- `npm run test:watch` - Run Vitest tests in watch mode
-- `npm run check` - Canonical full validation (`typecheck` + `lint` + `test` + `build`)
-- `npm run check:quick` - Fast local check (`typecheck` + `lint`)
-- `npm run db:migrate` - Run database migrations to create or update catalog tables
-- `npm run program:bootstrap` - Run an initial catalog import directly to live tables
-- `npm run program:sync` - Run the standard catalog synchronization, staging, validation, and promotion process
-
-## Quality Checks
-
-All code changes are validated using the canonical check script:
-
+### Quality Validation
+Before committing or creating a pull request, verify tests and builds:
 ```bash
-npm run check
+npm run check:quick  # Fast local check: typecheck + lint
+npm run check        # Full check: clean + typecheck + lint + tests + build
 ```
 
-This runs:
-1. **TypeScript typecheck** (`tsc --noEmit`)
-2. **ESLint** (`eslint`)
-3. **Actionlint** (`github-actionlint`)
-4. **Vitest test suite** (`vitest run`)
-5. **Next.js production build** (`next build`)
+See [docs/operations.md](docs/operations.md) for data sync and snapshot operational details.
 
-Local Git hooks and CI enforce this pipeline:
-- **commit-msg**: enforces Conventional Commits via `commitlint`
-- **pre-commit**: runs `npm run lint`
-- **pre-push**: runs `npm run check`
-- **GitHub Actions**: runs `npm run check` on pull requests and pushes to `main`, plus semantic PR title validation
+</details>
 
-The check requires zero database credentials and must pass before pushing or merging.
-
-## Conventional Commits & Release Process
-
-- **Commit Formatting**: All commits and PR titles must follow the [Conventional Commits](https://www.conventionalcommits.org/) specification:
-  - `feat: ...` (SemVer minor)
-  - `fix: ...` (SemVer patch)
-  - `feat!: ...` or `BREAKING CHANGE:` (SemVer major)
-  - `docs: ...`, `ci: ...`, `chore: ...`, `refactor: ...`, `test: ...`, `perf: ...`, `build: ...`
-- **Merge Strategy**: PRs are squash-merged to place the validated conventional PR title onto `main`.
-- **Release Please**: Automated release workflows track conventional commits on `main`, maintain `CHANGELOG.md`, manage versioning, and generate GitHub Releases and SemVer tags.
-- **Deployment Isolation**: Release creation is purely versioning/changelog automation; Vercel Production deployments remain separate and controlled. No npm packages are published (`private: true`).
-
-## Contributing
-
-Contributions, bug reports, and focused pull requests are welcome. Because this application relies on an unstable upstream catalog payload structure, please open an issue before submitting substantial parser, schema, synchronization, or catalog-contract changes.
+---
 
 ## License
 
-This project is licensed under the [MIT License](LICENSE).
+This project is open source and available under the [MIT License](LICENSE).

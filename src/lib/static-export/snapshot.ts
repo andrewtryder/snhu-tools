@@ -1,7 +1,7 @@
 import { createHash } from "node:crypto";
 import { lstat, mkdtemp, readFile, rename, rm, unlink, writeFile } from "node:fs/promises";
 import path from "node:path";
-import { isValidTransferCourseCode } from "@/features/transfers/lib/courseCode";
+import { isValidTransferCourseCode } from "@/lib/courseCode";
 import type { CourseReconciliation, CourseSourceCoverage, CoursesExport } from "./courses";
 import type { ProgramsExport } from "./programs";
 import type { SearchExport } from "./search";

@@ -2,7 +2,7 @@ import React from "react";
 import Link from "next/link";
 import { CourseNodeData } from "@/types/program";
 import { buildCourseLookup, resolvePrerequisites } from "@/lib/coursePrerequisites";
-import { coursePath, isValidCourseId, normalizeCourseId } from "@/features/courses/lib/courseIds";
+import { coursePath, isValidCourseId, normalizeCourseId } from "@/lib/courseCode";
 
 export function ProgramCourseInventory({ courses }: { courses: CourseNodeData[] }) {
   const byId = buildCourseLookup(courses);

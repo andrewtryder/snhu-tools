@@ -8,9 +8,7 @@ import { getSiteUrl } from "@/lib/siteUrl";
 
 import { serializeJsonLd } from "@/lib/safeJsonLd";
 
-// Indefinite Full Route Cache — invalidated on demand by POST /api/revalidate?scope=courses.
-// Removing the searchParams prop was the prerequisite: accessing searchParams in a Server
-// Component is a dynamic API that opts the entire route out of static rendering.
+// Static route backed by committed catalog snapshots.
 export const revalidate = false;
 
 const title = "SNHU Courses & Prerequisite Explorer";

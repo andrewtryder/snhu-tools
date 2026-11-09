@@ -13,7 +13,18 @@ vi.mock("@/features/courses/sync/parse", () => ({ parseCourse: course.parse }));
 vi.mock("@/features/courses/sync/persist", () => ({ getSyncState: course.getState, tryClaimLease: course.claim, startRefresh: course.start, getSyncItemsBatch: course.items, insertStagedCourse: course.insert, advanceCursor: course.advance, promoteStaging: course.promote, setSyncError: course.setError, tryClaimBootstrapLease: vi.fn() }));
 vi.mock("@/features/courses/sync/promote", () => ({ promoteStaging: course.promote }));
 vi.mock("@/lib/syncReporting", () => ({ reportSyncError: course.report }));
-vi.mock("@/lib/db/client", () => ({ createPgClient: transfer.create }));
+vi.mock("@/lib/db/client", () => ({
+  createPgClient: transfer.create,
+  withDirectClient: async (fn: (client: unknown) => Promise<unknown>) => {
+    const client = transfer.create(process.env.POSTGRES_URL);
+    await client.connect();
+    try {
+      return await fn(client);
+    } finally {
+      await client.end();
+    }
+  },
+}));
 vi.mock("@/features/transfers/sync/fetch", () => ({ fetchExperiences: transfer.fetchExperiences, fetchExperienceDetail: transfer.fetchDetail }));
 vi.mock("@/features/transfers/sync/parse", () => ({ parseExperienceDetail: transfer.parse }));
 vi.mock("@/features/transfers/sync/persist", () => ({ getSyncState: transfer.getState, tryClaimLease: transfer.claim, startRefresh: transfer.start, getSyncItems: transfer.items, insertStagedTransfer: transfer.insert, advanceCursor: transfer.advance, promoteStaging: transfer.promote, setSyncError: transfer.setError, abortToIdle: transfer.abort }));

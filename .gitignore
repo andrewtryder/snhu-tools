@@ -47,6 +47,8 @@ next-env.d.ts
 # Static snapshot staging, backups, and journals (keeps src/data/snapshots tracked)
 /src/data/.snapshot-stage-*
 /src/data/.snapshots.previous-*
+/src/data/.snapshot-backup-temp-*
+/src/data/.snapshots.active-temp-*
 /src/data/.snapshot-promotion.json
 /.snapshot-backup-temp-*
 /.snapshot-pr-summary.md

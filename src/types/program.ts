@@ -13,14 +13,6 @@ export interface RequirementRuleMetadata {
   sourceText?: string;
 }
 
-export interface PrerequisiteRequirement {
-  type: "course" | "choice" | "min_credits" | "group";
-  courseId?: string;
-  options?: string[];
-  minCredits?: number;
-  description?: string;
-}
-
 export interface CourseNodeData {
   id: string;
   code: string; // e.g. "CS 113"

@@ -3,9 +3,11 @@ import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { spawnSync } from "node:child_process";
-import { validateCatalogSyncResult } from "../../scripts/validators/validate-catalog-sync-result.mjs";
-import { validateTransferSyncResult } from "../../scripts/validators/validate-transfer-sync-result.mjs";
-import { validateProgramSyncResult } from "../../scripts/validate-sync-result.mjs";
+import {
+  validateCatalogSyncResult,
+  validateProgramSyncResult,
+  validateTransferSyncResult,
+} from "../../scripts/validate-sync-result.mjs";
 
 const programResult = (action: string) => ({ action, status: "idle", importedCount: 1, skippedCount: 0, failedCount: 0 });
 
@@ -37,20 +39,19 @@ describe("Program terminal sync result validator", () => {
   });
 });
 
-describe("terminal validator CLIs", () => {
-  it("rejects missing files and malformed JSON result files", () => {
+describe("terminal validator CLI", () => {
+  it("rejects missing files and malformed JSON result files across domains", () => {
     const directory = mkdtempSync(join(tmpdir(), "snhu-validator-"));
     const malformed = join(directory, "result.json");
+    const validCatalog = join(directory, "valid-catalog.json");
     writeFileSync(malformed, "{");
+    writeFileSync(validCatalog, JSON.stringify({ action: "promoted" }));
     try {
-      for (const script of [
-        "scripts/validate-sync-result.mjs",
-        "scripts/validators/validate-catalog-sync-result.mjs",
-        "scripts/validators/validate-transfer-sync-result.mjs",
-      ]) {
-        expect(spawnSync(process.execPath, [script, join(directory, "missing.json")]).status).toBe(1);
-        expect(spawnSync(process.execPath, [script, malformed]).status).toBe(1);
-      }
+      const script = "scripts/validate-sync-result.mjs";
+      expect(spawnSync(process.execPath, [script, join(directory, "missing.json")]).status).toBe(1);
+      expect(spawnSync(process.execPath, [script, malformed]).status).toBe(1);
+      expect(spawnSync(process.execPath, [script, "--domain=catalog", validCatalog]).status).toBe(0);
+      expect(spawnSync(process.execPath, [script, "--domain=transfer", validCatalog]).status).toBe(0);
     } finally {
       rmSync(directory, { recursive: true, force: true });
     }
