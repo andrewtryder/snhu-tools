@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useId, useRef, useState } from "react";
 import { Loader2, Search } from "lucide-react";
-import { normalizeCourseId } from "../lib/courseIds";
+import { normalizeCourseId } from "@/lib/courseCode";
 
 interface CourseSuggestion {
   catalog_course_id: string;

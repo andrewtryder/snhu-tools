@@ -1,5 +1,5 @@
 import type { Pool } from "pg";
-import { isValidTransferCourseCode, normalizeTransferCourseCode } from "@/features/transfers/lib/courseCode";
+import { isValidTransferCourseCode, normalizeTransferCourseCode } from "@/lib/courseCode";
 import type { TransferRow } from "@/features/transfers/lib/seoQueries";
 
 export type TransfersExport = { meta:{domain:"transfers";counts:{rows:number}}; rows:TransferRow[]; lastModified:string|null };

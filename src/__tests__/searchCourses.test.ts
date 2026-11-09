@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { searchCourses } from "@/features/courses/lib/searchCourses";
-import { coursePath } from "@/features/courses/lib/courseIds";
+import { coursePath } from "@/lib/courseCode";
 
 describe("searchCourses static snapshot contract", () => {
   it("returns empty results for blank input", async () => expect(await searchCourses("  ")).toEqual([]));

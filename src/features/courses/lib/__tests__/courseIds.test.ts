@@ -4,7 +4,7 @@ import {
   normalizeCourseId,
   parseCourseIdList,
   MAX_COURSE_IDS,
-} from "../courseIds";
+} from "@/lib/courseCode";
 
 describe("courseIds utilities", () => {
   describe("normalizeCourseId", () => {

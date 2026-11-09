@@ -1,5 +1,7 @@
-const KUALI_API_BASE = 'https://snhu.kuali.co/api/v1/catalog';
-const CATALOG_ID = '6349a3f9164d00001c6c80da';
+import { kualiConfig } from '@/config/kualiConfig';
+
+const KUALI_API_BASE = `${kualiConfig.baseUrl}/api/v1/catalog`;
+const CATALOG_ID = kualiConfig.catalogId;
 
 export interface KualiCourseListItem {
   __catalogCourseId?: string;

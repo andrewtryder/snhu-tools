@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { sanitizeLogValue } from "@/lib/observability";
+import { sanitizeLogValue } from "@/lib/logSanitization";
 import { shouldReportClientNotice } from "../instrumentation-client";
 
 describe("Observability & Secret Redaction Engine", () => {

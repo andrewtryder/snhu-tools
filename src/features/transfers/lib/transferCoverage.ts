@@ -1,5 +1,5 @@
 import { getSiteUrl } from "@/lib/siteUrl";
-import { formatTransferCourseCode } from "./courseCode";
+import { formatTransferCourseCode } from "@/lib/courseCode";
 import { getAllTransferRows, getTransferLastModified } from "./seoQueries";
 import { canonicalPath, transferCoursePath } from "./slug";
 

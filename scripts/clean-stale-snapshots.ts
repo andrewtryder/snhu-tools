@@ -13,7 +13,8 @@ export function cleanStaleSnapshots(activeDir: string = "src/data/snapshots"): n
         entry.name.startsWith(".snapshot-stage-") ||
         entry.name.startsWith(".snapshots.previous-") ||
         entry.name.startsWith(".snapshot-backup-temp-") ||
-        entry.name.startsWith(".snapshots.active-temp-")
+        entry.name.startsWith(".snapshots.active-temp-") ||
+        entry.name === ".snapshot-promotion.json"
       ) {
         rmSync(path.join(dataDir, entry.name), { recursive: true, force: true });
         removedCount++;

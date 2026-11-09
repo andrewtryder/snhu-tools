@@ -1,5 +1,6 @@
 import type { Client } from 'pg';
-import { createPgClient } from '@/lib/db/client';
+import { mapWithConcurrency } from '@/lib/concurrency';
+import { withDirectClient } from '@/lib/db/client';
 import { reportSyncError } from '@/lib/syncReporting';
 import { fetchExperienceDetail, fetchExperiences } from './fetch';
 import { parseExperienceDetail, type ParsedTransferCourse } from './parse';
@@ -41,28 +42,6 @@ export type TransferSyncResult =
 
 export type TransferTerminalSyncResult = Exclude<TransferSyncResult, { action: 'batch' }>;
 
-async function mapWithConcurrency<T, R>(
-  items: T[],
-  concurrency: number,
-  fn: (item: T) => Promise<R>
-): Promise<R[]> {
-  if (items.length === 0) return [];
-
-  const results: R[] = new Array(items.length);
-  let nextIndex = 0;
-
-  async function worker() {
-    while (nextIndex < items.length) {
-      const index = nextIndex++;
-      results[index] = await fn(items[index]);
-    }
-  }
-
-  const workers = Array.from({ length: Math.min(concurrency, items.length) }, () => worker());
-  await Promise.all(workers);
-  return results;
-}
-
 async function fetchAndParsePids(
   pids: string[],
   concurrency: number
@@ -78,20 +57,7 @@ async function fetchAndParsePids(
   return nested.flat();
 }
 
-async function withClient<T>(fn: (client: Client) => Promise<T>): Promise<T> {
-  const connectionString = process.env.POSTGRES_URL;
-  if (!connectionString) {
-    throw new Error('POSTGRES_URL is required');
-  }
-
-  const client = createPgClient(connectionString);
-  await client.connect();
-  try {
-    return await fn(client);
-  } finally {
-    await client.end();
-  }
-}
+const withClient = withDirectClient;
 
 async function processSnapshotBatch(
   client: Client,

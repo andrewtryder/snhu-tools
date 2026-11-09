@@ -1,7 +1,7 @@
 import type { CoursesExport } from "./courses";
 import type { ProgramsExport } from "./programs";
 import type { TransfersExport } from "./transfers";
-import { isValidTransferCourseCode } from "@/features/transfers/lib/courseCode";
+import { isValidTransferCourseCode } from "@/lib/courseCode";
 
 export type SearchExport = { meta:{domain:"search";counts:{entries:number}}; programs:ProgramsExport["directory"]; courses:CoursesExport["summaries"]; transfers:TransfersExport["rows"] };
 const transferKey=(row:TransfersExport["rows"][number])=>[row.courseNumber,row.subjectPrefix,row.groupFilter2Name,row.pid,row.coursePID,row.title,row.eligibilityTimeframe,row.academicLevel].map(value=>value??"").join("\0");

@@ -1,5 +1,5 @@
 import * as cheerio from 'cheerio';
-import { isValidCourseId, normalizeCourseId } from '@/features/courses/lib/courseIds';
+import { isValidCourseId, normalizeCourseId } from "@/lib/courseCode";
 import type { KualiCourseDetails } from './fetch';
 
 export interface ParsedCourse {

@@ -1,7 +1,7 @@
 import type { Pool } from "pg";
 import { CATEGORY_PALETTES } from "@/lib/graphLayout";
 import { getCourseNodeId, normalizeCourseCode } from "@/lib/courseCode";
-import { isValidCourseId, normalizeCourseId } from "@/features/courses/lib/courseIds";
+import { isValidCourseId, normalizeCourseId } from "@/lib/courseCode";
 import { normalizeDegreeLevel } from "@/lib/kualiParser";
 import { resolvePublicCatalogUrl } from "@/lib/snhuCatalog";
 import type { DegreeProgram, GroupCategory, RequirementGroup, RequirementItem, RequirementRuleMetadata } from "@/types/program";

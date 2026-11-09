@@ -1,4 +1,4 @@
-import { normalizeTransferCourseCode } from "./courseCode";
+import { normalizeTransferCourseCode } from "@/lib/courseCode";
 
 export function slugify(value: string): string {
   return value

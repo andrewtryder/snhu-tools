@@ -1,5 +1,5 @@
 import { getAllTransferRows } from "./seoQueries";
-import { normalizeTransferCourseCode } from "./courseCode";
+import { normalizeTransferCourseCode } from "@/lib/courseCode";
 
 export interface TransferCourseSearchResult {
   courseNumber: string;

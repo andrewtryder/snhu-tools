@@ -1,8 +1,8 @@
 import { randomUUID } from "node:crypto";
 import { recordProgramSyncError, withProgramSyncConnection } from "./database";
 import { fetchKualiProgramList, fetchKualiProgramDetail, fetchKualiCourseDetail, fetchKualiCourseList } from "./fetch";
-import { parseProgramPayload, parseCoursePayload, extractCourseReferences, generatePrerequisiteEdges } from "./parse";
-import { NormalizedCourseDetails } from "@/lib/kualiCourseParser";
+import { parseProgramDetail, extractCourseReferences } from "@/lib/kualiParser";
+import { parseCourseDetails, generatePrerequisiteEdges, NormalizedCourseDetails } from "@/lib/kualiCourseParser";
 import { persistProgramToStaging, persistCoursesToStaging, persistEdgesToStaging } from "./persist";
 import { validateStaging, promoteStagingToLive } from "./promote";
 import { SyncResult, SyncOptions, ProgramSyncState } from "./types";
@@ -109,7 +109,7 @@ export async function runProgramSync(options: SyncOptions = {}): Promise<SyncRes
             try {
               const rawDetail = await fetchKualiProgramDetail(pid, catalogId);
               if (!rawDetail) return { pid, success: false, error: "Not found" };
-              const program = parseProgramPayload(rawDetail, catalogId);
+              const program = parseProgramDetail(rawDetail, catalogId);
               return { pid, success: true, program };
             } catch (err) {
               return { pid, success: false, error: (err as Error).message };
@@ -193,7 +193,7 @@ export async function runProgramSync(options: SyncOptions = {}): Promise<SyncRes
               try {
                 const rawCourse = await fetchKualiCourseDetail(ref.detailPid, catalogId);
                 if (rawCourse) {
-                  const detail = parseCoursePayload(rawCourse, ref.code);
+                  const detail = parseCourseDetails(rawCourse, ref.code);
                   parsedCourses[i + idx] = detail;
                 } else {
                   parsedCourses[i + idx].resolutionStatus = "not_found";

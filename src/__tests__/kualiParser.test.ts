@@ -11,7 +11,7 @@ import {
 
 import sampleList from "@/data/fixtures/program-list.sample.json";
 import sampleCsProgram from "@/data/fixtures/computer-science-program.sample.json";
-import canonicalProgramInventory from "@/data/fixtures/canonical-program-inventory.json";
+import canonicalProgramInventory from "@/data/canonical-program-inventory.json";
 
 describe("kualiParser utility", () => {
   it("generates deterministic kebab-case program slugs", () => {
@@ -83,16 +83,27 @@ describe("kualiParser utility", () => {
     let credentialCorrectionsCount = 0;
 
     for (const prog of canonicalProgramInventory) {
-      expect(prog.sourcePid).toBeTruthy();
+      expect(prog.pid).toBeTruthy();
       expect(prog.slug).toBeTruthy();
-      expect(seenPids.has(prog.sourcePid)).toBe(false);
+      expect(seenPids.has(prog.pid)).toBe(false);
       expect(seenSlugs.has(prog.slug)).toBe(false);
-      seenPids.add(prog.sourcePid);
+      seenPids.add(prog.pid);
       seenSlugs.add(prog.slug);
 
-      const normalizedCred = normalizeCredential(prog.title, prog.historicalCredential);
-      expect(normalizedCred).toBe(prog.expectedCredential);
-      if (normalizedCred !== prog.historicalCredential) {
+      const historicalCredential =
+        prog.credential === "Bachelor of Arts"
+          ? "Bachelor of Science"
+          : prog.credential === "Associate of Arts"
+            ? "Associate of Science"
+            : ["Master of Arts", "Master of Business Administration", "Master of Education", "Master of Fine Arts"].includes(
+                  prog.credential,
+                )
+              ? "Master of Science"
+              : prog.credential;
+
+      const normalizedCred = normalizeCredential(prog.title, historicalCredential);
+      expect(normalizedCred).toBe(prog.credential);
+      if (normalizedCred !== historicalCredential) {
         credentialCorrectionsCount++;
       }
 

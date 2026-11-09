@@ -1,5 +1,5 @@
 import { getAllCourseSummaries } from "./courses";
-import { normalizeCourseId } from "./courseIds";
+import { normalizeCourseId } from "@/lib/courseCode";
 
 export interface CourseSearchResult {
   catalog_course_id: string;

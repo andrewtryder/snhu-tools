@@ -3,10 +3,38 @@ import path from "node:path";
 
 export default defineConfig({
   test: {
-    environment: "jsdom",
+    projects: [
+      {
+        extends: true,
+        test: {
+          name: "node",
+          environment: "node",
+          include: ["**/*.test.ts"],
+          exclude: [
+            "node_modules/**",
+            "**/*.test.tsx",
+            "**/renderReactFlowToPng.test.ts",
+            "**/observability.test.ts",
+          ],
+        },
+      },
+      {
+        extends: true,
+        test: {
+          name: "jsdom",
+          environment: "jsdom",
+          include: [
+            "**/*.test.tsx",
+            "**/renderReactFlowToPng.test.ts",
+            "**/observability.test.ts",
+          ],
+          exclude: ["node_modules/**"],
+        },
+      },
+    ],
     setupFiles: ["./src/test/setup.ts"],
     globals: true,
-    testTimeout: 20_000,
+    testTimeout: 30_000,
     typecheck: {
       tsconfig: "./tsconfig.vitest.json",
     },

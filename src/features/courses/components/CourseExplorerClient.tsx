@@ -16,7 +16,7 @@ import {
 import "@xyflow/react/dist/style.css";
 import { GitBranch } from "lucide-react";
 import { layoutCourseGraph, type CourseTree } from "../lib/courseGraphLayout";
-import { coursePath, parseCourseIdList } from "../lib/courseIds";
+import { coursePath, parseCourseIdList } from "@/lib/courseCode";
 import { CourseSearchInput } from "./CourseSearchInput";
 
 const CONTROL_LABELS: Record<string, string> = {
