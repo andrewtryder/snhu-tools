@@ -63,7 +63,7 @@
     "eslint-config-next": "16.4.5",
     "github-actionlint": "^1.7.12",
     "husky": "^9.1.7",
-    "jsdom": "^30.1.3",
+    "jsdom": "^31.0.0",
     "tailwindcss": "^4",
     "tsx": "^4.23.15",
     "typescript": "^5.9.3",
