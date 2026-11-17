@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.6.3](https://github.com/andrewtryder/snhu-tools/compare/v0.6.2...v0.6.3) (2026-11-17)
+
+
+### Bug Fixes
+
+* **deps:** update dependencies and workflows ([#67](https://github.com/andrewtryder/snhu-tools/issues/67)) ([e4be1c3](https://github.com/andrewtryder/snhu-tools/commit/e4be1c3975c853cee616f6db1fe5d05983f97605))
+
 ## [0.6.2](https://github.com/andrewtryder/snhu-tools/compare/v0.6.1...v0.6.2) (2026-11-08)
 
 
