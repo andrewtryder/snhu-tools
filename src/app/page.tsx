@@ -7,6 +7,7 @@ import { AppFooter } from "@/components/AppFooter";
 import { Card } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
 import { getCatalogLastUpdated, getPrograms } from "@/lib/serverData";
+import { getPublishedSnapshotVerifiedAt } from "@/lib/staticSnapshots";
 import { resolvePopularBachelorPrograms } from "@/lib/popularBachelorPrograms";
 import { siteConfig } from "@/lib/site";
 import {
@@ -217,7 +218,7 @@ export default async function HomePage() {
         </div>
       </main>
 
-      <AppFooter lastUpdated={lastUpdated} />
+      <AppFooter lastUpdated={lastUpdated} snapshotVerifiedAt={getPublishedSnapshotVerifiedAt()} />
     </div>
   );
 }

@@ -14,6 +14,7 @@ type Manifest = {
   schemaVersion: number;
   createdAt: string;
   fixture: boolean;
+  provenance?: { kind: string; approved: boolean };
   domains: Record<StaticSnapshotDomain, { file: string; sha256: string; required: boolean; counts: Record<string, number> }>;
 };
 
@@ -77,4 +78,11 @@ export function getStaticSnapshot<T extends DomainBundle>(domain: StaticSnapshot
 export function getStaticSnapshotManifest(): Manifest {
   assertStaticSnapshots();
   return manifest as Manifest;
+}
+
+/** The timestamp belongs to the deployed, approved PostgreSQL snapshot, never the build clock. */
+export function getPublishedSnapshotVerifiedAt(): string | null {
+  const snapshot = getStaticSnapshotManifest();
+  if (snapshot.fixture || snapshot.provenance?.kind !== "postgres" || !snapshot.provenance.approved) return null;
+  return Number.isFinite(Date.parse(snapshot.createdAt)) ? snapshot.createdAt : null;
 }

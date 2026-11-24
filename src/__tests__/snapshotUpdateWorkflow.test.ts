@@ -1,6 +1,6 @@
-import { describe, expect, it, vi } from "vitest";
+import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
 import path from "node:path";
-import { mkdtemp, rm, writeFile } from "node:fs/promises";
+import { cp, mkdir, mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import {
   CANONICAL_CBE_PIDS,
@@ -39,16 +39,26 @@ import * as coursesExporter from "../lib/static-export/courses";
 import * as transfersExporter from "../lib/static-export/transfers";
 import {
   exportBundlesFromDatabase,
-  runAutomatedSnapshotUpdate,
+  runAutomatedSnapshotUpdate as runSnapshotUpdate,
 } from "../../scripts/automated-snapshot-update";
-import { cleanStaleSnapshots } from "../../scripts/clean-stale-snapshots";
 
 describe("Weekly Snapshot Workflow Integrity Gates", () => {
-  const activeDir = path.resolve("src/data/snapshots");
+  let testRoot: string;
+  let activeDir: string;
 
-  afterAll(() => {
-    cleanStaleSnapshots(activeDir);
+  beforeAll(async () => {
+    testRoot = await mkdtemp(path.join(tmpdir(), "snapshot-workflow-test-"));
+    activeDir = path.join(testRoot, "snapshots");
+    await cp(path.resolve("src/data/snapshots"), activeDir, { recursive: true });
   });
+
+  afterAll(async () => {
+    if (testRoot) await rm(testRoot, { recursive: true, force: true });
+  });
+
+  function runAutomatedSnapshotUpdate(argv: string[], options?: Parameters<typeof runSnapshotUpdate>[1]) {
+    return runSnapshotUpdate(["--active-dir", activeDir, "--artifact-dir", testRoot, ...argv], options);
+  }
 
   async function getBaseFixtures() {
     const manifest = (await loadManifest(activeDir))!;
@@ -1305,6 +1315,30 @@ describe("Weekly Snapshot Workflow Integrity Gates", () => {
       } finally {
         await rm(tmpStage, { recursive: true, force: true });
       }
+    });
+
+    it("publishes verification-only metadata without touching the workflow summary", async () => {
+      const { manifest, bundles } = await getBaseFixtures();
+      const workflowArtifacts = path.join(testRoot, "workflow-artifacts");
+      await mkdir(workflowArtifacts);
+      const workflowSummary = path.join(workflowArtifacts, ".snapshot-pr-summary.md");
+      await writeFile(workflowSummary, "real workflow summary");
+
+      vi.spyOn(programsExporter, "exportProgramsFromDatabase").mockResolvedValueOnce(bundles.programs);
+      vi.spyOn(coursesExporter, "exportCoursesFromDatabase").mockResolvedValueOnce(bundles.courses);
+      vi.spyOn(transfersExporter, "exportTransfersFromDatabase").mockResolvedValueOnce(bundles.transfers);
+
+      const result = await runAutomatedSnapshotUpdate(["--force", "--publish-verification"], {
+        pool: createMockSyncPool(),
+        now: "2026-10-09T06:00:00Z",
+      });
+      expect(result.status).toBe("promoted_locally");
+      expect(result.changesDetected).toBe(false);
+      const promoted = await loadManifest(activeDir);
+      expect(promoted?.domains).toEqual(manifest.domains);
+      expect(promoted?.provenance?.approvalReference).toBe("WEEKLY-2026-10-09");
+      expect(await readFile(path.join(testRoot, ".snapshot-pr-summary.md"), "utf8")).toContain("No domain content changed");
+      expect(await readFile(workflowSummary, "utf8")).toBe("real workflow summary");
     });
 
     it("recovers safely if promotion journal is absent or empty", async () => {
