@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.6.5](https://github.com/andrewtryder/snhu-tools/compare/v0.6.4...v0.6.5) (2026-11-24)
+
+
+### Bug Fixes
+
+* **snapshots:** preserve weekly publication and expose verified freshness ([#75](https://github.com/andrewtryder/snhu-tools/issues/75)) ([49e1278](https://github.com/andrewtryder/snhu-tools/commit/49e127821c6e0b03dba9d593221bac2cc913a64b))
+
 ## [0.6.4](https://github.com/andrewtryder/snhu-tools/compare/v0.6.3...v0.6.4) (2026-11-24)
 
 
