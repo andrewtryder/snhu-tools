@@ -1,6 +1,6 @@
 import { execSync } from "node:child_process";
 import { existsSync } from "node:fs";
-import { readFile, writeFile, rm } from "node:fs/promises";
+import { mkdir, readFile, writeFile, rm } from "node:fs/promises";
 import path from "node:path";
 import { Pool } from "pg";
 import { cleanStaleSnapshots } from "./clean-stale-snapshots";
@@ -34,6 +34,8 @@ export interface AutomationArgs {
   checkOnly: boolean;
   force: boolean;
   createPr: boolean;
+  publishVerification: boolean;
+  artifactDir: string;
   stageDir?: string;
   activeDir: string;
   canonicalInventoryPath: string;
@@ -52,6 +54,8 @@ export function parseAutomationArgs(argv: string[]): AutomationArgs {
   const checkOnly = argv.includes("--check-only");
   const force = argv.includes("--force");
   const createPr = argv.includes("--create-pr");
+  const publishVerification = argv.includes("--publish-verification");
+  const artifactDir = path.resolve(valueAfter("--artifact-dir") ?? ".");
   const stageDir = valueAfter("--stage-dir");
   const activeDir = path.resolve(valueAfter("--active-dir") ?? "src/data/snapshots");
   const canonicalInventoryPath = path.resolve(
@@ -67,6 +71,8 @@ export function parseAutomationArgs(argv: string[]): AutomationArgs {
     checkOnly,
     force,
     createPr,
+    publishVerification,
+    artifactDir,
     stageDir: stageDir ? path.resolve(stageDir) : undefined,
     activeDir,
     canonicalInventoryPath,
@@ -152,7 +158,7 @@ export async function runAutomatedSnapshotUpdate(
   const approvalRef = args.approvalReference ?? `WEEKLY-${dateStr}`;
 
   console.log(`[snapshot-automation] Starting automated snapshot update runner (date: ${dateStr})`);
-  cleanStaleSnapshots(args.activeDir);
+  cleanStaleSnapshots(args.activeDir, args.artifactDir);
 
   // 1. Verify enabled state
   const isExplicitlyEnabled =
@@ -259,7 +265,10 @@ export async function runAutomatedSnapshotUpdate(
   const changesDetected = hasDomainDifferences(stagedManifest, baselineManifest);
   const diff = computeInventoryDiff(stagedBundles, baselineBundles);
 
-  if (!changesDetected && !diff.hasChanges) {
+  const dataChanged = changesDetected || diff.hasChanges;
+  // Only a fresh database export with validated sync markers can advance verification.
+  const publishVerification = args.publishVerification && syncMarkers !== null;
+  if (!dataChanged && !publishVerification) {
     console.log("[snapshot-automation] No catalog changes detected between upstream database and committed baseline.");
     console.log("[snapshot-automation] Exiting cleanly without opening or modifying a pull request.");
     if (!args.stageDir && stagedDirectory) {
@@ -268,7 +277,9 @@ export async function runAutomatedSnapshotUpdate(
     return { status: "no_changes", changesDetected: false, prCreated: false };
   }
 
-  console.log("[snapshot-automation] Catalog changes detected in upstream database:");
+  console.log(dataChanged
+    ? "[snapshot-automation] Catalog changes detected in upstream database:"
+    : "[snapshot-automation] No data changes; publishing fresh snapshot verification metadata.");
   console.log(`  Programs: ${diff.programs.baseline} -> ${diff.programs.staged} (${diff.programs.delta >= 0 ? `+${diff.programs.delta}` : diff.programs.delta})`);
   console.log(`  Courses: ${diff.courses.baseline} -> ${diff.courses.staged} (${diff.courses.delta >= 0 ? `+${diff.courses.delta}` : diff.courses.delta})`);
   console.log(`  Prerequisite Edges: ${diff.prerequisites.baseline} -> ${diff.prerequisites.staged} (${diff.prerequisites.delta >= 0 ? `+${diff.prerequisites.delta}` : diff.prerequisites.delta})`);
@@ -285,8 +296,10 @@ export async function runAutomatedSnapshotUpdate(
     dateStr,
   });
 
-  const summaryPath = path.resolve(".snapshot-pr-summary.md");
-  await writeFile(summaryPath, prSummary, "utf8");
+  const summaryPath = path.join(args.artifactDir, ".snapshot-pr-summary.md");
+  await mkdir(args.artifactDir, { recursive: true });
+  const summary = dataChanged ? prSummary : `${prSummary}\n\nNo domain content changed; this update records a successful fresh database verification.\n`;
+  await writeFile(summaryPath, summary, "utf8");
   console.log(`[snapshot-automation] PR summary saved to ${summaryPath}`);
 
   if (args.dryRun) {
@@ -294,7 +307,7 @@ export async function runAutomatedSnapshotUpdate(
     if (!args.stageDir && stagedDirectory) {
       await rm(stagedDirectory, { recursive: true, force: true }).catch(() => {});
     }
-    return { status: "dry_run_completed", changesDetected: true, prCreated: false, prSummary };
+    return { status: "dry_run_completed", changesDetected: dataChanged, prCreated: false, prSummary: summary };
   }
 
   // 7. Promote staged snapshot to active directory
@@ -346,14 +359,14 @@ export async function runAutomatedSnapshotUpdate(
         console.log("[snapshot-automation] Successfully created snapshot-update PR");
       }
 
-      return { status: "pr_created_or_updated", changesDetected: true, prCreated: true };
+      return { status: "pr_created_or_updated", changesDetected: dataChanged, prCreated: true };
     } catch (err) {
       console.error("[snapshot-automation] Git/PR operation failed:", err);
       throw err;
     }
   }
 
-  return { status: "promoted_locally", changesDetected: true, prCreated: false };
+  return { status: "promoted_locally", changesDetected: dataChanged, prCreated: false };
 }
 
 if (process.argv[1]?.endsWith("automated-snapshot-update.ts")) {

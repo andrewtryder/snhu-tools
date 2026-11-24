@@ -18,16 +18,22 @@ export function formatCatalogLastUpdated(lastUpdated: Date | string | null): str
 const linkClassName =
   "text-on-surface-variant transition-colors hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-surface-container-low rounded-sm";
 
-export function AppFooter({ lastUpdated = null }: { lastUpdated?: Date | string | null }) {
+export function AppFooter({ lastUpdated = null, snapshotVerifiedAt }: {
+  lastUpdated?: Date | string | null;
+  snapshotVerifiedAt?: Date | string | null;
+}) {
   const formattedDate = formatCatalogLastUpdated(lastUpdated);
 
   return (
     <footer aria-label="Footer" className="mt-auto border-t border-surface-variant bg-surface-container-low">
       <div className="mx-auto w-full max-w-[var(--spacing-container-max)] px-4 py-4 md:px-8">
         <div className="grid grid-cols-1 items-start gap-4 md:grid-cols-3 md:items-center">
-          <p className="text-center text-sm text-on-surface-variant md:text-left">
-            <span className="font-bold text-on-surface">Last Updated:</span> {formattedDate}
-          </p>
+          <div className="space-y-1 text-center text-sm text-on-surface-variant md:text-left">
+            <p><span className="font-bold text-on-surface">Program data last synced:</span> {formattedDate}</p>
+            {snapshotVerifiedAt !== undefined && (
+              <p><span className="font-bold text-on-surface">Published snapshot verified:</span> {formatCatalogLastUpdated(snapshotVerifiedAt)}</p>
+            )}
+          </div>
           <p className="text-center text-sm text-on-surface-variant">
             <span className="font-bold text-on-surface">Disclaimer:</span> Unofficial SNHU site. Data is
             provided for informational purposes only. Confirm official requirements with SNHU where

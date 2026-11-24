@@ -1,9 +1,12 @@
 import { existsSync, readdirSync, rmSync } from "node:fs";
 import path from "node:path";
 
-export function cleanStaleSnapshots(activeDir: string = "src/data/snapshots"): number {
-  const rootDir = process.cwd();
-  const dataDir = path.dirname(path.resolve(rootDir, activeDir));
+export function cleanStaleSnapshots(
+  activeDir: string = "src/data/snapshots",
+  artifactDir: string = process.cwd(),
+): number {
+  const rootDir = path.resolve(artifactDir);
+  const dataDir = path.dirname(path.resolve(activeDir));
   let removedCount = 0;
 
   if (existsSync(dataDir)) {

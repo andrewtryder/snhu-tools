@@ -79,7 +79,9 @@ jobs:
             FLAGS="--dry-run"
           fi
 
-          npx tsx scripts/automated-snapshot-update.ts $FLAGS
+          npx tsx scripts/automated-snapshot-update.ts \
+            --artifact-dir "$RUNNER_TEMP/snhu-snapshot-update" \
+            --publish-verification $FLAGS
 
       - name: Run isolated quality checks and production build
         if: steps.check-auth.outputs.authorized == 'true' && inputs.dry_run != true
@@ -88,9 +90,13 @@ jobs:
           POSTGRES_URL: ""
           VERCEL_ENV: "production"
         run: |
-          if [ ! -f .snapshot-pr-summary.md ]; then
-            echo "No catalog changes detected; skipping build and PR checks."
-            exit 0
+          if [ ! -s "$RUNNER_TEMP/snhu-snapshot-update/.snapshot-pr-summary.md" ]; then
+            echo "::error::Validated snapshot run did not produce a PR summary."
+            exit 1
+          fi
+          if git diff --quiet -- src/data/snapshots/ src/data/canonical-program-inventory.json; then
+            echo "::error::Validated snapshot run did not produce a publishable snapshot or verification update."
+            exit 1
           fi
           node scripts/verify-ci-build-protections.mjs --mode=accept-non-fixture
           npm run typecheck
@@ -104,9 +110,10 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          if [ ! -f .snapshot-pr-summary.md ]; then
-            echo "No changes were detected or PR summary was not generated."
-            exit 0
+          SUMMARY="$RUNNER_TEMP/snhu-snapshot-update/.snapshot-pr-summary.md"
+          if [ ! -s "$SUMMARY" ]; then
+            echo "::error::Snapshot PR summary disappeared before publication."
+            exit 1
           fi
 
           BRANCH="automation/snapshot-update"
@@ -120,17 +127,17 @@ jobs:
           git add src/data/snapshots/ src/data/canonical-program-inventory.json
           
           if git diff --staged --quiet; then
-            echo "No staged changes to commit."
-            exit 0
+            echo "::error::No staged snapshot changes to commit after verification."
+            exit 1
           fi
 
           git commit -m "$TITLE"
 
-          EXISTING_PR=$(gh pr list --head "$BRANCH" --base main --json number --jq '.[0].number' || echo "")
+          EXISTING_PR=$(gh pr list --head "$BRANCH" --base main --json number --jq '.[0].number // empty')
           if [ -n "$EXISTING_PR" ]; then
             echo "Updating existing PR #$EXISTING_PR..."
             git push --force-with-lease origin "$BRANCH"
-            gh pr edit "$EXISTING_PR" --title "$TITLE" --body-file .snapshot-pr-summary.md
+            gh pr edit "$EXISTING_PR" --title "$TITLE" --body-file "$SUMMARY"
           else
             echo "Opening new PR..."
             git push -u origin "$BRANCH"
@@ -138,10 +145,12 @@ jobs:
               --base main \
               --head "$BRANCH" \
               --title "$TITLE" \
-              --body-file .snapshot-pr-summary.md \
+              --body-file "$SUMMARY" \
               --label "snapshots,automated-pr"
           fi
 
       - name: Clean up temporary snapshot artifacts
         if: always() && steps.check-auth.outputs.authorized == 'true'
-        run: npm run snapshot:clean
+        run: |
+          npm run snapshot:clean
+          rm -f "$RUNNER_TEMP/snhu-snapshot-update/.snapshot-pr-summary.md"
