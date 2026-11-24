@@ -2,7 +2,7 @@
   "meta": {
     "domain": "search",
     "counts": {
-      "entries": 3870
+      "entries": 3891
     }
   },
   "programs": [
@@ -12916,6 +12916,16 @@
     {
       "subjectPrefix": "BUS",
       "courseNumber": "BUS1ELE",
+      "title": "Google Business Intelligence Professional Certificate",
+      "pid": "Hk7Gf7RXR",
+      "eligibilityTimeframe": null,
+      "groupFilter2Name": "Google",
+      "academicLevel": "Undergraduate",
+      "coursePID": null
+    },
+    {
+      "subjectPrefix": "BUS",
+      "courseNumber": "BUS1ELE",
       "title": "Business & Management",
       "pid": "Bk6J5B_wu",
       "eligibilityTimeframe": "Ongoing",
@@ -13028,6 +13038,16 @@
       "courseNumber": "BUS1ELE",
       "title": "Applied Business Solutions with Salesforce",
       "pid": "SJ4Ge8RRlx",
+      "eligibilityTimeframe": null,
+      "groupFilter2Name": "PathStream",
+      "academicLevel": "Undergraduate",
+      "coursePID": null
+    },
+    {
+      "subjectPrefix": "BUS",
+      "courseNumber": "BUS1ELE",
+      "title": "Salesforce Sales Operations Professional Certificate",
+      "pid": "SJHayShTke",
       "eligibilityTimeframe": null,
       "groupFilter2Name": "PathStream",
       "academicLevel": "Undergraduate",
@@ -13666,6 +13686,16 @@
     {
       "subjectPrefix": "CJ",
       "courseNumber": "CJ112",
+      "title": "Suffolk County Sheriff's Correction Officer Recruit Training",
+      "pid": "rkDyAdytZx",
+      "eligibilityTimeframe": null,
+      "groupFilter2Name": "Suffolk County Sheriff's Office",
+      "academicLevel": "Undergraduate",
+      "coursePID": "ByorkdHJV"
+    },
+    {
+      "subjectPrefix": "CJ",
+      "courseNumber": "CJ112",
       "title": "Customs and Border Protection Officer Basic Training (CBPOBT)",
       "pid": "SJxr2W-0U",
       "eligibilityTimeframe": null,
@@ -13700,6 +13730,26 @@
       "pid": "rJ4PbugFI",
       "eligibilityTimeframe": null,
       "groupFilter2Name": "Police Academy",
+      "academicLevel": "Undergraduate",
+      "coursePID": "BJDhxMllV"
+    },
+    {
+      "subjectPrefix": "CJ",
+      "courseNumber": "CJ140",
+      "title": "Suffolk County Sheriff's Correction Officer Recruit Training",
+      "pid": "rkDyAdytZx",
+      "eligibilityTimeframe": null,
+      "groupFilter2Name": "Suffolk County Sheriff's Office",
+      "academicLevel": "Undergraduate",
+      "coursePID": "BJDhxMllV"
+    },
+    {
+      "subjectPrefix": "CJ",
+      "courseNumber": "CJ140",
+      "title": "Suffolk County Sheriff's Basic Peace Officer Course",
+      "pid": "Sy9onlAOZl",
+      "eligibilityTimeframe": null,
+      "groupFilter2Name": "Suffolk County Sheriff's Office",
       "academicLevel": "Undergraduate",
       "coursePID": "BJDhxMllV"
     },
@@ -13855,6 +13905,26 @@
     },
     {
       "subjectPrefix": "CJ",
+      "courseNumber": "CJ205",
+      "title": "Suffolk County Sheriff's Correction Officer Recruit Training",
+      "pid": "rkDyAdytZx",
+      "eligibilityTimeframe": null,
+      "groupFilter2Name": "Suffolk County Sheriff's Office",
+      "academicLevel": "Undergraduate",
+      "coursePID": "SJkyIGgeN"
+    },
+    {
+      "subjectPrefix": "CJ",
+      "courseNumber": "CJ205",
+      "title": "Suffolk County Sheriff's Basic Peace Officer Course",
+      "pid": "Sy9onlAOZl",
+      "eligibilityTimeframe": null,
+      "groupFilter2Name": "Suffolk County Sheriff's Office",
+      "academicLevel": "Undergraduate",
+      "coursePID": "SJkyIGgeN"
+    },
+    {
+      "subjectPrefix": "CJ",
       "courseNumber": "CJ207",
       "title": "Pennsylvania State Police Academy Cadet Training",
       "pid": "B160NldL-x",
@@ -13875,6 +13945,16 @@
     },
     {
       "subjectPrefix": "CJ",
+      "courseNumber": "CJ207",
+      "title": "Suffolk County Sheriff's Correction Officer Recruit Training",
+      "pid": "rkDyAdytZx",
+      "eligibilityTimeframe": null,
+      "groupFilter2Name": "Suffolk County Sheriff's Office",
+      "academicLevel": "Undergraduate",
+      "coursePID": "ryOldfxeN"
+    },
+    {
+      "subjectPrefix": "CJ",
       "courseNumber": "CJ310",
       "title": "Customs and Border Protection Officer Basic Training (CBPOBT)",
       "pid": "SJxr2W-0U",
@@ -13882,6 +13962,16 @@
       "groupFilter2Name": "U.S. Customs and Border Protection",
       "academicLevel": "Undergraduate",
       "coursePID": "rJ-PKEggE"
+    },
+    {
+      "subjectPrefix": "CJ",
+      "courseNumber": "CJ320",
+      "title": "Suffolk County Sheriff's Correction Officer Recruit Training",
+      "pid": "rkDyAdytZx",
+      "eligibilityTimeframe": null,
+      "groupFilter2Name": "Suffolk County Sheriff's Office",
+      "academicLevel": "Undergraduate",
+      "coursePID": "NyGWL6HFe"
     },
     {
       "subjectPrefix": "CJ",
@@ -13920,6 +14010,16 @@
       "pid": "Sy2jgsSPC",
       "eligibilityTimeframe": null,
       "groupFilter2Name": "Sophia Learning",
+      "academicLevel": "Undergraduate",
+      "coursePID": "Hk2KaXxlE"
+    },
+    {
+      "subjectPrefix": "CJ",
+      "courseNumber": "CJ340",
+      "title": "Criminal Justice 104: Introduction to Criminology",
+      "pid": "BkgGtZ-A8",
+      "eligibilityTimeframe": "Ongoing",
+      "groupFilter2Name": "Study.com",
       "academicLevel": "Undergraduate",
       "coursePID": "Hk2KaXxlE"
     },
@@ -14174,6 +14274,16 @@
       "coursePID": "ry0LT4TvN"
     },
     {
+      "subjectPrefix": "COM",
+      "courseNumber": "COM430",
+      "title": "Business 313: Organizational Communication",
+      "pid": "B1Wtja72Ge",
+      "eligibilityTimeframe": null,
+      "groupFilter2Name": "Study.com",
+      "academicLevel": "Undergraduate",
+      "coursePID": "EJODvaBFg"
+    },
+    {
       "subjectPrefix": "CS",
       "courseNumber": "CS110",
       "title": "Computer Science A Level",
@@ -14405,6 +14515,16 @@
     },
     {
       "subjectPrefix": "CS",
+      "courseNumber": "CS407",
+      "title": "IBM Generative AI Engineering Professional Certificate",
+      "pid": "SJ_1U4r2fl",
+      "eligibilityTimeframe": null,
+      "groupFilter2Name": "International Business Machines (IBM)",
+      "academicLevel": "Undergraduate",
+      "coursePID": "SJhfFsKzf"
+    },
+    {
+      "subjectPrefix": "CS",
       "courseNumber": "CS465",
       "title": "AWS Cloud Institute",
       "pid": "ByCd8xtWJe",
@@ -14496,10 +14616,10 @@
     {
       "subjectPrefix": "CYB",
       "courseNumber": "CYB200",
-      "title": "Cisco Certified Support Technician: Cybersecurity",
-      "pid": "HktFJOmyGg",
-      "eligibilityTimeframe": null,
-      "groupFilter2Name": "Certiport (Pearson)",
+      "title": "CCNA Cybersecurity Certification",
+      "pid": "SyeC0cmhGl",
+      "eligibilityTimeframe": "Active certification",
+      "groupFilter2Name": "Cisco",
       "academicLevel": "Undergraduate",
       "coursePID": "r1glKbYBM"
     },
@@ -14785,6 +14905,16 @@
     },
     {
       "subjectPrefix": "DAD",
+      "courseNumber": "DAD1ELE",
+      "title": "Data Literacy",
+      "pid": "ryh6Jpg0ze",
+      "eligibilityTimeframe": null,
+      "groupFilter2Name": "Sophia Learning",
+      "academicLevel": "Undergraduate",
+      "coursePID": null
+    },
+    {
+      "subjectPrefix": "DAD",
       "courseNumber": "DAD215",
       "title": "SAS Programmer Professional Certificate",
       "pid": "rJLuC4l5zg",
@@ -14838,6 +14968,16 @@
       "courseNumber": "DAD220",
       "title": "Application Developer Apprenticeship Program",
       "pid": "HJ3vCBFp-x",
+      "eligibilityTimeframe": null,
+      "groupFilter2Name": "International Business Machines (IBM)",
+      "academicLevel": "Undergraduate",
+      "coursePID": "4JP6YpBYg"
+    },
+    {
+      "subjectPrefix": "DAD",
+      "courseNumber": "DAD220",
+      "title": "IBM Business Intelligence (BI) Analyst Professional Certificate",
+      "pid": "HkqTzlBnMe",
       "eligibilityTimeframe": null,
       "groupFilter2Name": "International Business Machines (IBM)",
       "academicLevel": "Undergraduate",
@@ -14906,10 +15046,10 @@
     {
       "subjectPrefix": "DAT",
       "courseNumber": "DAT1ELE",
-      "title": "IT Specialist: Data Analytics",
-      "pid": "B1yJ9zQS1l",
+      "title": "Google Business Intelligence Professional Certificate",
+      "pid": "Hk7Gf7RXR",
       "eligibilityTimeframe": null,
-      "groupFilter2Name": "Certiport (Pearson)",
+      "groupFilter2Name": "Google",
       "academicLevel": "Undergraduate",
       "coursePID": null
     },
@@ -15126,12 +15266,42 @@
     {
       "subjectPrefix": "DAT",
       "courseNumber": "DAT2ELE",
+      "title": "Google Advanced Data Analytics Professional Certificate",
+      "pid": "HJxmJco90",
+      "eligibilityTimeframe": null,
+      "groupFilter2Name": "Google",
+      "academicLevel": "Undergraduate",
+      "coursePID": null
+    },
+    {
+      "subjectPrefix": "DAT",
+      "courseNumber": "DAT2ELE",
+      "title": "IBM Business Intelligence (BI) Analyst Professional Certificate",
+      "pid": "HkqTzlBnMe",
+      "eligibilityTimeframe": null,
+      "groupFilter2Name": "International Business Machines (IBM)",
+      "academicLevel": "Undergraduate",
+      "coursePID": null
+    },
+    {
+      "subjectPrefix": "DAT",
+      "courseNumber": "DAT2ELE",
       "title": "Data Analyst Professional Certificate",
       "pid": "Hy2FLHFps",
       "eligibilityTimeframe": null,
       "groupFilter2Name": "International Business Machines (IBM)",
       "academicLevel": "Undergraduate",
       "coursePID": null
+    },
+    {
+      "subjectPrefix": "DAT",
+      "courseNumber": "DAT300",
+      "title": "Google Advanced Data Analytics Professional Certificate",
+      "pid": "HJxmJco90",
+      "eligibilityTimeframe": null,
+      "groupFilter2Name": "Google",
+      "academicLevel": "Undergraduate",
+      "coursePID": "HJcVYwRzV"
     },
     {
       "subjectPrefix": "DAT",
@@ -15160,6 +15330,16 @@
       "pid": "Sycs1DZbkl",
       "eligibilityTimeframe": null,
       "groupFilter2Name": "Google",
+      "academicLevel": "Undergraduate",
+      "coursePID": null
+    },
+    {
+      "subjectPrefix": "DAT",
+      "courseNumber": "DAT3ELE",
+      "title": "IBM Business Intelligence (BI) Analyst Professional Certificate",
+      "pid": "HkqTzlBnMe",
+      "eligibilityTimeframe": null,
+      "groupFilter2Name": "International Business Machines (IBM)",
       "academicLevel": "Undergraduate",
       "coursePID": null
     },
@@ -15416,6 +15596,16 @@
     {
       "subjectPrefix": "EDU",
       "courseNumber": "EDU1ELE",
+      "title": "Fire and Emergency Service Instructor Level I (INS 210) V3",
+      "pid": "BJjI87KhGg",
+      "eligibilityTimeframe": null,
+      "groupFilter2Name": "New York City Fire Department",
+      "academicLevel": "Undergraduate",
+      "coursePID": null
+    },
+    {
+      "subjectPrefix": "EDU",
+      "courseNumber": "EDU1ELE",
       "title": "ECE104: Classroom Management",
       "pid": "BJ4Xblxjh",
       "eligibilityTimeframe": null,
@@ -15449,16 +15639,6 @@
       "title": "Education 107: Intro to Curriculum, Instruction and Assessment",
       "pid": "B1Fp9cD8zx",
       "eligibilityTimeframe": null,
-      "groupFilter2Name": "Study.com",
-      "academicLevel": "Undergraduate",
-      "coursePID": null
-    },
-    {
-      "subjectPrefix": "EDU",
-      "courseNumber": "EDU1ELE",
-      "title": "Education 210: Technology in the Classroom",
-      "pid": "BkkXbiSvR",
-      "eligibilityTimeframe": "Ongoing",
       "groupFilter2Name": "Study.com",
       "academicLevel": "Undergraduate",
       "coursePID": null
@@ -15520,6 +15700,16 @@
       "pid": "SkRclkqnye",
       "eligibilityTimeframe": null,
       "groupFilter2Name": "Coopersmith Career Consulting",
+      "academicLevel": "Undergraduate",
+      "coursePID": null
+    },
+    {
+      "subjectPrefix": "EDU",
+      "courseNumber": "EDU3ELE",
+      "title": "First Line Supervisors Training Program (MNG 201) V7",
+      "pid": "SJMWGBAnzg",
+      "eligibilityTimeframe": null,
+      "groupFilter2Name": "New York City Fire Department",
       "academicLevel": "Undergraduate",
       "coursePID": null
     },
@@ -15610,16 +15800,6 @@
       "pid": "Sy016vx58",
       "eligibilityTimeframe": "Ongoing",
       "groupFilter2Name": "CLEP Exams",
-      "academicLevel": "Undergraduate",
-      "coursePID": "Hy33ojc8o"
-    },
-    {
-      "subjectPrefix": "ENG",
-      "courseNumber": "ENG130",
-      "title": "English Composition I",
-      "pid": "S14Kk1TLfe",
-      "eligibilityTimeframe": null,
-      "groupFilter2Name": "Distance Learning Systems Indiana",
       "academicLevel": "Undergraduate",
       "coursePID": "Hy33ojc8o"
     },
@@ -16055,31 +16235,11 @@
     },
     {
       "subjectPrefix": "FAS",
-      "courseNumber": "FAS201",
-      "title": "Art 103: History of Western Art I",
-      "pid": "SkIEvbbA8",
-      "eligibilityTimeframe": null,
-      "groupFilter2Name": "Study.com",
-      "academicLevel": "Undergraduate",
-      "coursePID": "4J1fYASYe"
-    },
-    {
-      "subjectPrefix": "FAS",
       "courseNumber": "FAS202",
       "title": "Art History II",
       "pid": "SykHE0l0L",
       "eligibilityTimeframe": null,
       "groupFilter2Name": "Sophia Learning",
-      "academicLevel": "Undergraduate",
-      "coursePID": "N1eMtRrKg"
-    },
-    {
-      "subjectPrefix": "FAS",
-      "courseNumber": "FAS202",
-      "title": "Art 104: History of Western Art II",
-      "pid": "By4KIOgvu",
-      "eligibilityTimeframe": null,
-      "groupFilter2Name": "Study.com",
       "academicLevel": "Undergraduate",
       "coursePID": "N1eMtRrKg"
     },
@@ -16286,16 +16446,6 @@
     {
       "subjectPrefix": "FIN",
       "courseNumber": "FIN330",
-      "title": "Finance 301: Corporate Finance",
-      "pid": "Hk3eQiv9d",
-      "eligibilityTimeframe": "Ongoing",
-      "groupFilter2Name": "Study.com",
-      "academicLevel": "Undergraduate",
-      "coursePID": "VylCo0Btl"
-    },
-    {
-      "subjectPrefix": "FIN",
-      "courseNumber": "FIN330",
       "title": "Finance 204: Financial Management",
       "pid": "Hky-V8z_Ze",
       "eligibilityTimeframe": null,
@@ -16468,6 +16618,26 @@
       "courseNumber": "GEN1ELE",
       "title": "Google IT Automation with Python Professional Certificate",
       "pid": "H11n_x37D",
+      "eligibilityTimeframe": null,
+      "groupFilter2Name": "Google",
+      "academicLevel": "Undergraduate",
+      "coursePID": null
+    },
+    {
+      "subjectPrefix": "GEN",
+      "courseNumber": "GEN1ELE",
+      "title": "Google Advanced Data Analytics Professional Certificate",
+      "pid": "HJxmJco90",
+      "eligibilityTimeframe": null,
+      "groupFilter2Name": "Google",
+      "academicLevel": "Undergraduate",
+      "coursePID": null
+    },
+    {
+      "subjectPrefix": "GEN",
+      "courseNumber": "GEN1ELE",
+      "title": "Google Business Intelligence Professional Certificate",
+      "pid": "Hk7Gf7RXR",
       "eligibilityTimeframe": null,
       "groupFilter2Name": "Google",
       "academicLevel": "Undergraduate",
@@ -16820,56 +16990,6 @@
       "pid": "r1zxVfi00",
       "eligibilityTimeframe": "Ongoing",
       "groupFilter2Name": "Cambridge Assessment International Education (AS Level & A Level)",
-      "academicLevel": "Undergraduate",
-      "coursePID": null
-    },
-    {
-      "subjectPrefix": "GRA",
-      "courseNumber": "GRA1ELE",
-      "title": "Print & Digital Media Publication Using Adobe In Design",
-      "pid": "BykhYdOsJe",
-      "eligibilityTimeframe": null,
-      "groupFilter2Name": "Certiport (Pearson)",
-      "academicLevel": "Undergraduate",
-      "coursePID": null
-    },
-    {
-      "subjectPrefix": "GRA",
-      "courseNumber": "GRA1ELE",
-      "title": "Visual Effects & Motion Graphics Using Adobe After Effects",
-      "pid": "H1xjXt_syg",
-      "eligibilityTimeframe": null,
-      "groupFilter2Name": "Certiport (Pearson)",
-      "academicLevel": "Undergraduate",
-      "coursePID": null
-    },
-    {
-      "subjectPrefix": "GRA",
-      "courseNumber": "GRA1ELE",
-      "title": "Web Authoring Using Adobe Dreamweaver",
-      "pid": "HJD0Kq_syx",
-      "eligibilityTimeframe": null,
-      "groupFilter2Name": "Certiport (Pearson)",
-      "academicLevel": "Undergraduate",
-      "coursePID": null
-    },
-    {
-      "subjectPrefix": "GRA",
-      "courseNumber": "GRA1ELE",
-      "title": "Digital Video Using Adobe Premiere Pro",
-      "pid": "Hyl5_Kdi1l",
-      "eligibilityTimeframe": null,
-      "groupFilter2Name": "Certiport (Pearson)",
-      "academicLevel": "Undergraduate",
-      "coursePID": null
-    },
-    {
-      "subjectPrefix": "GRA",
-      "courseNumber": "GRA1ELE",
-      "title": "Multiplatform Animation Using Adobe Animate",
-      "pid": "r11Zx5dsye",
-      "eligibilityTimeframe": null,
-      "groupFilter2Name": "Certiport (Pearson)",
       "academicLevel": "Undergraduate",
       "coursePID": null
     },
@@ -17476,6 +17596,16 @@
     {
       "subjectPrefix": "HIS",
       "courseNumber": "HIS1ELE",
+      "title": "Survey of World History",
+      "pid": "r16hoRx0U",
+      "eligibilityTimeframe": "Ongoing",
+      "groupFilter2Name": "StraighterLine",
+      "academicLevel": "Undergraduate",
+      "coursePID": null
+    },
+    {
+      "subjectPrefix": "HIS",
+      "courseNumber": "HIS1ELE",
       "title": "History 311: The Holocaust & World War II",
       "pid": "HJnTOKk2O",
       "eligibilityTimeframe": "Ongoing",
@@ -17890,6 +18020,16 @@
       "pid": "SJ4ZW8a01g",
       "eligibilityTimeframe": null,
       "groupFilter2Name": "National Healthcareer Association",
+      "academicLevel": "Undergraduate",
+      "coursePID": null
+    },
+    {
+      "subjectPrefix": "HTH",
+      "courseNumber": "HTH1ELE",
+      "title": "Certified First Responder Refresher Program (PRH 100R) V1, V2, V3, V4",
+      "pid": "SJCYjKP2Ge",
+      "eligibilityTimeframe": null,
+      "groupFilter2Name": "New York City Fire Department",
       "academicLevel": "Undergraduate",
       "coursePID": null
     },
@@ -18456,16 +18596,6 @@
     {
       "subjectPrefix": "IT",
       "courseNumber": "IT1ELE",
-      "title": "Microsoft Office Specialist: Excel Expert (MS 365 Apps)",
-      "pid": "rJgFO5ykZx",
-      "eligibilityTimeframe": null,
-      "groupFilter2Name": "Certiport (Pearson)",
-      "academicLevel": "Undergraduate",
-      "coursePID": null
-    },
-    {
-      "subjectPrefix": "IT",
-      "courseNumber": "IT1ELE",
       "title": "Google IT Automation with Python Professional Certificate",
       "pid": "H11n_x37D",
       "eligibilityTimeframe": null,
@@ -18776,6 +18906,16 @@
     {
       "subjectPrefix": "IT",
       "courseNumber": "IT1ELE",
+      "title": "AI Literacy",
+      "pid": "SkQDGhlAGl",
+      "eligibilityTimeframe": null,
+      "groupFilter2Name": "Sophia Learning",
+      "academicLevel": "Undergraduate",
+      "coursePID": null
+    },
+    {
+      "subjectPrefix": "IT",
+      "courseNumber": "IT1ELE",
       "title": "Computer Concepts & Applications",
       "pid": "rkEnpCsxt",
       "eligibilityTimeframe": "Ongoing",
@@ -19055,16 +19195,6 @@
     },
     {
       "subjectPrefix": "IT",
-      "courseNumber": "IT204",
-      "title": "Computer Science 303: Database Management",
-      "pid": "H10M0AgA8",
-      "eligibilityTimeframe": null,
-      "groupFilter2Name": "Study.com",
-      "academicLevel": "Undergraduate",
-      "coursePID": "Vy55ngLte"
-    },
-    {
-      "subjectPrefix": "IT",
       "courseNumber": "IT210",
       "title": "Business 104: Information Systems & Computer Applications",
       "pid": "H1wpvZbRI",
@@ -19166,6 +19296,16 @@
     {
       "subjectPrefix": "IT",
       "courseNumber": "IT215",
+      "title": "IBM Generative AI Engineering Professional Certificate",
+      "pid": "SJ_1U4r2fl",
+      "eligibilityTimeframe": null,
+      "groupFilter2Name": "International Business Machines (IBM)",
+      "academicLevel": "Undergraduate",
+      "coursePID": "BkJohC6Ip"
+    },
+    {
+      "subjectPrefix": "IT",
+      "courseNumber": "IT215",
       "title": "Generative AI Practitioner",
       "pid": "HyvOZeQ01g",
       "eligibilityTimeframe": "5 years",
@@ -19208,6 +19348,16 @@
       "courseNumber": "IT217",
       "title": "IBM AI Developer Professional Certificate",
       "pid": "S1p04guIWe",
+      "eligibilityTimeframe": null,
+      "groupFilter2Name": "International Business Machines (IBM)",
+      "academicLevel": "Undergraduate",
+      "coursePID": "SktTf1ALT"
+    },
+    {
+      "subjectPrefix": "IT",
+      "courseNumber": "IT217",
+      "title": "IBM Generative AI Engineering Professional Certificate",
+      "pid": "SJ_1U4r2fl",
       "eligibilityTimeframe": null,
       "groupFilter2Name": "International Business Machines (IBM)",
       "academicLevel": "Undergraduate",
@@ -19366,16 +19516,6 @@
     {
       "subjectPrefix": "IT",
       "courseNumber": "IT2ELE",
-      "title": "Cisco Certified Support Technician: Networking",
-      "pid": "BJpfwGZO1g",
-      "eligibilityTimeframe": null,
-      "groupFilter2Name": "Certiport (Pearson)",
-      "academicLevel": "Undergraduate",
-      "coursePID": null
-    },
-    {
-      "subjectPrefix": "IT",
-      "courseNumber": "IT2ELE",
       "title": "Google Cloud Cybersecurity Certificate",
       "pid": "SyltoWu_kg",
       "eligibilityTimeframe": null,
@@ -19516,6 +19656,16 @@
     {
       "subjectPrefix": "IT",
       "courseNumber": "IT3ELE",
+      "title": "IBM Generative AI Engineering Professional Certificate",
+      "pid": "SJ_1U4r2fl",
+      "eligibilityTimeframe": null,
+      "groupFilter2Name": "International Business Machines (IBM)",
+      "academicLevel": "Undergraduate",
+      "coursePID": null
+    },
+    {
+      "subjectPrefix": "IT",
+      "courseNumber": "IT3ELE",
       "title": "Software Engineer Apprenticeship",
       "pid": "SyGERLLCWe",
       "eligibilityTimeframe": null,
@@ -19605,6 +19755,26 @@
     },
     {
       "subjectPrefix": "IT",
+      "courseNumber": "IT450",
+      "title": "IBM Generative AI Engineering Professional Certificate",
+      "pid": "SJ_1U4r2fl",
+      "eligibilityTimeframe": null,
+      "groupFilter2Name": "International Business Machines (IBM)",
+      "academicLevel": "Undergraduate",
+      "coursePID": "Vk4EogLYg"
+    },
+    {
+      "subjectPrefix": "IT",
+      "courseNumber": "IT460",
+      "title": "IBM Generative AI Engineering Professional Certificate",
+      "pid": "SJ_1U4r2fl",
+      "eligibilityTimeframe": null,
+      "groupFilter2Name": "International Business Machines (IBM)",
+      "academicLevel": "Undergraduate",
+      "coursePID": "VJi8ag8Fg"
+    },
+    {
+      "subjectPrefix": "IT",
       "courseNumber": "IT476",
       "title": "AWS Certified Developer Associate",
       "pid": "B1Uc7pYPR",
@@ -19690,6 +19860,16 @@
       "pid": "rk6mquv0U",
       "eligibilityTimeframe": null,
       "groupFilter2Name": "New York City Police Department",
+      "academicLevel": "Undergraduate",
+      "coursePID": "E1Tz0xLtx"
+    },
+    {
+      "subjectPrefix": "JUS",
+      "courseNumber": "JUS201",
+      "title": "Basic Criminal Investigation Online",
+      "pid": "r17dZscM0",
+      "eligibilityTimeframe": null,
+      "groupFilter2Name": "Texas A&M Engineering Extension Service",
       "academicLevel": "Undergraduate",
       "coursePID": "E1Tz0xLtx"
     },
@@ -20480,6 +20660,16 @@
       "pid": "r1Oip0mw5",
       "eligibilityTimeframe": null,
       "groupFilter2Name": "Sophia Learning",
+      "academicLevel": "Undergraduate",
+      "coursePID": "NJHQovqFg"
+    },
+    {
+      "subjectPrefix": "LSP",
+      "courseNumber": "LSP111",
+      "title": "Spanish 101: Beginning Spanish",
+      "pid": "H1ssr_xD_",
+      "eligibilityTimeframe": "Ongoing",
+      "groupFilter2Name": "Study.com",
       "academicLevel": "Undergraduate",
       "coursePID": "NJHQovqFg"
     },
@@ -21285,6 +21475,16 @@
     },
     {
       "subjectPrefix": "MAT",
+      "courseNumber": "MAT243",
+      "title": "Google Advanced Data Analytics Professional Certificate",
+      "pid": "HJxmJco90",
+      "eligibilityTimeframe": null,
+      "groupFilter2Name": "Google",
+      "academicLevel": "Undergraduate",
+      "coursePID": "HyM37zzl-"
+    },
+    {
+      "subjectPrefix": "MAT",
       "courseNumber": "MAT275",
       "title": "Calculus BC",
       "pid": "rkedZHxc8",
@@ -21565,6 +21765,16 @@
     },
     {
       "subjectPrefix": "MIS",
+      "courseNumber": "MIS350",
+      "title": "IBM Business Intelligence (BI) Analyst Professional Certificate",
+      "pid": "HkqTzlBnMe",
+      "eligibilityTimeframe": null,
+      "groupFilter2Name": "International Business Machines (IBM)",
+      "academicLevel": "Undergraduate",
+      "coursePID": "EyBLdv5X-"
+    },
+    {
+      "subjectPrefix": "MIS",
       "courseNumber": "MIS3ELE",
       "title": "Business 303: Management Information Systems",
       "pid": "ryI2xl5L0",
@@ -21640,16 +21850,6 @@
       "pid": "rkJezZTCxe",
       "eligibilityTimeframe": null,
       "groupFilter2Name": "PathStream",
-      "academicLevel": "Undergraduate",
-      "coursePID": null
-    },
-    {
-      "subjectPrefix": "MKT",
-      "courseNumber": "MKT1ELE",
-      "title": "Business 202: Introduction to E-Commerce",
-      "pid": "r11laGkdC",
-      "eligibilityTimeframe": null,
-      "groupFilter2Name": "Study.com",
       "academicLevel": "Undergraduate",
       "coursePID": null
     },
@@ -22006,16 +22206,6 @@
     {
       "subjectPrefix": "OL",
       "courseNumber": "OL1ELE",
-      "title": "Business in Society",
-      "pid": "H1Ed5SFE2",
-      "eligibilityTimeframe": "Ongoing",
-      "groupFilter2Name": "Corporate College Services, Inc.",
-      "academicLevel": "Undergraduate",
-      "coursePID": null
-    },
-    {
-      "subjectPrefix": "OL",
-      "courseNumber": "OL1ELE",
       "title": "Principles of Management (MAN 101)",
       "pid": "SkNCP6u8a",
       "eligibilityTimeframe": "Ongoing",
@@ -22070,6 +22260,26 @@
       "pid": "Bk3Gc70gj",
       "eligibilityTimeframe": "Ongoing",
       "groupFilter2Name": "Joint Knowledge Online",
+      "academicLevel": "Undergraduate",
+      "coursePID": null
+    },
+    {
+      "subjectPrefix": "OL",
+      "courseNumber": "OL1ELE",
+      "title": "First Line Supervisors Training Program (MNG 201) V7",
+      "pid": "SJMWGBAnzg",
+      "eligibilityTimeframe": null,
+      "groupFilter2Name": "New York City Fire Department",
+      "academicLevel": "Undergraduate",
+      "coursePID": null
+    },
+    {
+      "subjectPrefix": "OL",
+      "courseNumber": "OL1ELE",
+      "title": "Captain's Development Course",
+      "pid": "SyhdlyOnMx",
+      "eligibilityTimeframe": null,
+      "groupFilter2Name": "New York City Fire Department",
       "academicLevel": "Undergraduate",
       "coursePID": null
     },
@@ -22365,16 +22575,6 @@
     },
     {
       "subjectPrefix": "OL",
-      "courseNumber": "OL317",
-      "title": "Business 321: Small Business Management",
-      "pid": "r1QBhCECv",
-      "eligibilityTimeframe": null,
-      "groupFilter2Name": "Study.com",
-      "academicLevel": "Undergraduate",
-      "coursePID": "EkFHffIte"
-    },
-    {
-      "subjectPrefix": "OL",
       "courseNumber": "OL318",
       "title": "Recruiting and Retention School; Recruiter",
       "pid": "r1GzvRLed",
@@ -22466,8 +22666,8 @@
     {
       "subjectPrefix": "OL",
       "courseNumber": "OL328",
-      "title": "Business 302: Foundations of Leadership",
-      "pid": "rJOhJuseh",
+      "title": "Business 305: Leadership Communication",
+      "pid": "SkarFgW6h",
       "eligibilityTimeframe": "Ongoing",
       "groupFilter2Name": "Study.com",
       "academicLevel": "Undergraduate",
@@ -22578,16 +22778,6 @@
       "courseNumber": "OL3ELE",
       "title": "Business 319: Negotiations & Conflict Management",
       "pid": "BkCTucqJ-x",
-      "eligibilityTimeframe": null,
-      "groupFilter2Name": "Study.com",
-      "academicLevel": "Undergraduate",
-      "coursePID": null
-    },
-    {
-      "subjectPrefix": "OL",
-      "courseNumber": "OL3ELE",
-      "title": "Business 324: Managerial Communication",
-      "pid": "ryzYchkggg",
       "eligibilityTimeframe": null,
       "groupFilter2Name": "Study.com",
       "academicLevel": "Undergraduate",
@@ -23246,6 +23436,16 @@
     {
       "subjectPrefix": "PHY",
       "courseNumber": "PHY150",
+      "title": "General Physics I",
+      "pid": "S1-SdClRU",
+      "eligibilityTimeframe": null,
+      "groupFilter2Name": "StraighterLine",
+      "academicLevel": "Undergraduate",
+      "coursePID": "B1v8B5aSV"
+    },
+    {
+      "subjectPrefix": "PHY",
+      "courseNumber": "PHY150",
       "title": "Physics 111: Physics I",
       "pid": "BkuSEQh0u",
       "eligibilityTimeframe": null,
@@ -23410,16 +23610,6 @@
       "pid": "HkIO_OYhlx",
       "eligibilityTimeframe": null,
       "groupFilter2Name": "Coopersmith Career Consulting",
-      "academicLevel": "Undergraduate",
-      "coursePID": "NyntpGItx"
-    },
-    {
-      "subjectPrefix": "POL",
-      "courseNumber": "POL210",
-      "title": "American Government",
-      "pid": "rkGcL16Izl",
-      "eligibilityTimeframe": null,
-      "groupFilter2Name": "Distance Learning Systems Indiana",
       "academicLevel": "Undergraduate",
       "coursePID": "NyntpGItx"
     },
@@ -24560,6 +24750,26 @@
       "pid": "r118XOKhlx",
       "eligibilityTimeframe": null,
       "groupFilter2Name": "Coopersmith Career Consulting",
+      "academicLevel": "Undergraduate",
+      "coursePID": null
+    },
+    {
+      "subjectPrefix": "TEC",
+      "courseNumber": "TEC1ELE",
+      "title": "Ladder Company Chauffeur (VEH 201) V3, V4",
+      "pid": "r1PXymYhGl",
+      "eligibilityTimeframe": null,
+      "groupFilter2Name": "New York City Fire Department",
+      "academicLevel": "Undergraduate",
+      "coursePID": null
+    },
+    {
+      "subjectPrefix": "TEC",
+      "courseNumber": "TEC1ELE",
+      "title": "First Line Supervisors Training Program (MNG 201) V7",
+      "pid": "SJMWGBAnzg",
+      "eligibilityTimeframe": null,
+      "groupFilter2Name": "New York City Fire Department",
       "academicLevel": "Undergraduate",
       "coursePID": null
     },

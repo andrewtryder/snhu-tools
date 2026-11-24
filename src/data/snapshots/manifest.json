@@ -1,18 +1,18 @@
 {
   "schemaVersion": 1,
-  "createdAt": "2026-10-19T14:20:52.628Z",
+  "createdAt": "2026-11-24T02:40:01.494Z",
   "fixture": false,
   "provenance": {
     "kind": "postgres",
     "source": "postgres-readonly-export",
-    "sourceDigest": "dd52435d5460676cef28ce9722aa0ae1092a1d8444c8b1537aa68fb8408ede58",
-    "approvalReference": "WEEKLY-2026-10-19",
+    "sourceDigest": "717b1b7230a131439f5aa8b105d72f91dc164e97d8e95ecb4ba5dc0943981083",
+    "approvalReference": "WEEKLY-2026-11-24",
     "approved": true
   },
   "domains": {
     "programs": {
       "file": "programs.json",
-      "sha256": "24fcf5d7da8b7c1cc8360e96d837b27b5d9be224133d64499488ec009a01f53b",
+      "sha256": "9f3e595f122cf4be0f924d067d6402f036880745b5c38e71e996cc50b2efe46a",
       "required": true,
       "counts": {
         "programs": 227
@@ -20,7 +20,7 @@
     },
     "courses": {
       "file": "courses.json",
-      "sha256": "c7b67c2da9911ff88f542bab8f9735302b70efde4eb844e2c47fe9665d32fab1",
+      "sha256": "7cf606761077bd424151a1d4516141a97a819db6f9faf1b68d831e3f39686ebf",
       "required": true,
       "counts": {
         "ids": 2394,
@@ -30,18 +30,18 @@
     },
     "transfers": {
       "file": "transfers.json",
-      "sha256": "618d7fe56b26a3da5c74fda719fb7dbd632f5f9500310dcc2bf2d6ae7ef2ab27",
+      "sha256": "2c46cc5ab72914acf2e16cf90fc0b65927f8046df8f5df6dd5e21d77a4dbfb07",
       "required": true,
       "counts": {
-        "rows": 1249
+        "rows": 1270
       }
     },
     "search": {
       "file": "search.json",
-      "sha256": "676776014afeef33700ce75139fec0169b8edf906be200ada18e7327b696b0c2",
+      "sha256": "487bdeb576ed9bde8342a637aa8f29334ccedabe5c42d21711be41438051c9e8",
       "required": true,
       "counts": {
-        "entries": 3870
+        "entries": 3891
       }
     }
   }
