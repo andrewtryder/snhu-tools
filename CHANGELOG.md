@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.6.4](https://github.com/andrewtryder/snhu-tools/compare/v0.6.3...v0.6.4) (2026-11-24)
+
+
+### Bug Fixes
+
+* **deps:** update Tailwind CSS, ESLint and Vitest ([#71](https://github.com/andrewtryder/snhu-tools/issues/71)) ([20e449a](https://github.com/andrewtryder/snhu-tools/commit/20e449ad8fa290f975b0e2859b67ffd889d894f4))
+
 ## [0.6.3](https://github.com/andrewtryder/snhu-tools/compare/v0.6.2...v0.6.3) (2026-11-17)
 
 
